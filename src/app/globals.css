@@ -1,0 +1,114 @@
+@import "tailwindcss";
+
+/* ─── Design Tokens ─────────────────────────────────────────────────────────── */
+:root {
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --surface: #ffffff;
+  --surface-muted: #f8fafc;
+  --border-subtle: #e2e8f0;
+  --border-default: #cbd5e1;
+  --text-primary: #0f172a;
+  --text-muted: #64748b;
+  --text-placeholder: #94a3b8;
+  --primary: #1d4ed8;
+  --primary-soft: #eff6ff;
+  --primary-hover: #1e40af;
+  --success: #16a34a;
+  --success-soft: #f0fdf4;
+  --warning: #d97706;
+  --warning-soft: #fffbeb;
+  --danger: #dc2626;
+  --danger-soft: #fef2f2;
+  --info: #0284c7;
+  --info-soft: #f0f9ff;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-border-subtle: var(--border-subtle);
+  --color-border-default: var(--border-default);
+  --color-text-primary: var(--text-primary);
+  --color-text-muted: var(--text-muted);
+  --color-text-placeholder: var(--text-placeholder);
+  --color-primary: var(--primary);
+  --color-primary-soft: var(--primary-soft);
+  --color-primary-hover: var(--primary-hover);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+/* ─── Base ───────────────────────────────────────────────────────────────────── */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+a {
+  text-underline-offset: 4px;
+}
+
+/* ─── Page content typography ─────────────────────────────────────────────────── */
+.content-body {
+  max-width: 65ch;
+  line-height: 1.75;
+}
+
+.content-body p {
+  margin-bottom: 1rem;
+}
+
+.content-body ul,
+.content-body ol {
+  margin-bottom: 1rem;
+  padding-left: 1.5rem;
+}
+
+.content-body li {
+  margin-bottom: 0.25rem;
+}
+
+.content-body strong {
+  font-weight: 600;
+}
+
+.content-body em {
+  font-style: italic;
+}
+
+/* ─── Utilities ─────────────────────────────────────────────────────────────── */
+.text-muted-foreground {
+  color: var(--text-muted);
+}
+
+.bg-muted {
+  background-color: var(--surface-muted);
+}
+
+.text-destructive {
+  color: var(--danger);
+}
+
+.bg-destructive {
+  background-color: var(--danger);
+}
+
+.border-destructive {
+  border-color: var(--danger);
+}

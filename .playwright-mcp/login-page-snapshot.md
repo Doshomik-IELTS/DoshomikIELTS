@@ -1,0 +1,52 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - complementary [ref=e3]:
+      - generic [ref=e5]:
+        - img [ref=e7]
+        - generic [ref=e9]: BookSocial
+      - navigation [ref=e10]:
+        - link "Dashboard" [ref=e11] [cursor=pointer]:
+          - /url: /
+          - img [ref=e12]
+          - text: Dashboard
+        - link "Books" [ref=e14] [cursor=pointer]:
+          - /url: /books
+          - img [ref=e15]
+          - text: Books
+        - link "Posts" [ref=e17] [cursor=pointer]:
+          - /url: /posts
+          - img [ref=e18]
+          - text: Posts
+        - link "Accounts" [ref=e20] [cursor=pointer]:
+          - /url: /accounts
+          - img [ref=e21]
+          - text: Accounts
+        - link "Analytics" [ref=e23] [cursor=pointer]:
+          - /url: /analytics
+          - img [ref=e24]
+          - text: Analytics
+        - link "Variables" [ref=e26] [cursor=pointer]:
+          - /url: /variables
+          - img [ref=e27]
+          - text: Variables
+      - generic [ref=e29]:
+        - link "Sign In" [ref=e31] [cursor=pointer]:
+          - /url: /login
+        - generic [ref=e35]: Connected
+    - main [ref=e36]:
+      - generic [ref=e38]:
+        - heading "Welcome Back" [level=1] [ref=e39]
+        - paragraph [ref=e40]: Sign in to continue
+        - generic [ref=e41]:
+          - generic [ref=e42]:
+            - generic [ref=e43]: Email
+            - textbox "you@example.com" [ref=e44]
+          - generic [ref=e45]:
+            - generic [ref=e46]: Password
+            - textbox "••••••••" [ref=e47]
+          - button "Sign In" [ref=e48] [cursor=pointer]
+        - generic [ref=e49]: or continue with
+        - paragraph [ref=e50]:
+          - text: Don't have an account?
+          - button "Sign up" [ref=e51] [cursor=pointer]
+  - alert [ref=e52]

@@ -1,0 +1,479 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum AppRole {
+  learner
+  admin
+  reviewer
+  evaluator
+}
+
+enum ContentStatus {
+  draft
+  review
+  published
+  archived
+}
+
+enum Difficulty {
+  basic
+  intermediate
+  advanced
+}
+
+enum ResourceCategory {
+  basic_english
+  words
+  synonyms
+  grammar
+  reading_strategy
+  listening_strategy
+  writing_strategy
+  speaking_strategy
+}
+
+enum TestType {
+  practice
+  short_mock
+  full_mock
+}
+
+enum IeltsModule {
+  listening
+  reading
+  writing
+  speaking
+}
+
+enum AttemptStatus {
+  in_progress
+  submitted
+  evaluating
+  completed
+  failed
+}
+
+enum JobStatus {
+  queued
+  processing
+  succeeded
+  failed
+  needs_review
+}
+
+enum ConfidenceLevel {
+  low
+  medium
+  high
+}
+
+enum GenerationStatus {
+  blueprint
+  generating
+  validating
+  review
+  published
+  archived
+}
+
+model Profile {
+  id             String    @id @default(uuid())
+  authUserId     String    @unique
+  email          String    @unique
+  name           String?
+  targetBand     Float?
+  examDate       DateTime?
+  nativeLanguage String?
+  studyGoal      String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  roles              Role[]
+  resourcesCreated   Resource[]            @relation("ResourceCreatedBy")
+  resourceVersions   ResourceVersion[]
+  practiceAttempts   PracticeAttempt[]
+  mockAttempts       MockTestAttempt[]
+  mediaAssets        MediaAsset[]
+  auditLogs          AuditLog[]
+  savedResources     SavedResource[]
+  writingEvaluations WritingEvaluation[]
+  speakingEvaluations SpeakingEvaluation[]
+  contentReviews     ContentReview[]
+  externalStudyRecords ExternalStudyRecord[]
+}
+
+model Role {
+  id        String   @id @default(uuid())
+  profileId String
+  role      AppRole  @default(learner)
+  createdAt DateTime @default(now())
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, role])
+}
+
+model Resource {
+  id          String           @id @default(uuid())
+  title       String
+  slug        String           @unique
+  category    ResourceCategory
+  difficulty  Difficulty      @default(basic)
+  body        String
+  examplesJson Json?
+  tags        String[]         @default([])
+  status      ContentStatus    @default(draft)
+  createdById String?
+  publishedAt DateTime?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  createdBy Profile?          @relation("ResourceCreatedBy", fields: [createdById], references: [id])
+  versions  ResourceVersion[]
+  practiceAttempts PracticeAttempt[]
+  savedBy   SavedResource[]
+}
+
+model SavedResource {
+  id         String   @id @default(uuid())
+  profileId  String
+  resourceId String
+  createdAt  DateTime @default(now())
+
+  profile  Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  resource Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, resourceId])
+}
+
+model ResourceVersion {
+  id            String   @id @default(uuid())
+  resourceId    String
+  versionNumber Int
+  snapshotJson  Json
+  changeNote    String?
+  createdById   String?
+  createdAt     DateTime @default(now())
+
+  resource  Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  createdBy Profile? @relation(fields: [createdById], references: [id])
+
+  @@unique([resourceId, versionNumber])
+}
+
+model Test {
+  id        String        @id @default(uuid())
+  title     String
+  type      TestType      @default(short_mock)
+  status    ContentStatus @default(draft)
+  estimatedDurationMinutes Int?
+  publishedAt DateTime?
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  sections TestSection[]
+  attempts MockTestAttempt[]
+}
+
+model TestSection {
+  id              String      @id @default(uuid())
+  testId          String
+  module          IeltsModule
+  partNumber      Int?
+  title           String
+  instructions    String?
+  durationMinutes Int?
+  orderIndex      Int
+  contentJson     Json?       // reading passage, listening transcript, writing visual spec, speaking cue card
+  mediaAssetId    String?     // audio for listening sections
+
+  test      Test       @relation(fields: [testId], references: [id], onDelete: Cascade)
+  questions Question[]
+  attempts  AttemptAnswer[]
+}
+
+model Question {
+  id          String     @id @default(uuid())
+  sectionId   String
+  questionType String
+  prompt      String
+  optionsJson Json?
+  orderIndex  Int
+  difficulty  Difficulty @default(basic)
+  explanation String?
+  sourceSpanJson Json?   // {startOffset, endOffset, excerpt, reference}
+
+  section    TestSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  answerKey  AnswerKey?
+  answers    AttemptAnswer[]
+}
+
+model AnswerKey {
+  id                  String @id @default(uuid())
+  questionId          String @unique
+  canonicalAnswer     String
+  acceptedAnswersJson Json?
+  scoringRuleJson     Json?
+  explanation         String?
+
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+}
+
+model PracticeAttempt {
+  id               String   @id @default(uuid())
+  profileId        String
+  resourceId       String?
+  practiceType     String
+  answersJson      Json?
+  scoreJson        Json?
+  feedbackJson     Json?
+  timeSpentSeconds Int?
+  createdAt        DateTime @default(now())
+
+  profile  Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  resource Resource? @relation(fields: [resourceId], references: [id])
+}
+
+model MockTestAttempt {
+  id          String        @id @default(uuid())
+  profileId   String
+  testId      String
+  status      AttemptStatus @default(in_progress)
+  startedAt   DateTime      @default(now())
+  submittedAt DateTime?
+  completedAt DateTime?
+
+  profile             Profile             @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  test                Test                @relation(fields: [testId], references: [id])
+  answers             AttemptAnswer[]
+  moduleScores        ModuleScore[]
+  scorePrediction     ScorePrediction?
+  writingEvaluations  WritingEvaluation[]
+  speakingEvaluations SpeakingEvaluation[]
+}
+
+model AttemptAnswer {
+  id          String   @id @default(uuid())
+  attemptId   String
+  sectionId   String
+  questionId  String?
+  answerText  String?
+  answerJson  Json?
+  isCorrect   Boolean?
+  score       Float?
+  submittedAt DateTime @default(now())
+
+  attempt  MockTestAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  section  TestSection     @relation(fields: [sectionId], references: [id])
+  question Question?       @relation(fields: [questionId], references: [id])
+}
+
+model ModuleScore {
+  id            String          @id @default(uuid())
+  attemptId     String
+  module        IeltsModule
+  rawScore      Int?
+  maxRawScore   Int?
+  estimatedBand Float
+  criteriaJson  Json?
+  feedbackJson  Json?
+  confidence    ConfidenceLevel @default(low)
+  createdAt     DateTime        @default(now())
+
+  attempt MockTestAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+
+  @@unique([attemptId, module])
+}
+
+model ScorePrediction {
+  id            String          @id @default(uuid())
+  attemptId     String          @unique
+  listeningBand Float
+  readingBand   Float
+  writingBand   Float
+  speakingBand  Float
+  overallBand   Float
+  confidence    ConfidenceLevel @default(low)
+  calculationJson Json?
+  disclaimer    String
+  createdAt     DateTime        @default(now())
+
+  attempt MockTestAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+}
+
+model MediaAsset {
+  id              String   @id @default(uuid())
+  profileId       String?
+  bucket          String
+  path            String
+  purpose         String
+  contentType     String
+  sizeBytes       Int?
+  durationSeconds Int?
+  licenseMetadataJson Json?
+  createdAt       DateTime @default(now())
+
+  profile            Profile?            @relation(fields: [profileId], references: [id])
+  speakingEvaluations SpeakingEvaluation[]
+}
+
+model LlmJob {
+  id            String    @id @default(uuid())
+  type          String
+  status        JobStatus @default(queued)
+  provider      String?
+  model         String?
+  promptVersion String?
+  inputJson     Json
+  outputJson    Json?
+  errorJson     Json?
+  attemptCount  Int       @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  writingEvaluations  WritingEvaluation[]
+  speakingEvaluations SpeakingEvaluation[]
+}
+
+model AuditLog {
+  id             String   @id @default(uuid())
+  actorProfileId String?
+  action         String
+  entityType     String
+  entityId       String?
+  metadataJson   Json?
+  createdAt      DateTime @default(now())
+
+  actor Profile? @relation(fields: [actorProfileId], references: [id])
+}
+
+model ScoreMapping {
+  id           String   @id @default(uuid())
+  module       String   // listening, reading_academic, reading_general_training
+  version      String   @default("v1")
+  rawToBandJson Json    // [{minRaw, maxRaw, band}]
+  isDefault    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([module, version])
+}
+
+model TestGenerationJob {
+  id             String          @id @default(uuid())
+  module         String         // listening, reading, writing, speaking
+  testType       TestType
+  status         GenerationStatus @default(blueprint)
+  provider      String?
+  model         String?
+  promptVersion String?
+  blueprintJson Json?
+  outputJson    Json?
+  validationJson Json?
+  errorJson     Json?
+  createdById   String?
+  reviewedById  String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+
+model EvaluationCalibration {
+  id              String   @id @default(uuid())
+  provider        String
+  model           String
+  promptVersion   String?
+  calibrationSetId String?
+  averageDeviation Float?
+  sampleSize     Int?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+enum TaskType {
+  task_1
+  task_2
+}
+
+enum SpeakingPart {
+  part_1
+  part_2
+  part_3
+}
+
+model WritingEvaluation {
+  id              String    @id @default(uuid())
+  profileId       String
+  attemptId       String
+  sectionId       String
+  taskType        TaskType
+  responseText    String
+  wordCount       Int?
+  criteriaBandsJson Json?
+  overallBand     Float?
+  feedbackJson    Json?
+  llmJobId        String?
+  status          JobStatus @default(queued)
+  needsHumanReview Boolean  @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  profile Profile        @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  attempt MockTestAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  job     LlmJob?          @relation(fields: [llmJobId], references: [id])
+}
+
+model SpeakingEvaluation {
+  id                  String    @id @default(uuid())
+  profileId           String
+  attemptId           String
+  sectionId           String
+  part                SpeakingPart
+  responseText        String?
+  mediaAssetId        String?
+  transcript          String?
+  criteriaBandsJson   Json?
+  overallBand         Float?
+  feedbackJson        Json?
+  pronunciationAvailable Boolean @default(false)
+  llmJobId            String?
+  status              JobStatus @default(queued)
+  needsHumanReview    Boolean  @default(false)
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  profile Profile        @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  attempt MockTestAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  media   MediaAsset?      @relation(fields: [mediaAssetId], references: [id])
+  job     LlmJob?          @relation(fields: [llmJobId], references: [id])
+}
+
+model ContentReview {
+  id          String        @id @default(uuid())
+  contentType String
+  contentId   String
+  status      ContentStatus @default(draft)
+  reviewerId  String?
+  notes       String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  reviewer Profile? @relation(fields: [reviewerId], references: [id])
+}
+
+model ExternalStudyRecord {
+  id            String   @id @default(uuid())
+  profileId     String
+  sourceLabel   String
+  progressLabel String
+  notes         String?
+  createdAt     DateTime @default(now())
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+}
