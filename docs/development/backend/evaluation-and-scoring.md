@@ -7,6 +7,16 @@
 - Full overall band prediction appears only after all four modules are complete.
 - All bands are unofficial estimates.
 
+## Current Implementation Status
+
+- **Reading/Listening Scoring:** Fully implemented in submission flow (`/api/attempts/[id]/submit-section`)
+- **Writing Evaluation:** Implemented - `/api/evaluations/writing` creates `WritingEvaluation` + `LlmJob`
+- **Speaking Evaluation:** Implemented - `/api/evaluations/speaking` creates `SpeakingEvaluation` + `LlmJob`
+- **Score Prediction:** Implemented - `/api/attempts/[id]/predict-score` when all 4 modules complete
+- **Production LLM:** Implemented 2026-05-10 - supports OpenAI and Anthropic with Zod validation
+- **EvaluationCalibration:** New model added for tracking LLM accuracy vs human scores
+- **ScoreMapping:** New model added for configurable raw-to-band score mappings
+
 ## Answer Normalization
 
 Apply normalization before comparing objective answers:

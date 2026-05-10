@@ -4,6 +4,25 @@
 
 Use Supabase Storage for V1 media storage.
 
+## Current Implementation Status
+
+- **Implemented (2026-05-10):**
+  - `/api/media/upload-url` - Creates signed upload URL and MediaAsset record
+  - `/api/media/[assetId]/download-url` - Creates signed download URL with access checks
+  - Private bucket support via signed URLs
+  - File type validation for audio uploads
+  - Owner/admin/reviewer/evaluator access checks
+
+- **API Endpoints:**
+  - `POST /api/media/upload-url` - Request signed upload URL
+  - `GET /api/media/:assetId/download-url` - Get signed download URL
+
+- **Supported Purposes:**
+  - `speaking_recording` - Learner audio uploads
+  - `listening_audio` - Admin/reviewer audio with license metadata
+  - `generated_audio` - TTS generated content
+  - `reports` - Generated PDF exports
+
 ## Buckets
 
 Create these buckets:

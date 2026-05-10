@@ -22,6 +22,45 @@ Jobs should be used for long-running, expensive, or failure-prone work so learne
 - Speaking evaluation (with text or transcript)
 - Auto-completion of mock test attempts when all modules are scored
 
+## Provider Selection
+
+The system supports two evaluation providers:
+
+### Deterministic Provider (Default/Fallback)
+- Location: `src/lib/evaluation/provider.ts`
+- Uses algorithmic scoring based on response length, lexical variety, and basic grammar signals
+- Suitable for MVP development and testing
+- No external API keys required
+- Activated when `LLM_PROVIDER` and `LLM_API_KEY` are not set
+
+### Production LLM Provider
+- Location: `src/lib/evaluation/llm-provider.ts`
+- Supports OpenAI and Anthropic models
+- Requires `LLM_PROVIDER` and `LLM_API_KEY` environment variables
+- Uses Zod schema validation for output (`src/lib/evaluation/schemas.ts`)
+- Activated when both `LLM_PROVIDER` and `LLM_API_KEY` are set
+
+**Environment Variables:**
+```bash
+# For production LLM
+LLM_PROVIDER=openai  # or 'anthropic'
+LLM_API_KEY=sk-...
+OPENAI_BASE_URL=...  # optional, for proxy/custom endpoints
+ANTHROPIC_BASE_URL=...  # optional, for proxy/custom endpoints
+
+# For Redis queue (required for async processing)
+REDIS_URL=redis://...
+```
+
+## Evaluation Calibration
+
+The system tracks LLM evaluation accuracy via the `EvaluationCalibration` model:
+
+- Located in `src/lib/evaluation/calibration.ts`
+- Stores provider, model, prompt version, average deviation from human scores, and sample size
+- Enables tracking of evaluation quality over time
+- New in v1 (2026-05-10)
+
 ## Job Statuses
 
 Standard statuses:

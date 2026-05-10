@@ -13,6 +13,15 @@ Backend route handlers must:
 
 **Development Auth:** For local development, use `/api/dev-auth/login`, `/api/dev-auth/register`, and `/api/dev-auth/logout` endpoints. These are for development only and should not be exposed in production.
 
+## Current Implementation Status
+
+- **Auth Handlers:** Dev auth endpoints implemented in `src/app/api/dev-auth/`
+- **Session Validation:** Via `src/lib/auth/session.ts` - `validateAuth()` function
+- **Role Checks:** Via `src/lib/auth/roles.ts` - `requireAdminActor()`, `requireReviewerActor()`, etc.
+- **Middleware:** `middleware.ts` handles auth redirects for protected routes
+- **Admin Layout:** `(admin)/layout.tsx` enforces role-based access (admin/reviewer/evaluator only)
+- **Rate Limiting:** Via route handler validation (not external provider)
+
 ## Authorization
 
 Roles:

@@ -9,7 +9,9 @@ export type ApiErrorCode =
   | "CONFLICT"
   | "RATE_LIMITED"
   | "INTERNAL_ERROR"
-  | "INVALID_STATE";
+  | "INVALID_STATE"
+  | "INVALID_DIRECTION"
+  | "SKIP_NOT_ALLOWED";
 
 export type ApiError = {
   code: ApiErrorCode;

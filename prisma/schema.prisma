@@ -107,6 +107,7 @@ model Profile {
   speakingEvaluations SpeakingEvaluation[]
   contentReviews     ContentReview[]
   externalStudyRecords ExternalStudyRecord[]
+  resourceProgress   ResourceProgress[]
 }
 
 model Role {
@@ -130,6 +131,7 @@ model Resource {
   examplesJson Json?
   tags        String[]         @default([])
   status      ContentStatus    @default(draft)
+  orderIndex  Int              @default(0) // For progression ordering
   createdById String?
   publishedAt DateTime?
   createdAt   DateTime         @default(now())
@@ -139,6 +141,9 @@ model Resource {
   versions  ResourceVersion[]
   practiceAttempts PracticeAttempt[]
   savedBy   SavedResource[]
+  progress   ResourceProgress[]
+  prereqs    ResourcePrerequisite[]     @relation("ResourcePrereqs")
+  dependents ResourcePrerequisite[]     @relation("ResourceDependents")
 }
 
 model SavedResource {
@@ -249,6 +254,8 @@ model MockTestAttempt {
   startedAt   DateTime      @default(now())
   submittedAt DateTime?
   completedAt DateTime?
+  timeSpentSeconds Int      @default(0) // Track total time spent
+  lastActiveAt   DateTime  @default(now()) // For timer checks
 
   profile             Profile             @relation(fields: [profileId], references: [id], onDelete: Cascade)
   test                Test                @relation(fields: [testId], references: [id])
@@ -407,6 +414,13 @@ enum SpeakingPart {
   part_3
 }
 
+enum ProgressStatus {
+  not_started
+  in_progress
+  completed
+  skipped
+}
+
 model WritingEvaluation {
   id              String    @id @default(uuid())
   profileId       String
@@ -476,4 +490,35 @@ model ExternalStudyRecord {
   createdAt     DateTime @default(now())
 
   profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+}
+
+model ResourceProgress {
+  id          String         @id @default(uuid())
+  profileId   String
+  resourceId  String
+  status      ProgressStatus @default(not_started)
+  progress    Float          @default(0)  // 0-100 percentage
+  timeSpent   Int            @default(0)  // seconds
+  completedAt DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  profile  Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  resource Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, resourceId])
+}
+
+model ResourcePrerequisite {
+  id              String   @id @default(uuid())
+  resourceId      String   // The resource that has prerequisites
+  prerequisiteId  String   // The required resource to complete first
+  requiredScore   Float?   // Minimum score required (if practice)
+  minProgress     Float?   @default(100) // Minimum progress percentage required
+  createdAt       DateTime @default(now())
+
+  resource      Resource @relation("ResourcePrereqs", fields: [resourceId], references: [id], onDelete: Cascade)
+  prerequisite  Resource @relation("ResourceDependents", fields: [prerequisiteId], references: [id], onDelete: Cascade)
+
+  @@unique([resourceId, prerequisiteId])
 }

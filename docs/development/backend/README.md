@@ -46,6 +46,12 @@ V1 is a learner MVP. Full admin CRUD can be added later; initial content may be 
 | `GET` | `/api/admin/reviews` | ✅ Done | Combined content/writing/speaking review queue. |
 | `GET` | `/api/admin/reviews/[id]` | ✅ Done | Review detail. |
 | `PATCH` | `/api/admin/reviews/[id]` | ✅ Done | Review actions for content and evaluation review. |
+| `POST` | `/api/admin/tests/[id]/sections` | ✅ Done | Create test section. |
+| `POST` | `/api/admin/questions` | ✅ Done | Create question with answer key. |
+| `GET` | `/api/admin/questions/[id]` | ✅ Done | Get question details. |
+| `PATCH` | `/api/admin/questions/[id]` | ✅ Done | Update question. |
+| `DELETE` | `/api/admin/questions/[id]` | ✅ Done | Delete question. |
+| `GET` | `/api/attempts/[id]/report` | ✅ Done | Attempt report with scores/feedback. |
 | `POST` | `/api/dev-auth/login` | ✅ Done | Dev session login. |
 | `POST` | `/api/dev-auth/logout` | ✅ Done | Dev session logout. |
 | `POST` | `/api/dev-auth/register` | ✅ Done | Dev session registration. |

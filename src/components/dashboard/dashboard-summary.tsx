@@ -35,8 +35,23 @@ interface DashboardData {
   }[];
 }
 
+interface ProgressData {
+  overall: {
+    totalResources: number;
+    completed: number;
+    inProgress: number;
+    percentage: number;
+    totalTimeSpent: number;
+  };
+  byCategory: Record<string, { completed: number; total: number }>;
+}
+
 async function fetchDashboard(): Promise<DashboardData> {
   return apiFetch<DashboardData>("/api/dashboard");
+}
+
+async function fetchProgress(): Promise<ProgressData> {
+  return apiFetch<ProgressData>("/api/progress");
 }
 
 function statusVariant(status: string): "success" | "warning" | "neutral" {
@@ -49,6 +64,11 @@ export function DashboardSummary() {
   const { data, isLoading, isError } = useQuery({
     queryKey: ["dashboard"],
     queryFn: fetchDashboard,
+  });
+
+  const { data: progressData } = useQuery<ProgressData>({
+    queryKey: ["progress"],
+    queryFn: fetchProgress,
   });
 
   if (isLoading) return <DashboardSkeleton />;
@@ -110,6 +130,37 @@ export function DashboardSummary() {
         <StatCard label="Completed tests" value={stats.completedAttempts} />
         <StatCard label="In progress" value={stats.inProgressAttempts} />
       </div>
+
+      {progressData?.overall && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Learning Progress</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Overall Progress</span>
+                <span className="text-sm text-slate-600">{progressData.overall.percentage}%</span>
+              </div>
+              <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-blue-500 rounded-full transition-all"
+                  style={{ width: `${progressData.overall.percentage}%` }}
+                />
+              </div>
+              <div className="flex justify-between text-sm text-slate-500">
+                <span>{progressData.overall.completed} completed</span>
+                <span>{progressData.overall.inProgress} in progress</span>
+              </div>
+              {progressData.overall.totalTimeSpent > 0 && (
+                <p className="text-xs text-slate-400">
+                  Total study time: {Math.floor(progressData.overall.totalTimeSpent / 3600)}h {Math.floor((progressData.overall.totalTimeSpent % 3600) / 60)}m
+                </p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {recentAttempts.length > 0 && (
         <Card>
