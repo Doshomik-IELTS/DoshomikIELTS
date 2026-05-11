@@ -11,7 +11,8 @@ export type ApiErrorCode =
   | "INTERNAL_ERROR"
   | "INVALID_STATE"
   | "INVALID_DIRECTION"
-  | "SKIP_NOT_ALLOWED";
+  | "SKIP_NOT_ALLOWED"
+  | "INSUFFICIENT_CREDITS";
 
 export type ApiError = {
   code: ApiErrorCode;

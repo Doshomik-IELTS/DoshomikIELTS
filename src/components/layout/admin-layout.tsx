@@ -6,6 +6,7 @@ const adminNav: { label: string; href: string }[] = [
   { label: "Resources", href: "/admin/resources" },
   { label: "Tests", href: "/admin/tests" },
   { label: "Reviews", href: "/admin/reviews" },
+  { label: "Referrals", href: "/admin/referrals" },
 ];
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {

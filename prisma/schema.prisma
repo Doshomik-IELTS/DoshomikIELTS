@@ -108,6 +108,9 @@ model Profile {
   contentReviews     ContentReview[]
   externalStudyRecords ExternalStudyRecord[]
   resourceProgress   ResourceProgress[]
+  referral           Referral?
+  referralRedemptions ReferralRedemption[]
+  creditLedger       CreditLedger[]
 }
 
 model Role {
@@ -421,6 +424,32 @@ enum ProgressStatus {
   skipped
 }
 
+enum ReferralStatus {
+  active
+  suspended
+  deactivated
+}
+
+enum RedemptionStatus {
+  pending
+  completed
+  cancelled
+}
+
+enum CreditTxType {
+  referral_bonus
+  redemption
+  admin_grant
+  admin_revoke
+  refund
+  promo
+}
+
+enum RewardTrigger {
+  on_signup
+  on_first_purchase
+}
+
 model WritingEvaluation {
   id              String    @id @default(uuid())
   profileId       String
@@ -521,4 +550,55 @@ model ResourcePrerequisite {
   prerequisite  Resource @relation("ResourceDependents", fields: [prerequisiteId], references: [id], onDelete: Cascade)
 
   @@unique([resourceId, prerequisiteId])
+}
+
+model Referral {
+  id         String         @id @default(uuid())
+  referrerId String         @unique
+  code       String         @unique
+  status     ReferralStatus @default(active)
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+
+  referrer    Profile               @relation(fields: [referrerId], references: [id], onDelete: Cascade)
+  redemptions ReferralRedemption[]
+}
+
+model ReferralRedemption {
+  id             String           @id @default(uuid())
+  referralId     String
+  refereeId      String
+  referrerReward Int              @default(0)
+  refereeReward  Int              @default(0)
+  status         RedemptionStatus @default(pending)
+  processedAt    DateTime?
+  createdAt      DateTime         @default(now())
+
+  referral Referral @relation(fields: [referralId], references: [id], onDelete: Cascade)
+  referee  Profile  @relation(fields: [refereeId], references: [id], onDelete: Cascade)
+}
+
+model CreditLedger {
+  id          String       @id @default(uuid())
+  profileId   String
+  amount      Int          // Positive = credit, Negative = debit
+  type        CreditTxType
+  description String
+  refId       String?
+  createdAt   DateTime     @default(now())
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId])
+}
+
+model ReferralConfig {
+  id                     String        @id @default("singleton")
+  referrerReward         Int           @default(1)
+  refereeReward          Int           @default(1)
+  minPurchaseForReward   Int?
+  maxRedemptionsPerCode  Int?
+  rewardTrigger          RewardTrigger @default(on_signup)
+  enabled                Boolean       @default(true)
+  updatedAt              DateTime      @updatedAt
 }

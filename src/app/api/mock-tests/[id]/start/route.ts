@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { requireCurrentUser } from "@/lib/auth/session";
 import { ok, fail } from "@/lib/api/response";
+import { redeemCreditForTest, getCreditBalance, processOngoingPurchase } from "@/lib/referral/service";
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   let actor;
@@ -36,6 +37,18 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       startedAt: existingAttempt.startedAt,
     });
   }
+
+  try {
+    await redeemCreditForTest(actor.profile.id, testId);
+  } catch (err) {
+    if (err instanceof Error && err.message === "INSUFFICIENT_CREDITS") {
+      const { balance } = await getCreditBalance(actor.profile.id);
+      return fail({ code: "INSUFFICIENT_CREDITS", message: "Not enough credits to start this mock test.", details: { balance } }, 402);
+    }
+    throw err;
+  }
+
+  await processOngoingPurchase(actor.profile.id);
 
   const attempt = await prisma.mockTestAttempt.create({
     data: {
