@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { State } from "@/components/ui/state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { apiFetch } from "@/lib/api/client";
+import { ResourceSaveButton } from "@/components/resources/resource-save-button";
 
 interface Resource {
   id: string;
@@ -16,6 +17,7 @@ interface Resource {
   difficulty: string;
   tags: string[];
   createdAt: string;
+  saved: boolean;
 }
 
 interface ResourcesResponse {
@@ -69,17 +71,22 @@ export function ResourceList() {
   return (
     <div className="grid gap-4 md:grid-cols-3">
       {data.resources.map((resource) => (
-        <Link key={resource.id} href={`/resources/${resource.slug || resource.id}`}>
-          <Card variant="interactive" className="h-full">
-            <CardContent className="p-5">
-              <p className="font-semibold text-slate-900">{resource.title}</p>
-              <div className="mt-2 flex gap-2">
-                <Badge variant="neutral">{resource.category}</Badge>
-                <Badge variant="neutral">{resource.difficulty}</Badge>
+        <Card key={resource.id} variant="interactive" className="h-full">
+          <CardContent className="p-5 flex flex-col h-full">
+            <div className="flex items-start justify-between gap-2">
+              <Link href={`/resources/${resource.slug || resource.id}`} className="flex-1 min-w-0">
+                <p className="font-semibold text-slate-900 hover:text-blue-600 transition-colors">{resource.title}</p>
+              </Link>
+              <div className="flex-shrink-0">
+                <ResourceSaveButton resourceId={resource.id} initialSaved={resource.saved} variant="icon" />
               </div>
-            </CardContent>
-          </Card>
-        </Link>
+            </div>
+            <div className="mt-2 flex gap-2 flex-wrap">
+              <Badge variant="neutral">{resource.category}</Badge>
+              <Badge variant="neutral">{resource.difficulty}</Badge>
+            </div>
+          </CardContent>
+        </Card>
       ))}
     </div>
   );

@@ -42,7 +42,7 @@ Common HTTP statuses:
 
 ## Implementation Status
 
-> **Last updated:** 2026-05-10
+> **Last updated:** 2026-05-13
 
 ✅ = Implemented | ⚠️ = Partial | ❌ = Not implemented
 
@@ -68,14 +68,6 @@ Request fields:
 - `nativeLanguage`
 - `studyGoal`
 
-### `GET /api/profile/progress` ⚠️
-
-Returns latest module scores, full score prediction, saved resources, and attempt summary. Partially implemented via `/api/dashboard`.
-
-### `GET /api/profile/attempts` ⚠️
-
-Returns paginated practice and mock test attempt history. Practice history at `/api/practice/attempts`; mock test history via `/api/attempts/:id`.
-
 ---
 
 ## Resources
@@ -90,8 +82,8 @@ Query filters:
 - `difficulty`
 - `tag`
 - `search`
-- `page`
-- `limit`
+
+Each resource includes a `saved` boolean field indicating whether the current user has bookmarked it.
 
 ### `GET /api/resources/:id` ✅
 
@@ -99,7 +91,68 @@ Returns one published resource with examples and practice metadata.
 
 ### `POST /api/resources/:id/save` ✅
 
-Saves or unsaves a resource for the authenticated learner.
+Saves a resource for the authenticated learner. No body required.
+
+### `DELETE /api/resources/:id/save` ✅
+
+Removes a saved resource bookmark.
+
+---
+
+## Progress And Achievements
+
+### `GET /api/progress` ✅
+
+Returns learning progress including:
+
+- Overall completion percentage
+- By-category breakdown
+- Time spent
+- Recent progress entries
+
+### `GET /api/progress/[resourceId]` ✅
+
+Returns resource-specific progress for the current user.
+
+### `POST /api/progress/check-unlock` ✅
+
+Checks whether a resource is unlocked based on prerequisites.
+
+### `GET /api/achievements` ✅
+
+Returns:
+
+- Current streak and longest streak
+- Earned and locked achievement badges
+
+Falls back to default badges if the database has no achievements configured.
+
+---
+
+## Flashcards
+
+### `GET /api/flashcards/decks` ✅
+
+Returns available flashcard decks with card counts.
+
+### `GET /api/flashcards/decks/:id` ✅
+
+Returns deck detail including all cards with SM-2 fields (easeFactor, interval, nextReview).
+
+### `GET /api/flashcards/decks/:id/progress` ✅
+
+Returns study progress for a deck: total cards, due today, reviewed by user, mastery percent.
+
+### `POST /api/flashcards/study/:deckId` ✅
+
+Submits a card review with SM-2 quality rating (0–5).
+
+Request fields:
+
+- `cardId`
+- `quality` (0 = Again, 2 = Hard, 4 = Good, 5 = Easy)
+
+Response: updated card SM-2 fields. Quality >= 3 advances the card; quality < 3 resets repetitions.
 
 ---
 
@@ -170,7 +223,15 @@ Response includes module, score, and completion status.
 
 ### `GET /api/attempts/:attemptId` ✅
 
-Returns attempt status, submitted sections, module scores, evaluation statuses, and completion state. Includes `moduleProgress` array showing completion per module.
+Returns attempt status, submitted sections, module scores, evaluation statuses, and completion state. Includes `moduleProgress` array showing completion per module. Each section includes `durationMinutes` for timer integration.
+
+### `GET /api/attempts/:attemptId/can-proceed` ✅
+
+Checks whether a learner can proceed to a given section based on prerequisites.
+
+### `GET /api/attempts/:attemptId/report` ✅
+
+Returns detailed attempt report with section-by-section breakdown, question results, and band scores.
 
 ### `POST /api/attempts/:attemptId/predict-score` ✅
 
@@ -233,6 +294,38 @@ Response includes:
 
 ---
 
+## Referrals And Credits
+
+### `GET /api/referrals/me` ✅
+
+Returns learner's referral stats: referral code, usage count, credit earned.
+
+### `POST /api/referrals/apply` ✅
+
+Applies a referral code to the current user's account.
+
+### `GET /api/referrals/generate` ✅
+
+Generates a new referral code for the learner.
+
+### `GET /api/referrals/me/redemptions` ✅
+
+Returns learner's redeemed referral codes.
+
+### `GET /api/referrals/me/credits` ✅
+
+Returns learner's credit balance.
+
+### `GET /api/credits` ✅
+
+Returns credit summary for the current user.
+
+### `GET /api/credits/ledger` ✅
+
+Returns credit transaction history (credit/debit entries with descriptions).
+
+---
+
 ## Media
 
 ### `POST /api/media/upload-url` ✅
@@ -254,8 +347,6 @@ Creates a short-lived signed download URL after owner/admin/reviewer/evaluator a
 
 ### Resources
 
-All admin resource endpoints are implemented:
-
 - `GET /api/admin/resources` ✅ — List with filters
 - `POST /api/admin/resources` ✅ — Create
 - `GET /api/admin/resources/[id]` ✅ — Get single
@@ -270,6 +361,26 @@ All admin resource endpoints are implemented:
 - `GET /api/admin/tests/[id]` ✅ — Get test with sections/questions
 - `PATCH /api/admin/tests/[id]` ✅ — Update test and nested sections/questions
 - `DELETE /api/admin/tests/[id]` ✅ — Delete
+- `POST /api/admin/tests/[id]/sections` ✅ — Create test section
+- `GET /api/admin/tests/[id]/sections` ✅ — List test sections
+
+### Questions
+
+- `POST /api/admin/questions` ✅ — Create question with optional answer key
+- `GET /api/admin/questions/[id]` ✅ — Get question details
+- `PATCH /api/admin/questions/[id]` ✅ — Update question
+- `DELETE /api/admin/questions/[id]` ✅ — Delete question
+
+### Flashcards
+
+- `GET /api/admin/flashcards/decks` ✅ — List decks with card counts
+- `POST /api/admin/flashcards/decks` ✅ — Create deck
+- `GET /api/admin/flashcards/decks/[id]` ✅ — Get deck with cards
+- `PATCH /api/admin/flashcards/decks/[id]` ✅ — Update deck
+- `DELETE /api/admin/flashcards/decks/[id]` ✅ — Delete deck
+- `POST /api/admin/flashcards/decks/[id]/cards` ✅ — Add card to deck
+- `PATCH /api/admin/flashcards/cards/[id]` ✅ — Update card
+- `DELETE /api/admin/flashcards/cards/[id]` ✅ — Delete card
 
 ### Reviews
 
@@ -277,17 +388,16 @@ All admin resource endpoints are implemented:
 - `GET /api/admin/reviews/[id]` ✅ — Review detail.
 - `PATCH /api/admin/reviews/[id]` ✅ — Review actions.
 
-### Admin Test Sections & Questions
+### Referrals
 
-- `POST /api/admin/tests/[id]/sections` ✅ — Create test section.
-- `POST /api/admin/questions` ✅ — Create question with optional answer key.
-- `GET /api/admin/questions/[id]` ✅ — Get question details.
-- `PATCH /api/admin/questions/[id]` ✅ — Update question.
-- `DELETE /api/admin/questions/[id]` ✅ — Delete question.
-
-### Attempts
-
-- `GET /api/attempts/[id]/report` ✅ — Get attempt report with scores and feedback.
+- `GET /api/admin/referrals` ✅ — Referral program analytics
+- `POST /api/admin/referrals` ✅ — Create/update referral program config
+- `GET /api/admin/referrals/[code]/status` ✅ — Referral status
+- `PATCH /api/admin/referrals/[code]/status` ✅ — Update referral status
+- `GET /api/admin/referrals/analytics` ✅ — Referral analytics
+- `GET /api/admin/referrals/credits` ✅ — Credits overview
+- `POST /api/admin/referrals/credits` ✅ — Issue credits
+- `POST /api/admin/referrals/credits/revoke` ✅ — Revoke credits
 
 ---
 
@@ -298,6 +408,7 @@ All admin resource endpoints are implemented:
 Returns learner dashboard with:
 
 - Profile summary
+- Streak and longest streak
 - Latest scores by module
 - Recent attempts
 - Saved resources count

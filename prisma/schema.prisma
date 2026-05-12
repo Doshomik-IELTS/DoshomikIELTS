@@ -94,6 +94,9 @@ model Profile {
   studyGoal      String?
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
+  streak          Int       @default(0)
+  longestStreak   Int       @default(0)
+  lastStudyDate   DateTime?
 
   roles              Role[]
   resourcesCreated   Resource[]            @relation("ResourceCreatedBy")
@@ -111,6 +114,9 @@ model Profile {
   referral           Referral?
   referralRedemptions ReferralRedemption[]
   creditLedger       CreditLedger[]
+  flashCardDecks    FlashCardDeck[]
+  cardReviewLogs    CardReviewLog[]
+  achievements      ProfileAchievement[]
 }
 
 model Role {
@@ -601,4 +607,90 @@ model ReferralConfig {
   rewardTrigger          RewardTrigger @default(on_signup)
   enabled                Boolean       @default(true)
   updatedAt              DateTime      @updatedAt
+}
+
+// Flashcard models for spaced repetition learning
+model FlashCardDeck {
+  id          String         @id @default(uuid())
+  title       String
+  description String?
+  category    String         // e.g. "vocabulary", "grammar", "listening"
+  difficulty  Difficulty     @default(intermediate)
+  status      ContentStatus  @default(draft)
+  tags        String[]       @default([])
+  createdById String?
+  publishedAt DateTime?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  cards       FlashCard[]
+  createdBy  Profile? @relation(fields: [createdById], references: [id])
+  @@index([createdById])
+}
+
+model FlashCard {
+  id          String       @id @default(uuid())
+  deckId      String
+  front       String       // Question / prompt
+  back        String       // Answer / definition
+  examples    String[]     @default([])  // Example sentences
+  hints       String[]     @default([])
+  tags        String[]     @default([])
+  difficulty  Difficulty   @default(intermediate)
+  orderIndex  Int          @default(0)
+  // Spaced repetition fields
+  interval    Int          @default(1)   // Days until next review
+  repetitions Int          @default(0)   // Successful reviews in a row
+  easeFactor Float        @default(2.5) // SM-2 ease factor
+  nextReview  DateTime?   // When to show this card next
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  deck        FlashCardDeck  @relation(fields: [deckId], references: [id], onDelete: Cascade)
+  reviewLogs  CardReviewLog[]
+
+  @@index([deckId])
+  @@index([nextReview])
+}
+
+model CardReviewLog {
+  id           String       @id @default(uuid())
+  cardId       String
+  profileId    String
+  quality      Int          // 0-5 rating (SM-2)
+  interval     Int          // Resulting interval in days
+  easeFactor   Float        // Resulting ease factor
+  reviewedAt    DateTime     @default(now())
+
+  card    FlashCard @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  profile Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([cardId])
+  @@index([profileId])
+}
+
+model Achievement {
+  id          String   @id @default(uuid())
+  slug        String   @unique
+  name        String
+  description String
+  icon        String
+  createdAt   DateTime @default(now())
+
+  profiles ProfileAchievement[]
+
+  @@index([slug])
+}
+
+model ProfileAchievement {
+  id           String   @id @default(uuid())
+  profileId    String
+  achievementId String
+  earnedAt     DateTime @default(now())
+
+  profile    Profile     @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  achievement Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, achievementId])
+  @@index([profileId])
 }

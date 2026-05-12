@@ -18,6 +18,9 @@ export async function GET() {
         examDate: true,
         name: true,
         email: true,
+        streak: true,
+        longestStreak: true,
+        lastStudyDate: true,
       },
     }),
     prisma.savedResource.count({
@@ -80,6 +83,8 @@ export async function GET() {
       targetBand: profile?.targetBand,
       examDate: profile?.examDate,
     },
+    streak: profile?.streak ?? 0,
+    longestStreak: profile?.longestStreak ?? 0,
     stats: {
       savedResources: savedResourcesCount,
       completedAttempts,

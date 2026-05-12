@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { requireAdminActor } from "@/lib/auth/admin-api";
 import { ok, fail } from "@/lib/api/response";
+import type { Prisma } from "@prisma/client";
 
 export async function GET(request: Request) {
   try {
@@ -84,6 +85,15 @@ export async function GET(request: Request) {
   });
 }
 
+type SectionInput = {
+  title: string;
+  module: "listening" | "reading" | "writing" | "speaking";
+  partNumber?: number;
+  instructions?: string;
+  durationMinutes?: number;
+  contentJson?: Record<string, unknown>;
+};
+
 export async function POST(request: Request) {
   try {
     await requireAdminActor();
@@ -101,8 +111,13 @@ export async function POST(request: Request) {
     return fail({ code: "VALIDATION_ERROR", message: "Invalid JSON body" }, 400);
   }
 
-  const body = json as { title?: string; type?: string; estimatedDurationMinutes?: number };
-  const { title, type, estimatedDurationMinutes } = body;
+  const body = json as {
+    title?: string;
+    type?: string;
+    estimatedDurationMinutes?: number;
+    sections?: SectionInput[];
+  };
+  const { title, type, estimatedDurationMinutes, sections } = body;
 
   if (!title) {
     return fail({ code: "VALIDATION_ERROR", message: "Title is required" }, 400);
@@ -114,6 +129,21 @@ export async function POST(request: Request) {
       type: (type as "practice" | "short_mock" | "full_mock") || "short_mock",
       estimatedDurationMinutes: estimatedDurationMinutes || null,
       status: "draft",
+      ...(sections?.length
+        ? {
+            sections: {
+              create: sections.map((s, idx): Prisma.TestSectionCreateWithoutTestInput => ({
+                title: s.title,
+                module: s.module,
+                partNumber: s.partNumber ?? null,
+                instructions: s.instructions ?? null,
+                durationMinutes: s.durationMinutes ?? null,
+                orderIndex: idx,
+                contentJson: s.contentJson ? (s.contentJson as Prisma.InputJsonValue) : undefined,
+              })),
+            },
+          }
+        : {}),
     },
   });
 

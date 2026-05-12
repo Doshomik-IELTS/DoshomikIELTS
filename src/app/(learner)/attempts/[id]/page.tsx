@@ -1,9 +1,8 @@
 "use client";
 
-import { use, useEffect, useMemo, useState, useCallback } from "react";
+import { use, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 import { ContentPanel } from "@/components/ui/content-panel";
@@ -12,6 +11,7 @@ import { useApiQuery, useApiMutation } from "@/lib/hooks/api";
 import { toast } from "sonner";
 import { SpeakingSubmission } from "@/components/ielts/speaking-submission";
 import { TestTimer } from "@/components/ielts/test-timer";
+import { WritingEditor } from "@/components/ielts/writing-editor";
 
 interface AttemptDetail {
   id: string;
@@ -22,6 +22,7 @@ interface AttemptDetail {
     module: string;
     title: string;
     submitted: boolean;
+    durationMinutes: number | null;
     savedAnswers: Record<string, string>;
     questions: { id: string; prompt: string }[];
   }[];
@@ -185,6 +186,19 @@ function ActiveAttempt({ attempt, onRefresh }: { attempt: AttemptDetail; onRefre
     await submitMutation.mutateAsync({ sectionId: section.id });
   }
 
+  async function handleTimeExpired() {
+    if (!section || section.submitted) return;
+    toast.warning("Time is up! Submitting your answers...");
+    try {
+      await saveMutation.mutateAsync({ sectionId: section.id, answers: sectionAnswers, isDraft: false });
+      await submitMutation.mutateAsync({ sectionId: section.id });
+    } catch {
+      toast.error("Auto-submit failed. Please submit manually.");
+    }
+  }
+
+  const isWriting = section?.module === "writing";
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-start gap-4">
@@ -197,16 +211,25 @@ function ActiveAttempt({ attempt, onRefresh }: { attempt: AttemptDetail; onRefre
             <p className="mt-1 text-sm text-amber-600">Unsaved changes</p>
           )}
         </div>
-        <Link
-          href="/mock-tests"
-          onClick={(event) => {
-            if (hasUnsavedChanges && !window.confirm("You have unsaved answers. Leave this attempt?")) {
-              event.preventDefault();
-            }
-          }}
-        >
-          <Button variant="ghost" size="sm">Exit</Button>
-        </Link>
+        <div className="flex items-center gap-3">
+          {section && section.durationMinutes && !section.submitted && (
+            <TestTimer
+              attemptId={attempt.id}
+              totalDuration={section.durationMinutes}
+              onTimeExpired={handleTimeExpired}
+            />
+          )}
+          <Link
+            href="/mock-tests"
+            onClick={(event) => {
+              if (hasUnsavedChanges && !window.confirm("You have unsaved answers. Leave this attempt?")) {
+                event.preventDefault();
+              }
+            }}
+          >
+            <Button variant="ghost" size="sm">Exit</Button>
+          </Link>
+        </div>
       </div>
 
       <div className="flex gap-2 flex-wrap">
@@ -247,16 +270,33 @@ function ActiveAttempt({ attempt, onRefresh }: { attempt: AttemptDetail; onRefre
                   />
                 </CardContent>
               </Card>
+            ) : isWriting ? (
+              <Card>
+                <CardContent className="p-5">
+                  <WritingEditor
+                    value={sectionAnswers["writing"] || ""}
+                    onChange={(val) =>
+                      setAnswers({ ...answers, [section.id]: { ...sectionAnswers, writing: val } })
+                    }
+                    disabled={section.submitted}
+                    taskType={section.title?.toLowerCase().includes("task 2") ? "task2" : "task1"}
+                    autoSaveKey={`${draftStorageKey}:writing`}
+                    autoSaveIntervalMs={3000}
+                  />
+                </CardContent>
+              </Card>
             ) : (
               section.questions.map((question, index) => (
                 <Card key={question.id}>
                   <CardContent className="p-5">
                     <p className="text-sm font-medium text-slate-500 mb-2">Question {index + 1}</p>
                     <p className="text-slate-700 mb-4">{question.prompt}</p>
-                    <Input
+                    <textarea
+                      className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400 resize-y"
                       placeholder="Type your answer..."
                       value={sectionAnswers[question.id] || ""}
                       disabled={section.submitted}
+                      rows={4}
                       onChange={(event) =>
                         setAnswers({
                           ...answers,

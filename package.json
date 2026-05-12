@@ -15,7 +15,8 @@
     "worker:dev": "tsx src/workers/index.ts",
     "test:p0": "tsx --test tests/p0/*.test.ts",
     "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui"
+    "test:e2e:ui": "playwright test --ui",
+    "postinstall": "node scripts/postinstall-prisma.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

@@ -21,11 +21,13 @@ export function useApiMutation<TData, TVariables>({
   endpoint,
   onSuccess,
   onError,
+  method = "POST",
 }: {
   mutationKey: string[];
   endpoint: string;
   onSuccess?: (data: TData) => void;
   onError?: (error: Error) => void;
+  method?: "POST" | "DELETE";
 }) {
   const queryClient = useQueryClient();
 
@@ -33,9 +35,9 @@ export function useApiMutation<TData, TVariables>({
     mutationKey,
     mutationFn: async (variables) => {
       const response = await fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(variables),
+        method,
+        headers: method === "POST" ? { "Content-Type": "application/json" } : {},
+        body: method === "POST" ? JSON.stringify(variables) : undefined,
       });
       const payload = (await response.json()) as TData | ApiError;
       if (!response.ok || (payload as ApiError).error) {

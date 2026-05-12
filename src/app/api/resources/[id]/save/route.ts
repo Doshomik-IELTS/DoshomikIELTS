@@ -34,3 +34,21 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
 
   return ok({ success: true });
 }
+
+export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const current = await getCurrentUser();
+  if (!current) {
+    return fail({ code: "UNAUTHENTICATED", message: "You must be logged in." }, 401);
+  }
+
+  const { id } = await params;
+
+  await prisma.savedResource.deleteMany({
+    where: {
+      profileId: current.profile.id,
+      resourceId: id,
+    },
+  });
+
+  return ok({ success: true });
+}

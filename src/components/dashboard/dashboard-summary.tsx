@@ -11,6 +11,8 @@ import { ContentPanel } from "@/components/ui/content-panel";
 import { State } from "@/components/ui/state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { apiFetch } from "@/lib/api/client";
+import { StreakBadge } from "@/components/dashboard/streak-badge";
+import { AchievementsPanel, type Achievement } from "@/components/dashboard/achievements-panel";
 
 interface DashboardData {
   profile: {
@@ -19,6 +21,8 @@ interface DashboardData {
     targetBand: number | null;
     examDate: string | null;
   };
+  streak: number;
+  longestStreak: number;
   stats: {
     savedResources: number;
     completedAttempts: number;
@@ -34,6 +38,12 @@ interface DashboardData {
     overallBand: number | null;
   }[];
 }
+
+type AchievementsData = {
+  streak: number;
+  longestStreak: number;
+  badges: Achievement[];
+};
 
 interface ProgressData {
   overall: {
@@ -54,6 +64,10 @@ async function fetchProgress(): Promise<ProgressData> {
   return apiFetch<ProgressData>("/api/progress");
 }
 
+async function fetchAchievements(): Promise<AchievementsData> {
+  return apiFetch<AchievementsData>("/api/achievements");
+}
+
 function statusVariant(status: string): "success" | "warning" | "neutral" {
   if (status === "completed") return "success";
   if (status === "in_progress") return "warning";
@@ -71,6 +85,11 @@ export function DashboardSummary() {
     queryFn: fetchProgress,
   });
 
+  const { data: achievementsData } = useQuery<AchievementsData>({
+    queryKey: ["achievements"],
+    queryFn: fetchAchievements,
+  });
+
   if (isLoading) return <DashboardSkeleton />;
 
   if (isError || !data) {
@@ -86,7 +105,7 @@ export function DashboardSummary() {
     );
   }
 
-  const { profile, stats, scores, recentAttempts } = data;
+  const { profile, stats, scores, recentAttempts, streak, longestStreak } = data;
 
   const examDateDisplay = profile.examDate
     ? new Intl.DateTimeFormat("en", { dateStyle: "medium" }).format(new Date(profile.examDate))
@@ -129,6 +148,15 @@ export function DashboardSummary() {
         <StatCard label="Saved resources" value={stats.savedResources} />
         <StatCard label="Completed tests" value={stats.completedAttempts} />
         <StatCard label="In progress" value={stats.inProgressAttempts} />
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <StreakBadge streak={streak} longestStreak={longestStreak} />
+        {achievementsData ? (
+          <AchievementsPanel badges={achievementsData.badges} />
+        ) : (
+          <AchievementsPanel badges={[]} />
+        )}
       </div>
 
       {progressData?.overall && (
