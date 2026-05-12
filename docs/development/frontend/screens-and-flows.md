@@ -66,6 +66,9 @@ Widgets:
 - Target band and exam date.
 - Latest predicted score.
 - Module score cards.
+- Streak badge (flame icon + current/longest streak).
+- Achievement badges panel (earned/locked badges grid).
+- Learning progress bar (overall completion percentage).
 - Recent attempts.
 - Saved resources.
 - Continue practice CTA.
@@ -76,6 +79,7 @@ Empty states:
 - No score yet.
 - No attempts yet.
 - No saved resources yet.
+- Streak at 0 (grayscale flame).
 
 ## Profile Screen
 
@@ -105,7 +109,7 @@ Features:
 - Category filter.
 - Difficulty filter.
 - Tag display.
-- Save/unsave action.
+- Save/unsave action (icon bookmark button).
 - Empty state when no results.
 
 ### Resource Detail
@@ -118,6 +122,50 @@ Sections:
 - Examples.
 - Practice questions or related practice CTA.
 - Save/unsave button.
+
+## Flashcard Flow
+
+### Flashcard Deck List (`/flashcards`)
+
+Features:
+
+- Category filter tabs.
+- Deck cards showing title, description, card count, difficulty.
+- "Study Now" CTA to enter study session.
+- Suspense boundary for useSearchParams compatibility.
+
+### Flashcard Deck Detail (`/flashcards/[id]`)
+
+Sections:
+
+- Deck title and description.
+- Card count and mastery progress.
+- "Study Now" CTA.
+- Card preview list.
+
+### Study Session (`/flashcards/[id]/study`)
+
+SM-2 spaced repetition session:
+
+- Flip card UI (click to reveal answer).
+- Quality rating buttons: Again (0), Hard (2), Good (4), Easy (5).
+- Progress bar showing cards reviewed.
+- Session complete screen with stats.
+- "Study More" to continue with remaining cards.
+
+### Admin Flashcards (`/admin/flashcards`)
+
+- Deck list with search/filters.
+- Create new deck modal.
+- Delete deck with confirmation.
+- "Edit" links to deck editor.
+
+### Admin Deck Editor (`/admin/flashcards/[id]`)
+
+- Deck metadata (title, description, category, difficulty, tags).
+- Card list with inline edit.
+- Add card form (front, back, examples, hints).
+- Edit/delete individual cards inline.
 
 ## Practice Flow
 

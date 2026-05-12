@@ -99,6 +99,29 @@ Admin components:
 - `TestSectionEditor` - Section management UI
 - `QuestionEditor` - Question create/edit with answer key support
 
+## Flashcard Admin
+
+Routes:
+
+- `/admin/flashcards`
+- `/admin/flashcards/[id]`
+
+Features implemented (2026-05-13):
+
+- Deck list with search and category filters.
+- Create new deck (title, description, category, difficulty, tags).
+- Delete deck with confirmation.
+- Deck editor with inline card management:
+  - Add new cards (front, back, examples, hints, difficulty).
+  - Inline edit existing cards.
+  - Delete individual cards.
+  - Card ordering by orderIndex.
+
+Admin components:
+
+- Deck list page with create modal and delete confirmation.
+- Deck editor page with card CRUD forms.
+
 ## Review Queue
 
 Routes:

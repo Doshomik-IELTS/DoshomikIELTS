@@ -33,11 +33,15 @@ Main active attempt page.
 Show:
 
 - Section navigation.
+- Per-section countdown timer (using `section.durationMinutes`).
 - Current section status.
 - Instructions.
 - Questions/prompts.
+- Writing editor with live word count and auto-save (for writing sections).
+- Speaking submission with text/audio recorder (for speaking sections).
 - Draft save state.
 - Submit section CTA.
+- Auto-submit when timer expires.
 
 ### `/attempts/[id]/score`
 
@@ -98,9 +102,11 @@ Optional post-MVP:
 
 - Prompt display.
 - Task 1/Task 2 label.
-- Textarea.
-- Live word count.
-- Draft save.
+- WritingEditor component with:
+  - Live word count (150 min for Task 1, 250 min for Task 2)
+  - Progress bar toward minimum word count
+  - Auto-save to localStorage every ~3 seconds
+  - "Draft saved" indicator
 - Submit.
 
 ### Speaking

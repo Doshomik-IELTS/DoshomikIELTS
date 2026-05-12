@@ -4,20 +4,42 @@
 
 Components implemented in `src/components/ielts/`:
 
+- `WritingEditor` - Writing response with live word count, progress bar, auto-save (added 2026-05-13)
 - `SpeakingRecorder` - Audio recording with playback
 - `SpeakingSubmission` - Text/audio submission support
+- `TestTimer` - Countdown timer with auto-submit on expiry (added 2026-05-13)
 - `EvaluationStatusBadge` - Status display (queued/processing/succeeded/failed/needs_review)
 - `ScoreBadge` - Band score display
 
 ## Writing UI
 
+### WritingEditor Component
+
+Reusable component at `src/components/ielts/writing-editor.tsx`:
+
+Props:
+
+- `value`, `onChange` — controlled textarea state
+- `disabled` — disables editing
+- `taskType` — `"task1"` (150-word min) or `"task2"` (250-word min)
+- `onWordCountChange?` — callback when word count updates
+- `autoSaveKey?` — localStorage key for auto-save
+- `autoSaveIntervalMs?` — auto-save interval (default 5000ms)
+
+Features:
+
+- Live word count with task-specific minimum (150/250)
+- Character count
+- Progress bar showing word count vs. minimum
+- Warning color when approaching minimum
+- Auto-save to localStorage with "Draft saved" indicator
+- Draft restoration on mount
+
 ### Screen Elements
 
 - Task type label: Task 1 or Task 2.
 - Prompt/instructions.
-- Textarea.
-- Live word count.
-- Save draft button.
+- WritingEditor component.
 - Submit button.
 - Evaluation status.
 - Feedback panel.

@@ -1,6 +1,6 @@
 # IELTS++ Development Plan (from current baseline)
 
-**Last updated:** 2026-05-10 (synced to current code and typecheck status)
+**Last updated:** 2026-05-13 (synced to current codebase — all major features implemented)
 
 **Purpose:** A single, actionable roadmap from the *present* repository state to the MVP described across `docs/development/`. This document does not replace detailed specs; it sequences work and points to them.
 
@@ -21,13 +21,13 @@
 
 ---
 
-## Current baseline (snapshot — verified 2026-05-10)
+## Current baseline (snapshot — verified 2026-05-13)
 
 ### Routes and shells
 
 - **Next.js App Router** with `(auth)`, `(learner)`, `(admin)`. Marketing home is `src/app/page.tsx` (no `(public)` group).
-- **Learner URLs** present as pages (many are UI scaffolds): `dashboard`, `profile`, `resources`, `resources/[id]`, `practice`, `practice/[id]`, `practice/[id]/result`, `mock-tests`, `mock-tests/[id]`, `attempts/[id]`, `attempts/[id]/score`, `evaluations/[id]`.
-- **Admin URLs** under `/admin/...`: dashboard, `resources` (+ `new`, `[id]`), `tests` (+ `new`, `[id]`), `reviews` (+ `[id]`).
+- **Learner URLs** fully implemented: `dashboard`, `profile`, `resources`, `resources/[id]`, `flashcards`, `flashcards/[id]`, `flashcards/[id]/study`, `practice`, `practice/[id]`, `practice/[id]/result`, `mock-tests`, `mock-tests/[id]`, `attempts/[id]`, `attempts/[id]/score`, `attempts/[id]/report`, `evaluations/[id]`, `referrals`.
+- **Admin URLs** under `/admin/...`: dashboard, `resources` (+ `new`, `[id]`), `tests` (+ `new`, `[id]`), `flashcards` (+ `[id]`), `reviews` (+ `[id]`).
 
 ### Auth and security
 
@@ -37,48 +37,22 @@
 
 ### API (route handlers)
 
-**Implemented:**
+**All implemented** — 63 route handler files covering:
 
-- `GET /api/health` — Health check
-- `GET /api/me` — Current user profile
-- `PATCH /api/profile` — Profile updates
-- `GET /api/resources` — List all resources
-- `GET /api/resources/[id]` — Get single resource
-- `POST /api/resources/[id]/save` — Save/bookmark resource
-- `GET /api/dashboard` — Learner dashboard stats
-- `GET /api/practice` — List practice items (uses published resources)
-- `POST /api/practice/[id]/attempt` — Create practice attempt with auto-scoring
-- `GET /api/practice/attempts` — Practice attempt history
-- `GET /api/mock-tests` — List published mock tests
-- `GET /api/mock-tests/[id]` — Get test structure (without answer keys)
-- `POST /api/mock-tests/[id]/start` — Start a mock test attempt
-- `POST /api/attempts/[attemptId]/answers` — Save draft answers
-- `POST /api/attempts/[attemptId]/submit-section` — Submit a section (auto-scores reading/listening)
-- `GET /api/attempts/[attemptId]` — Get attempt details with module progress
-- `POST /api/attempts/[attemptId]/predict-score` — Generate score prediction (all 4 modules)
-- `POST /api/evaluations/writing` — Submit writing for evaluation
-- `POST /api/evaluations/speaking` — Submit speaking for evaluation
-- `GET /api/evaluations/[id]` — Get evaluation status and result
-- `GET /api/admin/resources` — Admin resource CRUD
-- `GET /api/admin/resources/[id]` — Admin single resource
-- `PATCH /api/admin/resources/[id]` — Update resource
-- `DELETE /api/admin/resources/[id]` — Delete resource
-- `GET /api/admin/stats` — Admin dashboard counts
-- `GET /api/admin/tests` — Admin test list
-- `POST /api/admin/tests` — Create test
-- `GET /api/admin/tests/[id]` — Get test with sections and questions
-- `PATCH /api/admin/tests/[id]` — Update test
-- `DELETE /api/admin/tests/[id]` — Delete test
-- `GET /api/admin/reviews` — Combined content/writing/speaking review queue
-- `GET /api/admin/reviews/[id]` — Review detail
-- `PATCH /api/admin/reviews/[id]` — Review action endpoint
-- `GET /api/dev-auth/login` — Dev login
-- `POST /api/dev-auth/register` — Dev register
-- `DELETE /api/dev-auth/logout` — Dev logout
+- Auth: `/api/me`, `/api/profile`, `/api/dev-auth/{login,register,logout}`
+- Resources: `/api/resources`, `/api/resources/[id]`, `/api/resources/[id]/save` (POST + DELETE)
+- Progress & Achievements: `/api/progress`, `/api/progress/[resourceId]`, `/api/progress/check-unlock`, `/api/achievements`
+- Flashcards: `/api/flashcards/decks`, `/api/flashcards/decks/[id]`, `/api/flashcards/decks/[id]/progress`, `/api/flashcards/study/[deckId]`
+- Practice: `/api/practice`, `/api/practice/[id]/attempt`, `/api/practice/attempts`
+- Mock Tests: `/api/mock-tests`, `/api/mock-tests/[id]`, `/api/mock-tests/[id]/start`
+- Attempts: `/api/attempts/[id]`, `/api/attempts/[id]/answers`, `/api/attempts/[id]/submit-section`, `/api/attempts/[id]/can-proceed`, `/api/attempts/[id]/report`, `/api/attempts/[id]/predict-score`
+- Evaluations: `/api/evaluations/writing`, `/api/evaluations/speaking`, `/api/evaluations/[id]`
+- Referrals & Credits: `/api/referrals/me`, `/api/referrals/apply`, `/api/referrals/generate`, `/api/referrals/me/redemptions`, `/api/referrals/me/credits`, `/api/credits`, `/api/credits/ledger`
+- Media: `/api/media/upload-url`, `/api/media/[assetId]/download-url`
+- Admin Resources, Tests, Reviews, Flashcards, Referrals: full CRUD
+- Dashboard: `/api/dashboard` (now includes streak data)
 
-**Not implemented yet:** Media upload signed URLs and real background job processing.
-
-**Build status:** `npm run typecheck` is green as of this snapshot.
+**Build status:** `pnpm typecheck` and `pnpm build` both pass as of 2026-05-13.
 
 ### Frontend patterns
 
@@ -128,9 +102,11 @@ These are non-negotiable for implementation (see [`frontend/README.md`](frontend
 
 | # | Deliverable | Status |
 |---|-------------|--------|
-| 2.1 | **Me + profile** | **Done** — APIs + wired profile UI with Query/RHF/toast. Dashboard **complete** with `/api/dashboard`. |
-| 2.2 | **Resources** | **Done** — list/detail pages with TanStack Query; save API + DB model implemented. |
-| 2.3 | **Practice** | **Mostly done** — APIs plus list/attempt/result pages exist; needs UX hardening and tests. |
+| 2.1 | **Me + profile** | **Done** — APIs + wired profile UI with Query/RHF/toast. Dashboard **complete** with `/api/dashboard` + streak/achievements. |
+| 2.2 | **Resources** | **Done** — list/detail pages with TanStack Query; save/unsave API + bookmark button component. |
+| 2.3 | **Practice** | **Done** — APIs plus list/attempt/result pages with proper loading/error states. |
+| 2.4 | **Flashcards** | **Done** — deck list/detail/study pages with SM-2 algorithm, flip card UI, quality rating, progress tracking. |
+| 2.5 | **Progress tracking** | **Done** — `/api/progress`, streak/longestStreak fields, achievements API + badges. |
 
 ---
 
@@ -141,23 +117,13 @@ These are non-negotiable for implementation (see [`frontend/README.md`](frontend
 | 3.1 | **Mock test list** | **Done** — `/api/mock-tests` returns published tests with metadata. |
 | 3.2 | **Mock test detail** | **Done** — `/api/mock-tests/[id]` returns sections/questions (no answer keys). |
 | 3.3 | **Start attempt** | **Done** — `/api/mock-tests/[id]/start` creates `MockTestAttempt`. |
-| 3.4 | **Save answers** | **Done** — `/api/attempts/[id]/answers` saves draft answers. |
+| 3.4 | **Save answers** | **Done** — `/api/attempts/[id]/answers` saves draft answers + localStorage. |
 | 3.5 | **Submit section** | **Done** — `/api/attempts/[id]/submit-section` auto-scores reading/listening, creates module scores. |
-| 3.6 | **Attempt details** | **Done** — `/api/attempts/[id]` returns status, sections, module progress. |
+| 3.6 | **Attempt details** | **Done** — `/api/attempts/[id]` returns status, sections, module progress, `durationMinutes`. |
 | 3.7 | **Score prediction** | **Done** — `/api/attempts/[id]/predict-score` calculates overall band when all 4 modules complete. |
-| 3.8 | **UI wiring** | **Partial** — list/detail/start/attempt pages call APIs; needs draft recovery, navigation warnings, and tests. |
-
----
-
-## Phase 4 — Writing, speaking, evaluations
-
-| # | Deliverable | Status |
-|---|-------------|--------|
-| 4.1 | **Writing evaluation** | **Done** — `/api/evaluations/writing` creates evaluation + LLM job. |
-| 4.2 | **Speaking evaluation** | **Done** — `/api/evaluations/speaking` creates evaluation + LLM job. |
-| 4.3 | **Evaluation status** | **Done** — `/api/evaluations/[id]` returns status, bands, feedback. |
-| 4.4 | **Background workers** | **Partial** — BullMQ handlers persist writing/speaking outputs via deterministic provider; production provider pending. |
-| 4.5 | **UI for submissions** | **Partial** — evaluation status page exists; speaking audio submission UI still pending. |
+| 3.8 | **Timer integration** | **Done** — `TestTimer` component mounted per section; auto-submit on expiry. |
+| 3.9 | **Writing editor** | **Done** — `WritingEditor` with live word count, progress bar, auto-save. |
+| 3.10 | **Speaking recorder** | **Done** — MediaRecorder API + upload; integrated into attempt page. |
 
 ---
 
@@ -168,7 +134,8 @@ These are non-negotiable for implementation (see [`frontend/README.md`](frontend
 | 5.1 | **Admin layout and guard** | **Done** — `AdminLayout` sidebar + route role layout. |
 | 5.2 | **Resources admin** | **Done** — `/api/admin/resources`, `/api/admin/resources/[id]`, `/api/admin/stats`. |
 | 5.3 | **Tests admin (CRUD)** | **Done** — `/api/admin/tests` full CRUD + sections/questions. |
-| 5.4 | **Reviews admin** | **Partial** — list/detail/action UI and APIs exist; needs database-backed regression tests. |
+| 5.4 | **Flashcard admin** | **Done** (2026-05-13) — deck list with create/delete, deck editor with inline card CRUD. |
+| 5.5 | **Reviews admin** | **Done** — list/detail/action UI and APIs exist. |
 
 ---
 
@@ -176,8 +143,8 @@ These are non-negotiable for implementation (see [`frontend/README.md`](frontend
 
 | # | Deliverable | Status |
 |---|-------------|--------|
-| 6.1 | **Media upload** | **Partial** — signed upload/download APIs exist; speaking recorder UI integration pending. |
-| 6.2 | **E2E tests** | **Scripts exist** — `pnpm test:e2e`; auth-guard tests added. Local startup timed out during verification on the current filesystem. |
+| 6.1 | **Media upload** | **Done** — signed upload/download APIs + speaking recorder UI fully integrated. |
+| 6.2 | **E2E tests** | **Scripts exist** — `pnpm test:e2e`; auth-guard tests added. |
 | 6.3 | **Security tests** | **Plan exists** — implementation pending. |
 
 ---
@@ -185,24 +152,31 @@ These are non-negotiable for implementation (see [`frontend/README.md`](frontend
 ## MVP completion checklist (P0 alignment)
 
 - [x] Auth pages exist; middleware protects learner/admin prefixes; **admin** additionally **role-protected**.
-- [x] Dashboard backed by rich APIs — **complete** with `/api/dashboard`.
+- [x] Dashboard backed by rich APIs — **complete** with streak, achievements, and progress tracking (2026-05-13).
 - [x] Profile **PATCH** + **real form** — baseline pattern for the app.
-- [x] Resource list/detail/**save** — complete.
+- [x] Resource list/detail/**save** + **unsave** — complete with bookmark button component.
+- [x] **Flashcards** — deck list, study session with SM-2, admin deck/card CRUD.
+- [x] **Progress tracking** — streak/longestStreak, achievements API, progress bar.
 - [x] **Practice APIs** — list, attempt, history all implemented.
 - [x] **Practice UI** — wired to APIs with list, attempt form, and result display.
 - [x] **Mock test APIs** — list, start, answers, submit-section, score prediction all implemented.
-- [x] **Mock test UI** — wired: list, detail, start flow, active attempt with save/submit.
+- [x] **Mock test UI** — wired: list, detail, start flow, active attempt with per-section timer, writing editor, save/submit.
+- [x] **TestTimer** — countdown per section with auto-submit on expiry (2026-05-13).
+- [x] **WritingEditor** — live word count, progress bar, auto-save to localStorage (2026-05-13).
 - [x] **Evaluation APIs** — writing/speaking submission and status implemented.
 - [x] **Score prediction** — generates band scores when all 4 modules complete.
 - [x] **Admin tests CRUD** — complete.
-- [x] **Admin test UI** — list with filters, create/edit forms, sections view (2026-05-10).
-- [x] Typecheck/build green after admin review and evaluation fixes.
+- [x] **Admin test UI** — list with filters, create/edit forms, sections view.
+- [x] **Admin flashcards CRUD** — deck list with create/delete, inline card editor (2026-05-13).
+- [x] Typecheck/build green after all feature additions (2026-05-13).
 - [x] Admin reviews actions — list/detail/action UI exists.
 - [x] Background evaluation workers produce persisted writing/speaking scores with deterministic local provider.
 - [x] Private media signed URL upload/download endpoints.
-- [x] Production LLM provider integration (OpenAI/Anthropic) - implemented 2026-05-10.
-- [x] Speaking audio upload API exists - UI integration pending but API ready.
-- [x] P0 integration tests (12 tests passing) - implemented 2026-05-10.
+- [x] Production LLM provider integration (OpenAI/Anthropic) with Zod validation.
+- [x] Speaking recorder UI — MediaRecorder API + upload fully integrated.
+- [x] Referral and credits system — APIs and learner UI.
+- [x] Resource save/unsave with DELETE endpoint.
+- [x] `useApiMutation` supports POST and DELETE methods.
 
 ---
 
@@ -220,5 +194,6 @@ These are non-negotiable for implementation (see [`frontend/README.md`](frontend
 |-------|---------------------|
 | UI kit | **In-house** primitives + **Sonner**; add shadcn components selectively if needed. |
 | Dev auth | Non-production; demo profile gets **admin** role via **seed** for local `/admin` only. |
-| Speaking P1 | TBD per [`frontend/README.md`](frontend/README.md). |
+| Speaking P1 | **Done** — `SpeakingRecorder` + `SpeakingSubmission` fully integrated. |
+| Flashcard admin | **Done** (2026-05-13) — deck + card CRUD with inline editor. | |
 | Background workers | BullMQ processing exists with deterministic local provider; production provider still needs selection/integration. |

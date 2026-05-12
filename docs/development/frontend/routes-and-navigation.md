@@ -32,19 +32,23 @@ Purpose:
 
 | Route | Purpose |
 |---|---|
-| `/dashboard` | Learner overview, progress, saved resources, recent attempts. |
+| `/dashboard` | Learner overview, progress, saved resources, recent attempts, streak, achievements. |
 | `/profile` | Learner profile settings. |
-| `/resources` | Resource library with filters/search. |
+| `/resources` | Resource library with filters/search and save button. |
 | `/resources/[id]` | Resource detail page. |
+| `/flashcards` | Flashcard deck list with category filters. |
+| `/flashcards/[id]` | Flashcard deck detail. |
+| `/flashcards/[id]/study` | SM-2 study session with flip cards and quality rating. |
 | `/practice` | Practice list. |
 | `/practice/[id]` | Practice attempt page. |
 | `/practice/[id]/result` | Practice result page. |
 | `/mock-tests` | Published mock test list. |
 | `/mock-tests/[id]` | Mock test overview/start page. |
-| `/attempts/[id]` | Active or submitted mock attempt page. |
+| `/attempts/[id]` | Active or submitted mock attempt page with per-section timer and writing editor. |
 | `/attempts/[id]/score` | Module scores and final prediction page. |
 | `/attempts/[id]/report` | Detailed attempt report with section results. |
 | `/evaluations/[id]` | Writing/Speaking evaluation status and result. |
+| `/referrals` | Referral program with code generation and credit balance. |
 
 ## Admin Routes
 
@@ -57,6 +61,8 @@ Purpose:
 | `/admin/tests` | Test list. |
 | `/admin/tests/new` | Create test metadata. |
 | `/admin/tests/[id]` | Edit test metadata, sections, and questions. |
+| `/admin/flashcards` | Flashcard deck list with create/delete. |
+| `/admin/flashcards/[id]` | Deck editor with inline card CRUD. |
 | `/admin/reviews` | Review queue (content, writing, speaking). |
 | `/admin/reviews/[id]` | Review detail and actions. |
 
@@ -93,9 +99,11 @@ Redirect rules:
 
 - Dashboard
 - Resources
+- Flash Cards
 - Practice
 - Mock Tests
 - Attempts/History
+- Referrals
 - Profile
 - Logout
 
@@ -104,6 +112,7 @@ Redirect rules:
 - Admin Dashboard
 - Resources
 - Tests
+- Flash Cards
 - Reviews
 - Back to learner app
 

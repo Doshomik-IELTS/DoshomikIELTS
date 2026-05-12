@@ -1,7 +1,7 @@
 # Backend Data Model
 
-> **Status:** All models implemented in Prisma schema as of 2026-05-10
-> **Latest additions:** TestGenerationJob, ScoreMapping, EvaluationCalibration (2026-05-10)
+> **Status:** All models implemented in Prisma schema as of 2026-05-13
+> **Latest additions:** Profile streak/achievement fields, Achievement/ProfileAchievement models, FlashCardDeck/Card/CardReviewLog, Referral/ReferralRedemption/CreditLedger models (2026-05-13)
 
 ## General Rules
 
@@ -28,6 +28,9 @@ Fields:
 - `examDate`
 - `nativeLanguage`
 - `studyGoal`
+- `streak` — current consecutive study day streak (added 2026-05-13)
+- `longestStreak` — all-time best streak (added 2026-05-13)
+- `lastStudyDate` — date of last study activity (added 2026-05-13)
 - `createdAt`
 - `updatedAt`
 
@@ -39,7 +42,7 @@ Fields:
 - `profileId`
 - `role`: `learner`, `admin`, `reviewer`, `evaluator`
 
-### `SavedResource` (added 2026-05-10)
+### `SavedResource`
 
 Tracks bookmarked resources for learners.
 
@@ -48,6 +51,51 @@ Fields:
 - `id`
 - `profileId`
 - `resourceId`
+- `createdAt`
+
+### `Referral`
+
+Referral program configuration.
+
+Fields:
+
+- `id`
+- `code`
+- `description`
+- `creditRewardAmount`
+- `maxRedemptions`
+- `redemptionCount`
+- `status`: `active`, `inactive`, `expired`
+- `expiresAt`
+- `createdById`
+- `createdAt`
+- `updatedAt`
+
+### `ReferralRedemption`
+
+Tracks when a learner uses a referral code.
+
+Fields:
+
+- `id`
+- `referralId`
+- `referrerProfileId`
+- `refereeProfileId`
+- `creditAmountAwarded`
+- `redeemedAt`
+
+### `CreditLedger`
+
+Tracks all credit transactions for a profile.
+
+Fields:
+
+- `id`
+- `profileId`
+- `amount` — positive for credit, negative for debit
+- `type`: `referral_reward`, `redemption`, `bonus`, `adjustment`
+- `description`
+- `referenceId` — links to ReferralRedemption or other source
 - `createdAt`
 
 ## Resource Library
@@ -64,7 +112,7 @@ Fields:
 - `body`
 - `examplesJson`
 - `tags`
-- `status`: `draft`, `review`, `published`, `archived`
+- `status`: `draft`, `review`, `publishing`, `published`, `archived`
 - `createdById`
 - `reviewedById`
 - `publishedAt`
@@ -122,6 +170,76 @@ Fields:
 - `drillsJson`
 - `resourceId`
 
+## Progress Tracking
+
+### `ResourceProgress`
+
+Tracks learner progress on individual resources.
+
+Fields:
+
+- `id`
+- `profileId`
+- `resourceId`
+- `status`: `not_started`, `in_progress`, `completed`
+- `timeSpent` — seconds spent
+- `updatedAt`
+- `createdAt`
+
+## Flashcards
+
+### `FlashCardDeck`
+
+Spaced-repetition flashcard deck.
+
+Fields:
+
+- `id`
+- `profileId` — creator (learner who owns this deck)
+- `title`
+- `description`
+- `category`: `vocabulary`, `grammar`, `listening`, `reading`, `writing`, `speaking`
+- `difficulty`: `basic`, `intermediate`, `advanced`
+- `isPublic` — shared decks vs private
+- `tags`
+- `createdAt`
+- `updatedAt`
+
+### `FlashCard`
+
+Individual flashcard within a deck.
+
+Fields:
+
+- `id`
+- `deckId`
+- `front` — question/prompt
+- `back` — answer
+- `examples` — JSON array of example sentences
+- `hints` — JSON array of hints
+- `difficulty`: `basic`, `intermediate`, `advanced`
+- `orderIndex`
+- `repetitions` — SM-2 repetition count (0 = new)
+- `interval` — SM-2 interval in days
+- `easeFactor` — SM-2 ease factor (default 2.5)
+- `nextReview` — next review date (null = new/due)
+- `createdAt`
+- `updatedAt`
+
+### `CardReviewLog`
+
+SM-2 review history for analytics.
+
+Fields:
+
+- `id`
+- `cardId`
+- `profileId`
+- `quality` — 0–5 rating (0=Again, 2=Hard, 4=Good, 5=Easy)
+- `interval` — resulting interval in days
+- `easeFactor` — resulting ease factor
+- `reviewedAt`
+
 ## Tests And Questions
 
 ### `Test`
@@ -149,10 +267,10 @@ Fields:
 - `partNumber`
 - `title`
 - `instructions`
-- `durationMinutes`
+- `durationMinutes` — per-section time limit
 - `orderIndex`
-- `contentJson`: reading passage, listening transcript, writing visual spec, speaking cue card (added 2026-05-10)
-- `mediaAssetId`: audio for listening sections (added 2026-05-10)
+- `contentJson`: reading passage, listening transcript, writing visual spec, speaking cue card
+- `mediaAssetId`: audio for listening sections
 
 ### `Passage`
 
@@ -191,7 +309,7 @@ Fields:
 - `orderIndex`
 - `difficulty`
 - `explanation`
-- `sourceSpanJson`: {startOffset, endOffset, excerpt, reference} (added 2026-05-10, replaced sourceSpan)
+- `sourceSpanJson`: {startOffset, endOffset, excerpt, reference}
 
 ### `AnswerKey`
 
@@ -237,7 +355,7 @@ Fields:
 Fields:
 
 - `id`
-- `attemptId`
+- `attemptId` (references MockTestAttempt)
 - `sectionId`
 - `questionId`
 - `answerText`
@@ -320,6 +438,34 @@ Fields:
 - `createdAt`
 - `updatedAt`
 
+## Achievements
+
+### `Achievement` (added 2026-05-13)
+
+Defines available achievement badges.
+
+Fields:
+
+- `id`
+- `slug` — unique identifier
+- `name`
+- `description`
+- `icon` — emoji
+- `createdAt`
+
+### `ProfileAchievement` (added 2026-05-13)
+
+Tracks earned achievements per profile.
+
+Fields:
+
+- `id`
+- `profileId`
+- `achievementId`
+- `earnedAt`
+
+Unique constraint on `(profileId, achievementId)`.
+
 ## Media And Jobs
 
 ### `MediaAsset`
@@ -367,7 +513,7 @@ Fields:
 - `notes`
 - `createdAt`
 
-### `TestGenerationJob` (added 2026-05-10)
+### `TestGenerationJob`
 
 For LLM-powered test generation pipeline.
 
@@ -389,7 +535,7 @@ Fields:
 - `createdAt`
 - `updatedAt`
 
-### `ScoreMapping` (added 2026-05-10)
+### `ScoreMapping`
 
 For configurable raw-to-band score mappings.
 
@@ -403,7 +549,7 @@ Fields:
 - `createdAt`
 - `updatedAt`
 
-### `EvaluationCalibration` (added 2026-05-10)
+### `EvaluationCalibration`
 
 For tracking LLM evaluation accuracy vs human bands.
 
@@ -417,7 +563,6 @@ Fields:
 - `averageDeviation`
 - `sampleSize`
 - `createdAt`
-- `updatedAt`
 
 ### `AuditLog`
 
@@ -431,7 +576,7 @@ Fields:
 - `metadataJson`
 - `createdAt`
 
-### `ContentReview` (added 2026-05-10)
+### `ContentReview`
 
 For content review workflow.
 

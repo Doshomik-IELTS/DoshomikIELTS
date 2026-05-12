@@ -2,7 +2,7 @@
 
 ## Overview
 
-The IELTS++ frontend is a responsive Next.js App Router application for learners and basic admins. It supports public marketing/auth pages, learner dashboard, resources, practice, full mock tests, writing/speaking feedback, score prediction, and basic admin content workflows.
+The IELTS++ frontend is a responsive Next.js App Router application for learners and basic admins. It supports public marketing/auth pages, learner dashboard with streak tracking and achievements, resources with bookmarks, spaced-repetition flashcards, practice, full mock tests with per-section timers, writing tasks with word count and auto-save, speaking with audio recording, evaluation feedback, score prediction, referral program, and admin content workflows.
 
 Recommended stack:
 
@@ -17,25 +17,35 @@ Recommended stack:
 
 ## Implementation status (repository)
 
+> **Last updated:** 2026-05-13
+
 | Area | Status |
 |------|--------|
 | Middleware auth for learner/admin **paths** | ✅ Implemented (`middleware.ts`). |
 | **Admin role** gate | ✅ Implemented (`src/app/(admin)/layout.tsx` — roles from backend docs). |
 | **Profile** vertical slice | ✅ Complete - Reference implementation: RHF+zod, Sonner, API hooks (`src/components/profile/profile-editor.tsx`). |
 | **Login/Register** | ✅ Complete - Dev auth endpoints with forms (`src/app/(auth)/login`, `src/app/(auth)/register`). |
-| **Dashboard** | ✅ Complete with `/api/dashboard` (`src/components/dashboard/dashboard-summary.tsx`). |
-| **Resources** | ✅ Complete — list/detail/save (`src/components/resources/`). |
+| **Dashboard** | ✅ Complete - Includes streak, longest streak, progress bar, module score cards, recent attempts (`src/components/dashboard/dashboard-summary.tsx`). |
+| **Resources** | ✅ Complete — list/detail/save with icon bookmark button (`src/components/resources/`). |
+| **Flashcards** | ✅ Complete — deck grid, deck detail, SM-2 study session with flip cards and quality rating (`src/app/(learner)/flashcards/`, `src/components/ielts/flashcard-*`). |
 | **Practice** | ✅ Complete - List/attempt/result pages exist with proper loading/error states. |
 | **Mock Tests** | ✅ Complete - List/detail/start/attempt pages with score display (`/attempts/[id]/score`). |
+| **Test Timer** | ✅ Complete - Per-section countdown timer with auto-submit on expiry (`src/components/ielts/test-timer.tsx`, integrated into attempt page). |
+| **Writing Editor** | ✅ Complete - Live word count, progress bar, auto-save to localStorage, task-type-aware limits (`src/components/ielts/writing-editor.tsx`). |
 | **Attempt Report** | ✅ Complete - `/attempts/[id]/report` shows detailed results. |
 | **Evaluations** | ✅ Complete - Status/result page with production LLM provider. |
-| **Admin Resources** | ✅ Complete - CRUD with editor (`src/components/admin/resource-editor.tsx`). |
-| **Admin Tests** | ✅ Complete - CRUD with form, sections, and questions UI (`src/components/admin/test-*-form.tsx`, `test-section-editor.tsx`, `question-editor.tsx`). |
-| **Admin Reviews** | ✅ Complete - List/detail/action UI passes typecheck. |
 | **Speaking Recording** | ✅ Complete - Speaking recorder and submission components (`src/components/ielts/speaking-recorder.tsx`, `speaking-submission.tsx`). |
 | **Score Badge** | ✅ Complete - Band display component (`src/components/ielts/score-badge.tsx`). |
+| **Streak Badge** | ✅ Complete - Flame icon with streak and longest streak display (`src/components/dashboard/streak-badge.tsx`). |
+| **Achievements Panel** | ✅ Complete - Grid of earned/locked achievement badges (`src/components/dashboard/achievements-panel.tsx`). |
+| **Referrals** | ✅ Complete - Referral page with code generation and credits display. |
+| **Admin Resources** | ✅ Complete - CRUD with editor (`src/components/admin/resource-editor.tsx`). |
+| **Admin Tests** | ✅ Complete - CRUD with form, sections, and questions UI (`src/components/admin/test-*-form.tsx`, `test-section-editor.tsx`, `question-editor.tsx`). |
+| **Admin Flashcards** | ✅ Complete - Deck list with create/delete, deck editor with inline card CRUD (`src/app/(admin)/admin/flashcards/`). |
+| **Admin Reviews** | ✅ Complete - List/detail/action UI passes typecheck. |
+| **Resource Save Button** | ✅ Complete - Icon and button variants with POST/DELETE toggle (`src/components/resources/resource-save-button.tsx`). |
 
-**Current frontend P0:** keep `npm run typecheck`, `npm run lint`, and `npm run test:p0` green while adding browser/database coverage.
+**Current frontend P0:** keep `pnpm typecheck` and `pnpm build` green.
 
 ## Start Here
 
@@ -44,7 +54,7 @@ Recommended stack:
 3. [`minimal-aesthetic-improvement-plan.md`](minimal-aesthetic-improvement-plan.md) — audit findings and phased plan to polish inner pages.
 4. [`screens-and-flows.md`](screens-and-flows.md) — learner/admin screens and user flows.
 5. [`state-and-api-integration.md`](state-and-api-integration.md) — API client, data fetching, mutations, polling, and local draft state.
-6. [`mock-test-ui.md`](mock-test-ui.md) — exam simulation UI, section flow, answer rendering, and draft safety.
+6. [`mock-test-ui.md`](mock-test-ui.md) — exam simulation UI, section flow, answer rendering, draft safety, and timer integration.
 7. [`writing-speaking-ui.md`](writing-speaking-ui.md) — Writing and Speaking submission, audio, evaluation status, and feedback UI.
 8. [`admin-ui.md`](admin-ui.md) — basic admin resource/test/review screens.
 9. [`accessibility-responsive.md`](accessibility-responsive.md) — accessibility and responsive behavior requirements.
@@ -56,15 +66,17 @@ V1 includes:
 
 - Landing page (`/`).
 - Register/login/logout/reset password (`/login`, `/register`, `/reset-password`).
-- Protected learner dashboard (`/dashboard`).
+- Protected learner dashboard with streak/achievements (`/dashboard`).
 - Profile form (`/profile`).
-- Resource list/detail/save (`/resources`, `/resources/[id]`).
+- Resource list/detail with bookmark toggle (`/resources`, `/resources/[id]`).
+- Flashcard decks with SM-2 study sessions (`/flashcards`, `/flashcards/[id]`, `/flashcards/[id]/study`).
 - Practice list/attempt/result (`/practice`, `/practice/[id]`, `/practice/[id]/result`).
-- Mock test list/overview/active attempt/score/report (`/mock-tests`, `/mock-tests/[id]`, `/attempts/[id]`, `/attempts/[id]/score`, `/attempts/[id]/report`).
-- Writing task response UI.
+- Mock test list/overview/active attempt with timer/score/report (`/mock-tests`, `/mock-tests/[id]`, `/attempts/[id]`, `/attempts/[id]/score`, `/attempts/[id]/report`).
+- Writing task response UI with live word count and auto-save.
 - Speaking text/audio response UI with recorder.
 - Evaluation status and feedback pages (`/evaluations/[id]`).
-- Admin resource/test/review screens (`/admin`).
+- Referral code generation and credits (`/referrals`).
+- Admin resource/test/review/flashcard screens (`/admin`).
 
 V1 does not include:
 
@@ -83,6 +95,7 @@ V1 does not include:
 - Keep learner recordings private and use signed upload/download flows.
 - Full mock tests are desktop/tablet optimized; resources and short practice must work well on mobile.
 - Use clear loading, empty, error, pending, processing, failed, and needs-review states.
+- Wrap `useSearchParams()` in Suspense boundaries for static page generation compatibility.
 
 ## Complexity Priorities
 
@@ -93,8 +106,10 @@ V1 does not include:
 - Keep learner answer keys out of client state.
 - Harden practice and mock attempt pages with proper loading/error/empty states.
 - Maintain unsaved-answer protection and draft recovery for active attempts.
-- Complete speaking audio upload UI against signed media endpoints.
+- Per-section timer with auto-submit on expiry.
+- Writing editor with live word count and auto-save.
 - Keep score result page gated behind completed modules.
+- Streak and achievement display in dashboard.
 
 ### P1 — Build If Stable
 
@@ -109,5 +124,4 @@ V1 does not include:
 - Advanced pronunciation UI.
 - Personalized study plan screens.
 - AI tutor/chat interface.
-- Spaced repetition vocabulary UI.
 - Native mobile app.

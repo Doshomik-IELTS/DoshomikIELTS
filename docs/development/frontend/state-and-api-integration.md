@@ -59,24 +59,41 @@ Required learner integrations:
 
 - `GET /api/me` - Current user profile and roles
 - `PATCH /api/profile` - Update learner profile
-- `GET /api/dashboard` - Dashboard stats and progress
+- `GET /api/dashboard` - Dashboard stats and progress + streak
+- `GET /api/progress` - Learning progress with by-category breakdown
+- `GET /api/progress/[resourceId]` - Resource-specific progress
+- `POST /api/progress/check-unlock` - Check resource unlock conditions
+- `GET /api/achievements` - Streak, badges, and achievements
 - `GET /api/resources` - List published resources with filters
 - `GET /api/resources/:id` - Resource detail
-- `POST /api/resources/:id/save` - Bookmark/unbookmark resource
+- `POST /api/resources/:id/save` - Bookmark resource
+- `DELETE /api/resources/:id/save` - Remove bookmark
+- `GET /api/flashcards/decks` - List flashcard decks
+- `GET /api/flashcards/decks/:id` - Deck detail with cards
+- `GET /api/flashcards/decks/:id/progress` - Deck study progress
+- `POST /api/flashcards/study/:deckId` - SM-2 card review submission
 - `GET /api/practice` - List practice items
 - `POST /api/practice/:id/attempt` - Submit practice attempt
 - `GET /api/practice/attempts` - Practice history
 - `GET /api/mock-tests` - List published tests
 - `GET /api/mock-tests/:id` - Test detail (no answer keys)
 - `POST /api/mock-tests/:id/start` - Start new attempt
+- `GET /api/attempts/:attemptId` - Attempt status and progress (includes `durationMinutes` per section)
 - `POST /api/attempts/:attemptId/answers` - Save draft answers
 - `POST /api/attempts/:attemptId/submit-section` - Submit section for scoring
-- `GET /api/attempts/:attemptId` - Attempt status and progress
+- `GET /api/attempts/:attemptId/can-proceed` - Check section eligibility
 - `GET /api/attempts/:attemptId/report` - Detailed attempt report
 - `POST /api/attempts/:attemptId/predict-score` - Get score prediction
 - `GET /api/evaluations/:id` - Evaluation status and result
 - `POST /api/evaluations/writing` - Submit writing for evaluation
 - `POST /api/evaluations/speaking` - Submit speaking for evaluation
+- `GET /api/referrals/me` - Learner's referral stats
+- `POST /api/referrals/apply` - Apply referral code
+- `GET /api/referrals/generate` - Generate referral code
+- `GET /api/referrals/me/redemptions` - Redeemed referral codes
+- `GET /api/referrals/me/credits` - Credit balance
+- `GET /api/credits` - Credit summary
+- `GET /api/credits/ledger` - Credit transaction history
 - `POST /api/media/upload-url` - Get signed upload URL
 - `GET /api/media/:assetId/download-url` - Get signed download URL
 - `GET /api/health` - Health check
@@ -97,12 +114,38 @@ Admin integrations:
 - `PATCH /api/admin/tests/[id]` - Update test
 - `DELETE /api/admin/tests/[id]` - Delete test
 - `POST /api/admin/tests/[id]/sections` - Create section
+- `GET /api/admin/tests/[id]/sections` - List test sections
+
+**Questions:**
 - `POST /api/admin/questions` - Create question with answer key
+- `GET /api/admin/questions/[id]` - Get question details
+- `PATCH /api/admin/questions/[id]` - Update question
+- `DELETE /api/admin/questions/[id]` - Delete question
+
+**Flashcards:**
+- `GET /api/admin/flashcards/decks` - List decks with card counts
+- `POST /api/admin/flashcards/decks` - Create deck
+- `GET /api/admin/flashcards/decks/[id]` - Get deck with cards
+- `PATCH /api/admin/flashcards/decks/[id]` - Update deck
+- `DELETE /api/admin/flashcards/decks/[id]` - Delete deck
+- `POST /api/admin/flashcards/decks/[id]/cards` - Add card to deck
+- `PATCH /api/admin/flashcards/cards/[id]` - Update card
+- `DELETE /api/admin/flashcards/cards/[id]` - Delete card
 
 **Reviews:**
 - `GET /api/admin/reviews` - List review queue
 - `GET /api/admin/reviews/[id]` - Get review detail
 - `PATCH /api/admin/reviews/[id]` - Take review action
+
+**Referrals:**
+- `GET /api/admin/referrals` - Referral program analytics
+- `POST /api/admin/referrals` - Create/update referral config
+- `GET /api/admin/referrals/[code]/status` - Referral status
+- `PATCH /api/admin/referrals/[code]/status` - Update status
+- `GET /api/admin/referrals/analytics` - Analytics
+- `GET /api/admin/referrals/credits` - Credits overview
+- `POST /api/admin/referrals/credits` - Issue credits
+- `POST /api/admin/referrals/credits/revoke` - Revoke credits
 
 **Stats:**
 - `GET /api/admin/stats` - Dashboard counts

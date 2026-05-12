@@ -48,6 +48,7 @@ Apply rate limits to:
 - Media signed URL creation.
 - LLM evaluation creation.
 - Score prediction refresh.
+- Bookmark save/unsave (moderate limits to prevent abuse).
 
 Use stricter limits for endpoints that create LLM or transcription cost.
 
