@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { apiFetch } from "@/lib/api/client";
-import { TEST_TYPE_OPTIONS } from "@/lib/tests/constants";
 
 type Module = "listening" | "reading" | "writing" | "speaking";
 
@@ -68,7 +67,6 @@ export function TestEditorForm() {
   const [step, setStep] = useState<Step>("metadata");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [type, setType] = useState("full_mock");
   const [estimatedDuration, setEstimatedDuration] = useState("175");
   const [selectedModules, setSelectedModules] = useState<Set<Module>>(new Set(["listening", "reading", "writing", "speaking"]));
   const [creating, setCreating] = useState(false);

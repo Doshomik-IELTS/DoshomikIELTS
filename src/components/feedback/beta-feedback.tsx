@@ -45,7 +45,7 @@ export function BetaFeedback() {
         setMessage("");
         setCategory("general");
       }, 2000);
-    } catch (err) {
+    } catch {
       setError("Failed to submit feedback. Please try again.");
     } finally {
       setIsSubmitting(false);

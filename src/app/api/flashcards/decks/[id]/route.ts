@@ -1,10 +1,5 @@
 import { prisma } from "@/lib/prisma";
 import { ok, fail } from "@/lib/api/response";
-import { z } from "zod";
-
-const querySchema = z.object({
-  includeAll: z.string().optional(),
-});
 
 export async function GET(
   request: Request,

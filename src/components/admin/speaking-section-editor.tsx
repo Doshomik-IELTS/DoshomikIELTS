@@ -7,7 +7,6 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { apiFetch } from "@/lib/api/client";
-import type { SectionData } from "./section-list-editor";
 
 type CueCard = {
   part: "part_1" | "part_2" | "part_3";
@@ -30,14 +29,10 @@ type Props = {
 };
 
 function CueCardEditor({
-  testId,
-  section,
   cueCard,
   cueIndex,
   onUpdate,
 }: {
-  testId: string;
-  section: SectionData;
   cueCard: CueCard;
   cueIndex: number;
   onUpdate: (updated: CueCard) => void;
@@ -269,8 +264,6 @@ export function SpeakingSectionEditor({ testId, section, onContentUpdate }: Prop
           {content.cueCards.map((card, i) => (
             <CueCardEditor
               key={i}
-              testId={testId}
-              section={section}
               cueCard={card}
               cueIndex={i}
               onUpdate={(updated) => updateCueCard(i, updated)}

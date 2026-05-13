@@ -1,30 +1,30 @@
-import { evaluateResponse as evaluateDeterministic } from "./provider";
+import { evaluateWithDeterministicProvider } from "./deterministic-provider";
 import type { EvaluationRequest, EvaluationProviderResult } from "./types";
 import { evaluationSchema, WRITING_SYSTEM_PROMPT, SPEAKING_SYSTEM_PROMPT, WRITING_CRITIQUE_PROMPT, SPEAKING_CRITIQUE_PROMPT } from "./schemas";
-
-const PROVIDER = process.env.LLM_PROVIDER || "";
-const API_KEY = process.env.LLM_API_KEY || "";
 
 export async function evaluateWithLLM(
   request: EvaluationRequest,
 ): Promise<EvaluationProviderResult> {
-  if (!PROVIDER || !API_KEY) {
+  const provider = process.env.LLM_PROVIDER || "";
+  const apiKey = process.env.LLM_API_KEY || "";
+
+  if (!provider || !apiKey) {
     console.warn("[evaluation] No LLM provider configured, falling back to deterministic");
-    return evaluateDeterministic(request);
+    return evaluateWithDeterministicProvider(request);
   }
 
   try {
-    if (PROVIDER === "openai") {
-      return evaluateWithOpenAI(request);
+    if (provider === "openai") {
+      return await evaluateWithOpenAI(request);
     }
-    if (PROVIDER === "anthropic") {
-      return evaluateWithAnthropic(request);
+    if (provider === "anthropic") {
+      return await evaluateWithAnthropic(request);
     }
-    console.warn(`[evaluation] Unknown provider ${PROVIDER}, falling back to deterministic`);
-    return evaluateDeterministic(request);
+    console.warn(`[evaluation] Unknown provider ${provider}, falling back to deterministic`);
+    return evaluateWithDeterministicProvider(request);
   } catch (error) {
     console.error("[evaluation] LLM call failed:", error);
-    return evaluateDeterministic(request);
+    return evaluateWithDeterministicProvider(request);
   }
 }
 
@@ -54,7 +54,7 @@ async function evaluateWithOpenAI(
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${API_KEY}`,
+      "Authorization": `Bearer ${process.env.LLM_API_KEY || ""}`,
     },
     body: JSON.stringify({
       model,
@@ -121,7 +121,7 @@ async function evaluateWithAnthropic(
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "x-api-key": API_KEY,
+      "x-api-key": process.env.LLM_API_KEY || "",
       "anthropic-version": "2023-06-01",
     },
     body: JSON.stringify({

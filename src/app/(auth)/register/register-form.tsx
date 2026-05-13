@@ -9,6 +9,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { registerSchema, type RegisterValues } from "@/lib/validators/auth";
 import { useApiMutation } from "@/lib/hooks/api";
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { toast } from "sonner";
+
+const isDevAuthEnabled = process.env.NODE_ENV !== "production";
 
 export function RegisterForm() {
   const router = useRouter();
@@ -29,8 +33,36 @@ export function RegisterForm() {
     },
   });
 
-  const onSubmit = (data: RegisterValues) => {
-    registerMutation.mutate(data);
+  const onSubmit = async (data: RegisterValues) => {
+    if (isDevAuthEnabled) {
+      registerMutation.mutate(data);
+      return;
+    }
+
+    const supabase = createSupabaseBrowserClient();
+    const { data: authData, error } = await supabase.auth.signUp({
+      email: data.email,
+      password: data.password,
+      options: {
+        data: {
+          name: data.name,
+        },
+      },
+    });
+
+    if (error) {
+      toast.error(error.message || "Registration failed");
+      return;
+    }
+
+    if (authData.session) {
+      router.push("/dashboard");
+      router.refresh();
+      return;
+    }
+
+    toast.success("Account created. Check your email to confirm your account.");
+    router.push("/login");
   };
 
   return (

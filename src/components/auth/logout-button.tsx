@@ -3,6 +3,9 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+
+const isDevAuthEnabled = process.env.NODE_ENV !== "production";
 
 export function LogoutButton() {
   const router = useRouter();
@@ -11,7 +14,12 @@ export function LogoutButton() {
   async function handleLogout() {
     setLoading(true);
     try {
-      await fetch("/api/dev-auth/logout", { method: "POST" });
+      if (isDevAuthEnabled) {
+        await fetch("/api/dev-auth/logout", { method: "POST" });
+      } else {
+        const supabase = createSupabaseBrowserClient();
+        await supabase.auth.signOut();
+      }
       router.push("/login");
       router.refresh();
     } finally {

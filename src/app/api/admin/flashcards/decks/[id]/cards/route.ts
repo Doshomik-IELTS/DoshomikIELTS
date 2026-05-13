@@ -2,7 +2,6 @@ import { prisma } from "@/lib/prisma";
 import { ok, fail } from "@/lib/api/response";
 import { requireAdminActor } from "@/lib/auth/admin-api";
 import { z } from "zod";
-import type { Prisma } from "@prisma/client";
 
 const createCardSchema = z.object({
   front: z.string().min(1),

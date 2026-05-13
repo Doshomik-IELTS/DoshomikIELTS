@@ -4,15 +4,13 @@ import { createServerClient } from "@supabase/ssr";
 /**
  * Route Protection Matrix:
  * - Learner routes (dashboard, profile, resources, practice, mock-tests, attempts, evaluations): require auth
- * - Admin routes (/admin/*): require auth + admin/reviewer/evaluator role
+ * - Admin routes (/admin/*): require auth here; Prisma role checks run in the admin layout and APIs
  * - Auth routes (login, register, reset-password): redirect to dashboard if already authenticated
  */
 const protectedPrefixes = ["/dashboard", "/profile", "/resources", "/practice", "/mock-tests", "/attempts", "/evaluations"];
 const adminPrefixes = ["/admin"];
 const authRoutes = ["/login", "/register", "/reset-password"];
 const DEV_COOKIE_NAME = "ieltspp-dev-session";
-
-const ADMIN_ROLES = ["admin", "reviewer", "evaluator"];
 
 function isProtectedPath(pathname: string) {
   return protectedPrefixes.some((prefix) => pathname.startsWith(prefix));
@@ -24,11 +22,6 @@ function isAdminPath(pathname: string) {
 
 function isAuthRoute(pathname: string) {
   return authRoutes.some((route) => pathname === route || pathname.startsWith(route + "/"));
-}
-
-function hasAdminRole(user: { app_metadata?: Record<string, unknown> }): boolean {
-  const role = user.app_metadata?.role as string | undefined;
-  return role ? ADMIN_ROLES.includes(role) : false;
 }
 
 export async function middleware(request: NextRequest) {
@@ -70,12 +63,6 @@ export async function middleware(request: NextRequest) {
 
     if (user) {
       if (isAuthRoute(pathname)) {
-        const url = request.nextUrl.clone();
-        url.pathname = "/dashboard";
-        return NextResponse.redirect(url);
-      }
-
-      if (isAdminPath(pathname) && !hasAdminRole(user)) {
         const url = request.nextUrl.clone();
         url.pathname = "/dashboard";
         return NextResponse.redirect(url);

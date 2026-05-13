@@ -5,11 +5,12 @@ This folder contains product, strategy, market, content, and development documen
 ## Start Here
 
 1. [`development/README.md`](development/README.md) — development documentation index.
-2. [`development/development-plan.md`](development/development-plan.md) — baseline-aware roadmap and MVP checklist (updated with repo status).
-3. [`development/development-starting-phase.md`](development/development-starting-phase.md) — immediate starting-phase checklist.
-4. [`development/mvp-development-workplan.md`](development/mvp-development-workplan.md) — full 8-week MVP development plan.
-5. [`product-requirements.md`](product-requirements.md) — core product requirements.
-6. [`development/technical-complexity-report.md`](development/technical-complexity-report.md) — complexity, risks, and priorities.
+2. [`development/launch-readiness-plan.md`](development/launch-readiness-plan.md) — current launch blockers, acceptance criteria, and release gates.
+3. [`development/development-plan.md`](development/development-plan.md) — baseline-aware roadmap and MVP checklist (updated with repo status).
+4. [`development/development-starting-phase.md`](development/development-starting-phase.md) — immediate starting-phase checklist.
+5. [`development/mvp-development-workplan.md`](development/mvp-development-workplan.md) — full 8-week MVP development plan.
+6. [`product-requirements.md`](product-requirements.md) — core product requirements.
+7. [`development/technical-complexity-report.md`](development/technical-complexity-report.md) — complexity, risks, and priorities.
 
 ---
 
@@ -31,6 +32,7 @@ All development-focused files now live in [`development/`](development/).
 | Document | Purpose |
 |---|---|
 | [`development/README.md`](development/README.md) | Development docs index and reading order. |
+| [`development/launch-readiness-plan.md`](development/launch-readiness-plan.md) | Current launch blockers, required fixes, verification commands, and release gates. |
 | [`development/development-plan.md`](development/development-plan.md) | Current baseline, phased roadmap, and MVP checklist vs implementation. |
 | [`development/development-starting-phase.md`](development/development-starting-phase.md) | Starting-phase setup and first implementation checklist. |
 | [`development/mvp-development-workplan.md`](development/mvp-development-workplan.md) | Week-wise full-stack MVP plan. |
@@ -96,15 +98,16 @@ All backend-specific implementation docs live in [`development/backend/`](develo
 
 ### Solo Developer / Full-Stack Implementer
 
-1. `development/development-starting-phase.md`
-2. `development/mvp-development-workplan.md`
-3. `development/technical-complexity-report.md`
-4. `development/frontend/README.md`
-5. `development/backend/README.md`
-6. `development/backend/setup-and-env.md`
-7. `development/backend/data-model.md`
-8. `development/backend/api-spec.md`
-9. `testing-plans/README.md`
+1. `development/launch-readiness-plan.md`
+2. `development/development-starting-phase.md`
+3. `development/mvp-development-workplan.md`
+4. `development/technical-complexity-report.md`
+5. `development/frontend/README.md`
+6. `development/backend/README.md`
+7. `development/backend/setup-and-env.md`
+8. `development/backend/data-model.md`
+9. `development/backend/api-spec.md`
+10. `testing-plans/README.md`
 
 ### Product / Content Planning
 

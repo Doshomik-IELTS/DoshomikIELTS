@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import type { ApiEnvelope } from "@/lib/api/response";
 
 interface ApiError {
   error?: { message?: string };
@@ -14,6 +15,32 @@ function getErrorMessage(error: unknown): string {
   }
   if (error instanceof Error) return error.message;
   return "An unexpected error occurred";
+}
+
+function isApiEnvelope<TData>(payload: unknown): payload is ApiEnvelope<TData> {
+  return (
+    typeof payload === "object" &&
+    payload !== null &&
+    "data" in payload &&
+    "error" in payload
+  );
+}
+
+async function parseApiResponse<TData>(response: Response): Promise<TData> {
+  const payload = (await response.json()) as unknown;
+
+  if (isApiEnvelope<TData>(payload)) {
+    if (!response.ok || payload.error) {
+      throw new Error(payload.error?.message ?? "Request failed");
+    }
+    return payload.data;
+  }
+
+  if (!response.ok) {
+    throw new Error(getErrorMessage(payload));
+  }
+
+  return payload as TData;
 }
 
 export function useApiMutation<TData, TVariables>({
@@ -39,12 +66,7 @@ export function useApiMutation<TData, TVariables>({
         headers: method === "POST" ? { "Content-Type": "application/json" } : {},
         body: method === "POST" ? JSON.stringify(variables) : undefined,
       });
-      const payload = (await response.json()) as TData | ApiError;
-      if (!response.ok || (payload as ApiError).error) {
-        const error = getErrorMessage(payload);
-        throw new Error(error);
-      }
-      return payload as TData;
+      return parseApiResponse<TData>(response);
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: mutationKey.slice(0, 1) });
@@ -72,12 +94,7 @@ export function useApiQuery<TData>({
     queryKey,
     queryFn: async () => {
       const response = await fetch(endpoint);
-      const payload = (await response.json()) as TData | ApiError;
-      if (!response.ok || (payload as ApiError).error) {
-        const error = getErrorMessage(payload);
-        throw new Error(error);
-      }
-      return payload as TData;
+      return parseApiResponse<TData>(response);
     },
     enabled,
     refetchInterval,

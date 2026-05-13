@@ -12,9 +12,7 @@ import {
   MODULE_QUESTION_TYPES,
   DIFFICULTY_OPTIONS,
   getDefaultOptionsForType,
-  type QuestionTypeOption,
 } from "@/lib/tests/ielts-types";
-import type { SectionData } from "./section-list-editor";
 
 export type QuestionData = {
   id: string;

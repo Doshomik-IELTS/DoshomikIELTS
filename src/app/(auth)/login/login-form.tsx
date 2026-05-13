@@ -11,6 +11,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { loginSchema, type LoginValues } from "@/lib/validators/auth";
 import { useApiMutation } from "@/lib/hooks/api";
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+
+const isDevAuthEnabled = process.env.NODE_ENV !== "production";
 
 export function LoginForm({
   nextPath,
@@ -41,8 +44,26 @@ export function LoginForm({
     },
   });
 
-  const onSubmit = (data: LoginValues) => {
-    loginMutation.mutate({ ...data, role });
+  const onSubmit = async (data: LoginValues) => {
+    if (isDevAuthEnabled) {
+      loginMutation.mutate({ ...data, role });
+      return;
+    }
+
+    const supabase = createSupabaseBrowserClient();
+    const { error } = await supabase.auth.signInWithPassword({
+      email: data.email,
+      password: data.password,
+    });
+
+    if (error) {
+      toast.error(error.message || "Login failed");
+      return;
+    }
+
+    toast.success("Logged in successfully");
+    router.push(nextPath);
+    router.refresh();
   };
 
   return (

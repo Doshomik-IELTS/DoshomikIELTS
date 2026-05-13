@@ -45,15 +45,16 @@ For full task list, see [`mvp-remaining-tasks.md`](mvp-remaining-tasks.md).
 
 ## Start Here
 
-1. [`development-plan.md`](development-plan.md) — baseline vs repo, phased roadmap, MVP checklist.
-2. [`development-starting-phase.md`](development-starting-phase.md) — immediate starting-phase checklist.
-3. [`mvp-development-workplan.md`](mvp-development-workplan.md) — 8-week full-stack workplan.
-4. [`technical-complexity-report.md`](technical-complexity-report.md) — complexity, risk, and priority guidance.
-5. [`technical-architecture.md`](technical-architecture.md) — overall stack, hosting, storage, modules, and architecture.
-6. [`mock-test-implementation-plan.md`](mock-test-implementation-plan.md) — research-backed plan for full IELTS mock tests, scoring, practice modules, and LLM generation/evaluation.
-7. [`frontend/README.md`](frontend/README.md) — frontend route map, UI plan, and frontend tasks.
-8. [`backend/README.md`](backend/README.md) — backend implementation overview.
-9. [`../testing-plans/README.md`](../testing-plans/README.md) — index of all testing and QA plans (frontend, backend, and future E2E/performance/security).
+1. [`launch-readiness-plan.md`](launch-readiness-plan.md) — current public-launch blockers, acceptance criteria, and launch gates.
+2. [`development-plan.md`](development-plan.md) — baseline vs repo, phased roadmap, MVP checklist.
+3. [`development-starting-phase.md`](development-starting-phase.md) — immediate starting-phase checklist.
+4. [`mvp-development-workplan.md`](mvp-development-workplan.md) — 8-week full-stack workplan.
+5. [`technical-complexity-report.md`](technical-complexity-report.md) — complexity, risk, and priority guidance.
+6. [`technical-architecture.md`](technical-architecture.md) — overall stack, hosting, storage, modules, and architecture.
+7. [`mock-test-implementation-plan.md`](mock-test-implementation-plan.md) — research-backed plan for full IELTS mock tests, scoring, practice modules, and LLM generation/evaluation.
+8. [`frontend/README.md`](frontend/README.md) — frontend route map, UI plan, and frontend tasks.
+9. [`backend/README.md`](backend/README.md) — backend implementation overview.
+10. [`../testing-plans/README.md`](../testing-plans/README.md) — index of all testing and QA plans (frontend, backend, and future E2E/performance/security).
 
 ## Frontend
 
@@ -87,6 +88,7 @@ For full task list, see [`mvp-remaining-tasks.md`](mvp-remaining-tasks.md).
 
 ## Planning And Risk
 
+- [`launch-readiness-plan.md`](launch-readiness-plan.md) — current launch blockers and public-release gates.
 - [`mvp-development-workplan.md`](mvp-development-workplan.md)
 - [`mock-test-implementation-plan.md`](mock-test-implementation-plan.md)
 - [`resource-admin-dashboard-plan.md`](resource-admin-dashboard-plan.md) — adding all resource categories from the admin dashboard (API + UI phases).

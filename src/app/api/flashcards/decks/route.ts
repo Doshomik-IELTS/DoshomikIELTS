@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { ok, fail } from "@/lib/api/response";
+import { ok } from "@/lib/api/response";
 
 export async function GET() {
   const decks = await prisma.flashCardDeck.findMany({

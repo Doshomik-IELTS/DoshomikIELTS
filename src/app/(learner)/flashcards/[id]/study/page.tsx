@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { apiFetch } from "@/lib/api/client";
 
-type Card = {
+type StudyCard = {
   id: string;
   front: string;
   back: string;
@@ -17,15 +17,6 @@ type Card = {
   difficulty: string;
   orderIndex: number;
   nextReview: string | null;
-};
-
-type Deck = {
-  id: string;
-  title: string;
-  description: string | null;
-  category: string;
-  difficulty: string;
-  cards: Card[];
 };
 
 type Progress = {
@@ -46,7 +37,7 @@ export default function FlashcardStudyPage({ params }: { params: Promise<{ id: s
   const router = useRouter();
   const qc = useQueryClient();
   const [deckId, setDeckId] = useState("");
-  const [cards, setCards] = useState<Card[]>([]);
+  const [cards, setCards] = useState<StudyCard[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
   const [completed, setCompleted] = useState<string[]>([]);
@@ -54,7 +45,7 @@ export default function FlashcardStudyPage({ params }: { params: Promise<{ id: s
 
   useEffect(() => { params.then(p => setDeckId(p.id)); }, [params]);
 
-  const { data: deckData, isLoading } = useQuery<{ id: string; title: string; cards: Card[] }>({
+  const { data: deckData, isLoading } = useQuery<{ id: string; title: string; cards: StudyCard[] }>({
     queryKey: ["flashcard-deck", deckId],
     queryFn: () => apiFetch(`/api/flashcards/decks/${deckId}`),
     enabled: !!deckId,

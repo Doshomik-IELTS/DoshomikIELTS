@@ -1,4 +1,4 @@
-import { chromium } from "playwright";
+import { chromium, type Page } from "playwright";
 import * as path from "path";
 import * as fs from "fs";
 
@@ -26,14 +26,14 @@ const pages = [
   { url: "/admin/reviews", name: "19-admin-reviews", admin: true },
 ];
 
-async function loginAsLearner(page: any) {
+async function loginAsLearner(page: Page) {
   await page.goto("/");
   await page.request.post("/api/dev-auth/login", {
     data: { email: "demo@ieltspp.local", password: "Test@1234!", role: "learner" }
   });
 }
 
-async function loginAsAdmin(page: any) {
+async function loginAsAdmin(page: Page) {
   await page.goto("/");
   await page.request.post("/api/dev-auth/login", {
     data: { email: "admin@ieltspp.local", password: "Test@1234!", role: "admin" }

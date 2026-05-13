@@ -43,6 +43,7 @@ const createQuestionSchema = z.object({
   }).optional(),
 });
 
+// @ts-expect-error Reserved for future PATCH endpoint
 const updateQuestionSchema = createQuestionSchema.partial().omit({ sectionId: true });
 
 export async function GET(request: Request) {

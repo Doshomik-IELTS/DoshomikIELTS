@@ -127,6 +127,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   }
 
   const { answerKey: _answerKey, optionsJson: _opts, explanation: _exp, sourceSpanJson: _span, ...rest } = data;
+  void _answerKey; void _opts; void _exp; void _span;
   const updateData: Prisma.QuestionUpdateInput = {
     ...rest,
     optionsJson: data.optionsJson === undefined

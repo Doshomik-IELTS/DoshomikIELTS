@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server";
 import { requireCurrentUser } from "@/lib/auth/session";
 import { ok, fail } from "@/lib/api/response";
 import { prisma } from "@/lib/prisma";
@@ -28,9 +27,7 @@ export async function GET() {
     return fail({ code: "NOT_FOUND", message: "Profile not found" }, 404);
   }
 
-  const earnedMap = new Set(earnedAchievements.map((pa) => pa.achievement.slug));
-
-  const allAchievements = await prisma.achievement.findMany({
+   const allAchievements = await prisma.achievement.findMany({
     orderBy: { createdAt: "asc" },
   });
 
