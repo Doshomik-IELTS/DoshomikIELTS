@@ -5,15 +5,16 @@ export default defineConfig({
   timeout: 30_000,
   expect: { timeout: 5_000 },
   fullyParallel: true,
-  reporter: [["list"], ["html", { open: "never" }]],
+  reporter: "list",
   use: {
-    baseURL: "http://127.0.0.1:3100",
+    baseURL: "http://localhost:3002",
     trace: "on-first-retry",
+    screenshot: "only-on-failure",
   },
   webServer: {
-    command: "pnpm dev --hostname 127.0.0.1 --port 3100",
-    url: "http://127.0.0.1:3100",
-    reuseExistingServer: !process.env.CI,
+    command: "pnpm dev",
+    url: "http://localhost:3002",
+    reuseExistingServer: true,
     timeout: 180_000,
   },
   projects: [

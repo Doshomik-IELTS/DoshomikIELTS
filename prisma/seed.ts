@@ -4,7 +4,7 @@ const prisma = new PrismaClient();
 
 async function main() {
   const demo = await prisma.profile.upsert({
-    where: { authUserId: "dev:demo" },
+    where: { authUserId: "dev:learner" },
     update: {
       email: "demo@ieltspp.local",
       name: "Demo Learner",
@@ -17,7 +17,7 @@ async function main() {
       lastStudyDate: new Date(),
     },
     create: {
-      authUserId: "dev:demo",
+      authUserId: "dev:learner",
       email: "demo@ieltspp.local",
       name: "Demo Learner",
       targetBand: 6.5,
