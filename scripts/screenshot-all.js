@@ -1,4 +1,4 @@
-const { chromium } = require("@playwright/test");
+import { chromium } from "@playwright/test";
 
 const BASE_URL = "http://localhost:3002";
 const OUT_DIR = "/mnt/data/wd/10_project/projects/IELTS++/screenshots";

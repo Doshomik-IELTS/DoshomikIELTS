@@ -27,7 +27,7 @@ Recommended stack:
 | **Login/Register** | ✅ Complete - Dev auth endpoints with forms (`src/app/(auth)/login`, `src/app/(auth)/register`). |
 | **Dashboard** | ✅ Complete - Includes streak, longest streak, progress bar, module score cards, recent attempts (`src/components/dashboard/dashboard-summary.tsx`). |
 | **Resources** | ✅ Complete — list/detail/save with icon bookmark button (`src/components/resources/`). |
-| **Flashcards** | ✅ Complete — deck grid, deck detail, SM-2 study session with flip cards and quality rating (`src/app/(learner)/flashcards/`, `src/components/ielts/flashcard-*`). |
+| **Flashcards** | ✅ Complete — deck grid, deck detail, SM-2 study session with flip cards and quality rating (`src/app/(learner)/flashcards/`). |
 | **Practice** | ✅ Complete - List/attempt/result pages exist with proper loading/error states. |
 | **Mock Tests** | ✅ Complete - List/detail/start/attempt pages with score display (`/attempts/[id]/score`). |
 | **Test Timer** | ✅ Complete - Per-section countdown timer with auto-submit on expiry (`src/components/ielts/test-timer.tsx`, integrated into attempt page). |
@@ -40,8 +40,8 @@ Recommended stack:
 | **Achievements Panel** | ✅ Complete - Grid of earned/locked achievement badges (`src/components/dashboard/achievements-panel.tsx`). |
 | **Referrals** | ✅ Complete - Referral page with code generation and credits display. |
 | **Admin Resources** | ✅ Complete - CRUD with editor (`src/components/admin/resource-editor.tsx`). |
-| **Admin Tests** | ✅ Complete - CRUD with form, sections, and questions UI (`src/components/admin/test-*-form.tsx`, `test-section-editor.tsx`, `question-editor.tsx`). |
-| **Admin Flashcards** | ✅ Complete - Deck list with create/delete, deck editor with inline card CRUD (`src/app/(admin)/admin/flashcards/`). |
+| **Admin Tests** | ✅ Complete - CRUD with form, sections, and questions UI (`src/components/admin/test-*-form.tsx`, `test-section-editor.tsx`, `question-editor.tsx`). Includes visual test builder at `/admin/tests/[id]/builder`. |
+| **Admin Flashcards** | ✅ Complete - Deck list with create/delete, deck editor with inline card CRUD (`src/app/(admin)/admin/flashcards/`, `/admin/flashcards/[id]`). |
 | **Admin Reviews** | ✅ Complete - List/detail/action UI passes typecheck. |
 | **Resource Save Button** | ✅ Complete - Icon and button variants with POST/DELETE toggle (`src/components/resources/resource-save-button.tsx`). |
 

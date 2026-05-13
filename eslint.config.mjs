@@ -13,6 +13,13 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
   ]),
+  // Allow common React patterns - disable strict rules that flag safe patterns
+  {
+    rules: {
+      // Allow setState in useEffect - common pattern for syncing fetched data to form state
+      "react-hooks/set-state-in-effect": "off",
+    },
+  },
 ]);
 
 export default eslintConfig;

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { SidebarNav } from "@/components/layout/sidebar-nav";
+import { BetaFeedback } from "@/components/feedback/beta-feedback";
 
 const learnerNav: { label: string; href: string }[] = [
   { label: "Dashboard", href: "/dashboard" },
@@ -22,6 +23,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       <main className="md:pl-64">
         <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">{children}</div>
       </main>
+      <BetaFeedback />
     </div>
   );
 }

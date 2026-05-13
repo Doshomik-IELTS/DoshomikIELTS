@@ -694,3 +694,18 @@ model ProfileAchievement {
   @@unique([profileId, achievementId])
   @@index([profileId])
 }
+
+model BetaFeedback {
+  id          String   @id @default(uuid())
+  profileId   String?
+  email       String?
+  category    String
+  message     String
+  pageUrl     String?
+  metadataJson Json?
+  status      String   @default("new")
+  createdAt   DateTime @default(now())
+
+  @@index([status])
+  @@index([createdAt])
+}

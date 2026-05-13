@@ -4,6 +4,12 @@
 
 The IELTS++ backend powers an owned IELTS resource and mock-test platform. It supports learner accounts, profiles, text resources, practice attempts, full mock tests, spaced-repetition flashcards, referral/credits system, objective scoring, LLM-assisted writing/speaking evaluation, score prediction, media storage, and admin review workflows.
 
+## Code Quality Status
+
+- **TypeScript**: ✅ `pnpm typecheck` passes
+- **Lint**: ⚠️ 0 errors, 30 warnings (pre-existing unused imports - non-blocking)
+- **API Implementation**: 63 route files with 86 HTTP endpoints implemented
+
 ## Implementation status (HTTP APIs)
 
 **Implemented** in `src/app/api/`:

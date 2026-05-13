@@ -60,7 +60,8 @@ Purpose:
 | `/admin/resources/[id]` | Edit resource. |
 | `/admin/tests` | Test list. |
 | `/admin/tests/new` | Create test metadata. |
-| `/admin/tests/[id]` | Edit test metadata, sections, and questions. |
+| `/admin/tests/[id]` | Edit test metadata and sections. |
+| `/admin/tests/[id]/builder` | Visual test builder with question editor. |
 | `/admin/flashcards` | Flashcard deck list with create/delete. |
 | `/admin/flashcards/[id]` | Deck editor with inline card CRUD. |
 | `/admin/reviews` | Review queue (content, writing, speaking). |
