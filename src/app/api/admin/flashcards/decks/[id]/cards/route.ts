@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { ok, fail } from "@/lib/api/response";
 import { requireAdminActor } from "@/lib/auth/admin-api";
+import { logAuditEvent } from "@/lib/audit";
 import { z } from "zod";
 
 const createCardSchema = z.object({
@@ -40,8 +41,9 @@ export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  let actor;
   try {
-    await requireAdminActor();
+    actor = await requireAdminActor();
   } catch (error) {
     if (error instanceof Error && error.message === "UNAUTHENTICATED") {
       return fail({ code: "UNAUTHENTICATED", message: "Authentication required" }, 401);
@@ -73,6 +75,14 @@ export async function POST(
       orderIndex: parsed.data.orderIndex ?? (maxOrder?.orderIndex ?? -1) + 1,
       tags: parsed.data.tags,
     },
+  });
+
+  logAuditEvent({
+    action: "flashcard_card.create",
+    entityType: "FlashCard",
+    entityId: card.id,
+    actorId: actor.profile.id,
+    metadata: { deckId },
   });
 
   return ok({ id: card.id, front: card.front, orderIndex: card.orderIndex }, { status: 201 });

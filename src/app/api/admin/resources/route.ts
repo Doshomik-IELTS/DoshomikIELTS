@@ -2,6 +2,7 @@ import { fail, ok } from "@/lib/api/response";
 import { assertCanSetResourceStatus, requireAdminActor } from "@/lib/auth/admin-api";
 import { prisma } from "@/lib/prisma";
 import { ensureUniqueResourceSlug, slugifyTitle } from "@/lib/slug";
+import { logAuditEvent } from "@/lib/audit";
 import {
   adminResourceCreateSchema,
   adminResourceListQuerySchema,
@@ -160,6 +161,14 @@ export async function POST(request: Request) {
         publishedAt: true,
         updatedAt: true,
       },
+    });
+
+    await logAuditEvent({
+      action: "resource.create",
+      entityType: "Resource",
+      entityId: created.id,
+      actorId: actor.profile.id,
+      metadata: { title: created.title, status: created.status },
     });
 
     return ok({ resource: created }, { status: 201 });

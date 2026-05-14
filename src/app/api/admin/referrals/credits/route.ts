@@ -1,6 +1,7 @@
 import { fail, ok } from "@/lib/api/response";
 import { requireAdminActor } from "@/lib/auth/admin-api";
 import { prisma } from "@/lib/prisma";
+import { logAuditEvent } from "@/lib/audit";
 import { z } from "zod";
 import type { CreditTxType } from "@prisma/client";
 
@@ -57,7 +58,12 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  await requireAdminActor();
+  let actor;
+  try {
+    actor = await requireAdminActor();
+  } catch {
+    return fail({ code: "UNAUTHENTICATED", message: "Authentication required" }, 401);
+  }
 
   const body = await request.json().catch(() => null);
   const parsed = grantSchema.safeParse(body);
@@ -79,6 +85,14 @@ export async function POST(request: Request) {
       type: "admin_grant",
       description,
     },
+  });
+
+  logAuditEvent({
+    action: "credits.grant",
+    entityType: "CreditLedger",
+    entityId: tx.id,
+    actorId: actor.profile.id,
+    metadata: { profileId, amount, description },
   });
 
   return ok(tx, { status: 201 });

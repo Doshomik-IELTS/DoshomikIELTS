@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { requireAdminActor } from "@/lib/auth/admin-api";
 import { ok, fail } from "@/lib/api/response";
+import { logAuditEvent } from "@/lib/audit";
 import type { Prisma } from "@prisma/client";
 
 export async function GET(request: Request) {
@@ -95,8 +96,9 @@ type SectionInput = {
 };
 
 export async function POST(request: Request) {
+  let actor;
   try {
-    await requireAdminActor();
+    actor = await requireAdminActor();
   } catch (error) {
     if (error instanceof Error && error.message === "UNAUTHENTICATED") {
       return fail({ code: "UNAUTHENTICATED", message: "Authentication required" }, 401);
@@ -145,6 +147,14 @@ export async function POST(request: Request) {
           }
         : {}),
     },
+  });
+
+  await logAuditEvent({
+    action: "test.create",
+    entityType: "Test",
+    entityId: test.id,
+    actorId: actor.profile.id,
+    metadata: { title: test.title, type: test.type },
   });
 
   return ok({

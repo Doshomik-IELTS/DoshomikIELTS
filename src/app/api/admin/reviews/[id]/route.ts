@@ -2,6 +2,7 @@ import { ContentStatus, type Prisma } from "@prisma/client";
 import { fail, ok } from "@/lib/api/response";
 import { requireAdminActor } from "@/lib/auth/admin-api";
 import { prisma } from "@/lib/prisma";
+import { logAuditEvent } from "@/lib/audit";
 
 function adminErrorResponse(error: unknown) {
   if (error instanceof Error && error.message === "UNAUTHENTICATED") {
@@ -138,6 +139,13 @@ export async function PATCH(
             });
           }
         });
+
+        logAuditEvent({
+          action: "content_review.approve",
+          entityType: "ContentReview",
+          entityId: id,
+          actorId: actor.profile.id,
+        });
       } else if (action === "reject") {
         await prisma.$transaction(async (tx) => {
           const review = await tx.contentReview.update({
@@ -152,6 +160,13 @@ export async function PATCH(
             });
           }
         });
+
+        logAuditEvent({
+          action: "content_review.reject",
+          entityType: "ContentReview",
+          entityId: id,
+          actorId: actor.profile.id,
+        });
       } else {
         return fail({ code: "VALIDATION_ERROR", message: "Unsupported content review action." }, 400);
       }
@@ -160,6 +175,13 @@ export async function PATCH(
         await prisma.writingEvaluation.update({
           where: { id },
           data: { needsHumanReview: true },
+        });
+
+        logAuditEvent({
+          action: "writing_evaluation.flag",
+          entityType: "WritingEvaluation",
+          entityId: id,
+          actorId: actor.profile.id,
         });
       } else if (action === "set_band") {
         if (typeof parsed.band !== "number" || parsed.band < 0 || parsed.band > 9) {
@@ -173,6 +195,14 @@ export async function PATCH(
             status: "succeeded",
             needsHumanReview: false,
           },
+        });
+
+        logAuditEvent({
+          action: "writing_evaluation.set_band",
+          entityType: "WritingEvaluation",
+          entityId: id,
+          actorId: actor.profile.id,
+          metadata: { band: parsed.band },
         });
       } else {
         return fail({ code: "VALIDATION_ERROR", message: "Unsupported writing review action." }, 400);
@@ -183,6 +213,13 @@ export async function PATCH(
           where: { id },
           data: { needsHumanReview: true },
         });
+
+        logAuditEvent({
+          action: "speaking_evaluation.flag",
+          entityType: "SpeakingEvaluation",
+          entityId: id,
+          actorId: actor.profile.id,
+        });
       } else if (action === "set_band") {
         if (typeof parsed.band !== "number" || parsed.band < 0 || parsed.band > 9) {
           return fail({ code: "VALIDATION_ERROR", message: "Band must be a number from 0 to 9." }, 400);
@@ -195,6 +232,14 @@ export async function PATCH(
             status: "succeeded",
             needsHumanReview: false,
           },
+        });
+
+        logAuditEvent({
+          action: "speaking_evaluation.set_band",
+          entityType: "SpeakingEvaluation",
+          entityId: id,
+          actorId: actor.profile.id,
+          metadata: { band: parsed.band },
         });
       } else {
         return fail({ code: "VALIDATION_ERROR", message: "Unsupported speaking review action." }, 400);

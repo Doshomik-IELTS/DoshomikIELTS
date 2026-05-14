@@ -1,6 +1,7 @@
 import { fail, ok } from "@/lib/api/response";
 import { requireAdminActor } from "@/lib/auth/admin-api";
 import { prisma } from "@/lib/prisma";
+import { logAuditEvent } from "@/lib/audit";
 import { z } from "zod";
 
 const revokeSchema = z.object({
@@ -10,7 +11,12 @@ const revokeSchema = z.object({
 });
 
 export async function POST(request: Request) {
-  await requireAdminActor();
+  let actor;
+  try {
+    actor = await requireAdminActor();
+  } catch {
+    return fail({ code: "UNAUTHENTICATED", message: "Authentication required" }, 401);
+  }
 
   const body = await request.json().catch(() => null);
   const parsed = revokeSchema.safeParse(body);
@@ -32,6 +38,14 @@ export async function POST(request: Request) {
       type: "admin_revoke",
       description,
     },
+  });
+
+  logAuditEvent({
+    action: "credits.revoke",
+    entityType: "CreditLedger",
+    entityId: tx.id,
+    actorId: actor.profile.id,
+    metadata: { profileId, amount, description },
   });
 
   return ok(tx, { status: 201 });

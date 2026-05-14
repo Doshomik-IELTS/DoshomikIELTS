@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { ok, fail } from "@/lib/api/response";
 import { requireAdminActor } from "@/lib/auth/admin-api";
+import { logAuditEvent } from "@/lib/audit";
 import { z } from "zod";
 
 const updateCardSchema = z.object({
@@ -36,8 +37,9 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  let actor;
   try {
-    await requireAdminActor();
+    actor = await requireAdminActor();
   } catch (error) {
     if (error instanceof Error && error.message === "UNAUTHENTICATED") {
       return fail({ code: "UNAUTHENTICATED", message: "Authentication required" }, 401);
@@ -56,6 +58,15 @@ export async function PATCH(
     where: { id },
     data: parsed.data,
   });
+
+  logAuditEvent({
+    action: "flashcard_card.update",
+    entityType: "FlashCard",
+    entityId: id,
+    actorId: actor.profile.id,
+    metadata: { changes: parsed.data },
+  });
+
   return ok(card);
 }
 
@@ -63,8 +74,9 @@ export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  let actor;
   try {
-    await requireAdminActor();
+    actor = await requireAdminActor();
   } catch (error) {
     if (error instanceof Error && error.message === "UNAUTHENTICATED") {
       return fail({ code: "UNAUTHENTICATED", message: "Authentication required" }, 401);
@@ -74,5 +86,13 @@ export async function DELETE(
 
   const { id } = await params;
   await prisma.flashCard.delete({ where: { id } });
+
+  logAuditEvent({
+    action: "flashcard_card.delete",
+    entityType: "FlashCard",
+    entityId: id,
+    actorId: actor.profile.id,
+  });
+
   return ok({ deleted: true });
 }

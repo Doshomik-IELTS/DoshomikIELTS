@@ -4,6 +4,7 @@ import { hasRole } from "@/lib/auth/roles";
 import { requireCurrentUser } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
+import { mediaRateLimiter, withRateLimit } from "@/lib/rate-limit";
 
 const SPEAKING_TYPES = new Set(["audio/webm", "audio/mpeg", "audio/mp4", "audio/wav"]);
 const LISTENING_TYPES = new Set(["audio/mpeg", "audio/mp4", "audio/wav"]);
@@ -11,12 +12,22 @@ const DEFAULT_SIGNED_URL_TTL_SECONDS = 900;
 
 type UploadPurpose = "speaking_recording" | "listening_audio";
 
+const checkRateLimit = withRateLimit(mediaRateLimiter, (req: Request) => {
+  const userId = req.headers.get("x-user-id") ?? "unknown";
+  return userId;
+});
+
 export async function POST(request: Request) {
   let actor;
   try {
     actor = await requireCurrentUser();
   } catch {
     return fail({ code: "UNAUTHENTICATED", message: "Authentication required" }, 401);
+  }
+
+  const rateLimitResponse = await checkRateLimit(request);
+  if (rateLimitResponse) {
+    return rateLimitResponse;
   }
 
   let json: unknown;

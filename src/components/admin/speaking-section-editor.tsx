@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { apiFetch } from "@/lib/api/client";
+import type { SectionData } from "./section-list-editor";
 
 type CueCard = {
   part: "part_1" | "part_2" | "part_3";

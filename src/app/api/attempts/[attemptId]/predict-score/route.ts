@@ -1,6 +1,12 @@
 import { prisma } from "@/lib/prisma";
 import { requireCurrentUser } from "@/lib/auth/session";
 import { ok, fail } from "@/lib/api/response";
+import { predictionRateLimiter, withRateLimit } from "@/lib/rate-limit";
+
+const checkRateLimit = withRateLimit(predictionRateLimiter, (req: Request) => {
+  const userId = req.headers.get("x-user-id") ?? "unknown";
+  return userId;
+});
 
 export async function POST(request: Request, { params }: { params: Promise<{ attemptId: string }> }) {
   let actor;
@@ -8,6 +14,11 @@ export async function POST(request: Request, { params }: { params: Promise<{ att
     actor = await requireCurrentUser();
   } catch {
     return fail({ code: "UNAUTHENTICATED", message: "Authentication required" }, 401);
+  }
+
+  const rateLimitResponse = await checkRateLimit(request);
+  if (rateLimitResponse) {
+    return rateLimitResponse;
   }
 
   const { attemptId } = await params;

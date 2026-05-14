@@ -6,12 +6,20 @@ import {
 } from "@/lib/auth/dev-session";
 import { prisma } from "@/lib/prisma";
 import { fail, ok } from "@/lib/api/response";
+import { authRateLimiter, withRateLimit, getClientIp } from "@/lib/rate-limit";
 
 const isDevMode = process.env.NODE_ENV !== "production";
+
+const checkRateLimit = withRateLimit(authRateLimiter, getClientIp);
 
 export async function POST(request: Request) {
   if (!isDevMode) {
     return fail({ code: "FORBIDDEN", message: "Dev auth is only available in development." }, 403);
+  }
+
+  const rateLimitResponse = await checkRateLimit(request);
+  if (rateLimitResponse) {
+    return rateLimitResponse;
   }
 
   const body = (await request.json().catch(() => null)) as {

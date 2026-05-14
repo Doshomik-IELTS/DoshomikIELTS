@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { requireAdminActor } from "@/lib/auth/admin-api";
 import { ok, fail } from "@/lib/api/response";
+import { logAuditEvent } from "@/lib/audit";
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -79,8 +80,9 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 }
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  let actor;
   try {
-    await requireAdminActor();
+    actor = await requireAdminActor();
   } catch (error) {
     if (error instanceof Error && error.message === "UNAUTHENTICATED") {
       return fail({ code: "UNAUTHENTICATED", message: "Authentication required" }, 401);
@@ -130,6 +132,14 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     data: updateData,
   });
 
+  logAuditEvent({
+    action: "test.update",
+    entityType: "Test",
+    entityId: id,
+    actorId: actor.profile.id,
+    metadata: { title: updated.title, changes: updateData },
+  });
+
   return ok({
     id: updated.id,
     title: updated.title,
@@ -171,7 +181,17 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     }, 400);
   }
 
+  const actor = await requireAdminActor();
+
   await prisma.test.delete({ where: { id } });
+
+  logAuditEvent({
+    action: "test.delete",
+    entityType: "Test",
+    entityId: id,
+    actorId: actor.profile.id,
+    metadata: { title: test.title },
+  });
 
   return ok({ deleted: true });
 }
