@@ -1,6 +1,9 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { GraduationCap } from "lucide-react";
 import { LoginForm } from "./login-form";
+import { getCurrentUser } from "@/lib/auth/session";
+import { canAccessAdminRoutes } from "@/lib/auth/roles";
 
 export default function LoginPage({
   searchParams,
@@ -15,6 +18,11 @@ async function LoginScreen({
 }: {
   searchParams?: Promise<{ next?: string | string[] }>;
 }) {
+  const current = await getCurrentUser();
+  if (current) {
+    redirect(canAccessAdminRoutes(current.profile.roles) ? "/admin" : "/dashboard");
+  }
+
   const params = searchParams ? await searchParams : undefined;
   const nextPath = Array.isArray(params?.next) ? params?.next[0] : params?.next ?? "/dashboard";
 

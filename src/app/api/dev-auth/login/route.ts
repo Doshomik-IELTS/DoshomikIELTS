@@ -1,6 +1,6 @@
 import {
   createDevSessionToken,
-  devCredentialsMatch,
+  getDevCredentialRole,
   getDevAuthCookieName,
   getDevAuthSeedProfile,
 } from "@/lib/auth/dev-session";
@@ -29,9 +29,9 @@ export async function POST(request: Request) {
   } | null;
   const email = body?.email ?? "";
   const password = body?.password ?? "";
-  const role = body?.role === "admin" ? "admin" : "learner";
+  const role = getDevCredentialRole(email, password);
 
-  if (!devCredentialsMatch(email, password)) {
+  if (!role) {
     return fail({ code: "UNAUTHENTICATED", message: "Invalid demo credentials." }, 401);
   }
 
@@ -78,7 +78,7 @@ export async function POST(request: Request) {
 
   response.cookies.set({
     name: getDevAuthCookieName(),
-    value: createDevSessionToken({ email: profile.email, name: profile.name ?? seed.name }),
+    value: createDevSessionToken({ email: profile.email, name: profile.name ?? seed.name, role }),
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",

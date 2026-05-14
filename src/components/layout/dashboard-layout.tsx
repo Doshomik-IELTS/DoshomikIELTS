@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { SidebarNav } from "@/components/layout/sidebar-nav";
 import { BetaFeedback } from "@/components/feedback/beta-feedback";
+import { LogoutButton } from "@/components/auth/logout-button";
 
 const learnerNav: { label: string; href: string }[] = [
   { label: "Dashboard", href: "/dashboard" },
@@ -19,6 +20,9 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           IELTS++
         </Link>
         <SidebarNav items={learnerNav} />
+        <div className="mt-8">
+          <LogoutButton />
+        </div>
       </aside>
       <main className="md:pl-64">
         <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">{children}</div>

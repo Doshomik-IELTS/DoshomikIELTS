@@ -24,7 +24,7 @@ function isAuthRoute(pathname: string) {
   return authRoutes.some((route) => pathname === route || pathname.startsWith(route + "/"));
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (!isProtectedPath(pathname) && !isAdminPath(pathname) && !isAuthRoute(pathname)) {
@@ -33,11 +33,6 @@ export async function middleware(request: NextRequest) {
 
   const devToken = request.cookies.get(DEV_COOKIE_NAME)?.value;
   if (devToken) {
-    if (isAuthRoute(pathname)) {
-      const url = request.nextUrl.clone();
-      url.pathname = "/dashboard";
-      return NextResponse.redirect(url);
-    }
     return NextResponse.next();
   }
 
@@ -59,7 +54,9 @@ export async function middleware(request: NextRequest) {
       },
     });
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
     if (user) {
       if (isAuthRoute(pathname)) {

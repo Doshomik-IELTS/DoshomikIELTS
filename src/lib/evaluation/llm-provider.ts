@@ -20,6 +20,9 @@ export async function evaluateWithLLM(
     if (provider === "anthropic") {
       return await evaluateWithAnthropic(request);
     }
+    if (provider === "gemini") {
+      return await evaluateWithGemini(request);
+    }
     console.warn(`[evaluation] Unknown provider ${provider}, falling back to deterministic`);
     return evaluateWithDeterministicProvider(request);
   } catch (error) {
@@ -156,6 +159,83 @@ async function evaluateWithAnthropic(
     feedback: result.feedback,
     needsHumanReview: result.needsHumanReview ?? (result.overallBand < 4),
     provider: "anthropic",
+    model,
+    promptVersion: "ielts-rubric-v1",
+  };
+}
+
+async function evaluateWithGemini(
+  request: EvaluationRequest,
+): Promise<EvaluationProviderResult> {
+  const model = request.kind === "writing"
+    ? (process.env.LLM_MODEL_WRITING || "gemini-2.0-flash")
+    : (process.env.LLM_MODEL_SPEAKING || "gemini-2.0-flash-lite");
+
+  const systemPrompt = request.kind === "writing"
+    ? WRITING_SYSTEM_PROMPT
+    : SPEAKING_SYSTEM_PROMPT;
+
+  const userPrompt = request.kind === "writing"
+    ? WRITING_CRITIQUE_PROMPT
+      .replace("{{RESPONSE}}", request.responseText)
+      .replace("{{WORD_COUNT}}", String(request.wordCount ?? request.responseText.split(/\s+/).length))
+      .replace("{{TASK_TYPE}}", request.promptLabel)
+    : SPEAKING_CRITIQUE_PROMPT
+      .replace("{{RESPONSE}}", request.responseText)
+      .replace("{{WORD_COUNT}}", String(request.wordCount ?? request.responseText.split(/\s+/).length))
+      .replace("{{TASK_TYPE}}", request.promptLabel);
+
+  const apiKey = process.env.LLM_API_KEY || "";
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      contents: [
+        {
+          parts: [
+            { text: systemPrompt },
+            { text: userPrompt },
+          ],
+        },
+      ],
+      generationConfig: {
+        temperature: 0.3,
+        responseMimeType: "application/json",
+      },
+    }),
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`Gemini API error: ${response.status} ${error}`);
+  }
+
+  const data = await response.json() as {
+    candidates?: Array<{
+      content?: {
+        parts?: Array<{ text?: string }>;
+      };
+    }>;
+  };
+
+  const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
+  if (!content) {
+    throw new Error("Empty response from Gemini");
+  }
+
+  const parsed = JSON.parse(content);
+  const result = evaluationSchema.parse(parsed);
+
+  return {
+    overallBand: result.overallBand,
+    criteriaBands: result.criteriaBands,
+    feedback: result.feedback,
+    needsHumanReview: result.needsHumanReview ?? (result.overallBand < 4),
+    provider: "gemini",
     model,
     promptVersion: "ielts-rubric-v1",
   };

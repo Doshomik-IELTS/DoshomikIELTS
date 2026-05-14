@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
@@ -8,7 +7,6 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 const isDevAuthEnabled = process.env.NODE_ENV !== "production";
 
 export function LogoutButton() {
-  const router = useRouter();
   const [loading, setLoading] = useState(false);
 
   async function handleLogout() {
@@ -20,16 +18,15 @@ export function LogoutButton() {
         const supabase = createSupabaseBrowserClient();
         await supabase.auth.signOut();
       }
-      router.push("/login");
-      router.refresh();
+      window.location.assign("/login");
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <Button variant="outline" onClick={handleLogout} disabled={loading}>
-      {loading ? "Logging out..." : "Log out"}
+    <Button className="logout" variant="outline" onClick={handleLogout} disabled={loading}>
+      {loading ? "Logging out..." : "Logout"}
     </Button>
   );
 }

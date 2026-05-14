@@ -7,6 +7,7 @@ const COOKIE_NAME = "ieltspp-dev-session";
 export type DevSessionUser = {
   email: string;
   name: string;
+  role?: "learner" | "admin";
 };
 
 function secret() {
@@ -63,9 +64,21 @@ export async function readDevSession() {
 }
 
 export function devCredentialsMatch(email: string, password: string) {
-  const learnerMatch = email.trim().toLowerCase() === DEV_AUTH.email && password === DEV_AUTH.password;
-  const adminMatch = email.trim().toLowerCase() === DEV_ADMIN_AUTH.email && password === DEV_ADMIN_AUTH.password;
-  return learnerMatch || adminMatch;
+  return getDevCredentialRole(email, password) !== null;
+}
+
+export function getDevCredentialRole(email: string, password: string): "learner" | "admin" | null {
+  const normalizedEmail = email.trim().toLowerCase();
+
+  if (normalizedEmail === DEV_ADMIN_AUTH.email && password === DEV_ADMIN_AUTH.password) {
+    return "admin";
+  }
+
+  if (normalizedEmail === DEV_AUTH.email && password === DEV_AUTH.password) {
+    return "learner";
+  }
+
+  return null;
 }
 
 export function getDevAuthCookieName() {

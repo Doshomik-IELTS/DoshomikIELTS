@@ -1,9 +1,9 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Mail, Lock, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -22,7 +22,8 @@ export function LoginForm({
   nextPath: string;
   role?: "learner" | "admin";
 }) {
-  const router = useRouter();
+  const [isMounted, setIsMounted] = useState(false);
+  const redirectTarget = nextPath.startsWith("/") && !nextPath.startsWith("//") ? nextPath : "/dashboard";
   const {
     register,
     handleSubmit,
@@ -31,13 +32,12 @@ export function LoginForm({
     resolver: zodResolver(loginSchema),
   });
 
-  const loginMutation = useApiMutation<{ success: boolean }, LoginValues & { role?: string }>({
+  const loginMutation = useApiMutation<{ role?: "learner" | "admin" }, LoginValues & { role?: string }>({
     mutationKey: ["auth", "login"],
     endpoint: "/api/dev-auth/login",
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast.success("Logged in successfully");
-      router.push(nextPath);
-      router.refresh();
+      window.location.assign(data.role === "admin" && redirectTarget === "/dashboard" ? "/admin" : redirectTarget);
     },
     onError: (error) => {
       toast.error(error.message || "Login failed");
@@ -62,12 +62,15 @@ export function LoginForm({
     }
 
     toast.success("Logged in successfully");
-    router.push(nextPath);
-    router.refresh();
+    window.location.assign(redirectTarget);
   };
 
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   return (
-    <form className="space-y-5" onSubmit={(e) => { e.preventDefault(); handleSubmit(onSubmit)(e); }}>
+    <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
       <div className="space-y-2">
         <Label htmlFor="email" className="text-slate-300">
           Email
@@ -118,7 +121,7 @@ export function LoginForm({
       <Button
         type="submit"
         className="w-full bg-blue-600 hover:bg-blue-700"
-        disabled={loginMutation.isPending}
+        disabled={!isMounted || loginMutation.isPending}
       >
         {loginMutation.isPending ? (
           <>
