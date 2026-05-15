@@ -1,6 +1,10 @@
 # Mock Test Implementation Plan
 
-Last updated: 2026-05-10
+Last updated: 2026-05-16
+
+## Status: ✅ Core Mock Test Systems Implemented — Production Hardening In Progress
+
+All major mock test features are implemented: three test modes, full mock structure for all four IELTS modules, LLM generation pipeline scaffolding, evaluation pipeline with worker support, data model with scoring mappings, UX requirements for all module types, and release phases 1-3 largely complete. Phase 4 (full mock polish) is partially implemented with remaining work on weakness detection, timed/untimed toggle, reading notes, calibration dashboard, and production LLM/TTS workers.
 
 ## Research Baseline
 
@@ -37,6 +41,8 @@ IELTS++ should not claim official scoring. Every predicted score must be labeled
 > Unofficial estimate. Official IELTS results may differ.
 
 The product should simulate IELTS structure, timing, scoring logic, and feedback style while using original or licensed content only. LLM-created tests are allowed only after validation and review.
+
+For the admin CMS implementation details, including the current `/admin/tests/new` gaps, module-specific editor contracts, validation gates, and publish workflow, see [`content-management-system-implementation-plan.md`](content-management-system-implementation-plan.md).
 
 ## Test Modes
 
@@ -261,11 +267,11 @@ Confidence rules:
 - Medium: complete response, valid schema, no flags.
 - High: multiple consistent attempts and/or human-reviewed samples. Avoid high confidence in MVP unless explicitly reviewed.
 
-## Data Model Additions Required
+## Data Model Status
 
-Current schema is partial. The following additions are REQUIRED for full implementation:
+The schema now includes the core mock-test CMS and scoring primitives. Remaining model work is mostly hardening and analytics.
 
-### Test generation
+Implemented:
 
 - `TestGenerationJob` model:
   - module, testType, status (blueprint/generating/validating/review/published)
@@ -273,9 +279,8 @@ Current schema is partial. The following additions are REQUIRED for full impleme
   - blueprintJson, outputJson, validationJson, errorJson
   - createdById, reviewedById, timestamps
 
-- `Question.sourceSpanJson` (REPLACE existing sourceSpan String field):
-  - Replace: sourceSpan String
-  - With: sourceSpanJson Json for {startOffset, endOffset, excerpt, reference}
+- `Question.sourceSpanJson`:
+  - JSON support for `{startOffset, endOffset, excerpt, reference, visualUrl?, visualAlt?}`.
 
 - `TestSection.mediaAssetId`:
   - For listening section audio
@@ -283,7 +288,14 @@ Current schema is partial. The following additions are REQUIRED for full impleme
 - `TestSection.contentJson`:
   - Reading passage, listening transcript metadata, writing visual spec, speaking cue card
 
-### Evaluation
+- `QuestionGroup` and `Question.groupId`:
+  - IELTS-style grouped instructions and question blocks.
+
+- `TestVersion`, `Test.versionNumber`, and `Test.parentTestId`:
+  - Publish snapshots and duplicate-as-draft workflow.
+
+- `ScoreMapping`:
+  - Versioned raw-to-band mapping configuration.
 
 - `EvaluationCalibration` model:
   - provider, model, promptVersion
@@ -291,9 +303,12 @@ Current schema is partial. The following additions are REQUIRED for full impleme
   - averageDeviation
   - sampleSize
 
+Future optional additions:
+
 - `AttemptEvent` model (optional for MVP):
   - attemptId, eventType (autosave/section_opened/audio_started/etc)
   - metadataJson
+  - Needed for server-side strict Listening playback enforcement and richer analytics.
 
 ## UX Requirements
 
@@ -305,6 +320,7 @@ Current schema is partial. The following additions are REQUIRED for full impleme
 - Submitted/locked state.
 - Confirm before leaving with unsaved answers.
 - Review screen before final submission.
+- Unanswered-count warning before section submission.
 - No answer keys in client payload.
 - Accessibility: keyboard navigation and visible focus.
 
@@ -316,12 +332,23 @@ Current schema is partial. The following additions are REQUIRED for full impleme
 - Notes field optional.
 - Playback state persisted.
 
+Current status:
+
+- Strict one-play behavior is implemented in the browser UI for attached Listening audio.
+- Server-side `AttemptEvent` tracking is still required before using strict mode as anti-cheat enforcement.
+
 ### Reading UI
 
 - Split passage/questions layout on desktop.
 - Highlighting and notes.
 - Question navigation.
 - Mobile fallback: tabs between passage/questions.
+
+Current status:
+
+- Reading passages render side-by-side with questions on wide screens.
+- Source spans are highlighted from stored offsets or excerpt fallback.
+- Notes and passage/question mobile tabs remain future polish.
 
 ### Writing UI
 
@@ -465,9 +492,9 @@ Use IELTS rounding behavior: `.25` rounds up to next half, `.75` rounds up to ne
 
 ### Phase 1: Accurate objective modules
 
-- ✅ Complete reading/listening question renderers - Core APIs exist
-- ✅ Add answer normalization and word-limit validation - Implemented in submit-section
-- ✅ Add source-span explanations - Question.sourceSpanJson added to schema
+- ✅ Complete reading/listening question renderers - Shared IELTS renderer implemented
+- ✅ Add answer normalization and word-limit validation - Implemented when saving objective answers
+- ✅ Add source-span explanations - `Question.sourceSpanJson` added and rendered as highlights
 - ✅ Add raw-to-band mapping - ScoreMapping model implemented
 - ✅ Add tests proving answer keys never leak - P0 integration tests pass
 
@@ -482,23 +509,27 @@ Use IELTS rounding behavior: `.25` rounds up to next half, `.75` rounds up to ne
 
 ### Phase 3: LLM test generation
 
-- **NOT STARTED** - depends on Phase 1-2 completion
-- Add TestGenerationJob model (schema ready)
-- Add admin generation jobs API
-- Add validation pipeline
-- Add content review workflow
-- Add generated test versioning
-- Add prompt/version tracking
+- ✅ Add TestGenerationJob model
+- ✅ Add admin generation jobs API
+- ✅ Add local deterministic draft generation for workflow testing
+- ✅ Add reviewed output import-as-draft flow
+- ✅ Add content review workflow
+- ✅ Add generated/imported test validation through normal publish gate
+- ⏳ Add production LLM worker that fills `TestGenerationJob.outputJson`
+- ⏳ Add external provider prompt/version execution and retry handling
 
 ### Phase 4: Full mock polish
 
-- **NOT STARTED** - depends on Phase 1-3 completion
+- **PARTIALLY IMPLEMENTED**
 - Timed/untimed modes
-- Final review screen
+- Final review screen - ✅ Section-level review before submit implemented
 - Full attempt report - ✅ Done (API and UI implemented)
 - Weakness detection
 - Recommended practice queue
 - Analytics and score trajectory
+- Strict Listening one-play simulation - ✅ Browser UI implemented; server event hardening pending
+- Source-span highlighting - ✅ Implemented for Reading/Listening renderer
+- Drag-and-drop admin ordering - ✅ Implemented for sections, groups, and questions
 
 ## Immediate P0/P1 Tasks
 
@@ -511,15 +542,21 @@ Use IELTS rounding behavior: `.25` rounds up to next half, `.75` rounds up to ne
 - ✅ P0 integration tests - 12 tests passing
 - ✅ Add full attempt report - /api/attempts/[id]/report implemented
 - ✅ Speaking audio UI integration - Components: speaking-recorder.tsx, speaking-submission.tsx
+- ✅ Add source-highlighted learner Reading/Listening rendering
+- ✅ Add unanswered review before section submission
+- ✅ Add strict Listening simulation UI
 
 ### P1
 
 - ✅ Admin test list/create/edit UI - Complete
 - ✅ Admin test sections/questions editor - Sections CRUD + Question CRUD implemented
-- ⏳ Admin TestGenerationJob UI - Deferred to Phase 3
+- ✅ Admin TestGenerationJob UI - Job creation/review/import panels implemented
+- ✅ Structured scoring controls and bulk question paste
+- ✅ Admin validation-blocker dashboard counts
+- ✅ Mobile learner/admin navigation
 - ⏳ Weakness detection - Deferred to Phase 4
 - ⏳ Timed/untimed toggle - Deferred to Phase 4
-- ⏳ Highlighting and notes in reading - Deferred to Phase 4
-- ⏳ Listening strict one-play mode - Deferred to Phase 4
+- ✅ Highlighting in reading/listening - Implemented from stored source spans
+- ⏳ Notes in reading - Deferred to Phase 4
+- ✅ Listening strict one-play mode - Implemented in browser UI; server hardening pending
 - ⏳ Calibration dashboard comparing AI vs reviewer scores - Deferred to Phase 4
-

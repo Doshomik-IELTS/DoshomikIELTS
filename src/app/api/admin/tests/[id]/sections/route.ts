@@ -3,6 +3,8 @@ import { requireAdminActor } from "@/lib/auth/admin-api";
 import { ok, fail } from "@/lib/api/response";
 import { z } from "zod";
 import type { Prisma } from "@prisma/client";
+import { logAuditEvent } from "@/lib/audit";
+import { canEditTestContent, publishedMutationMessage } from "@/lib/tests/mutability";
 
 const createSectionSchema = z.object({
   title: z.string().min(1).max(255),
@@ -18,8 +20,9 @@ const createSectionSchema = z.object({
 const updateSectionSchema = createSectionSchema.partial();
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  let actor;
   try {
-    await requireAdminActor();
+    actor = await requireAdminActor();
   } catch (error) {
     if (error instanceof Error && error.message === "UNAUTHENTICATED") {
       return fail({ code: "UNAUTHENTICATED", message: "Authentication required" }, 401);
@@ -32,6 +35,10 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const test = await prisma.test.findUnique({ where: { id: testId } });
   if (!test) {
     return fail({ code: "NOT_FOUND", message: "Test not found" }, 404);
+  }
+  const editable = await canEditTestContent(testId);
+  if (!editable.ok) {
+    return fail({ code: "INVALID_STATE", message: publishedMutationMessage() }, 400);
   }
 
   const body = await request.json().catch(() => null);
@@ -62,6 +69,14 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     },
   });
 
+  await logAuditEvent({
+    action: "test_section.create",
+    entityType: "TestSection",
+    entityId: section.id,
+    actorId: actor.profile.id,
+    metadata: { testId, title: section.title, module: section.module },
+  });
+
   return ok({
     id: section.id,
     title: section.title,
@@ -77,8 +92,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 }
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  let actor;
   try {
-    await requireAdminActor();
+    actor = await requireAdminActor();
   } catch (error) {
     if (error instanceof Error && error.message === "UNAUTHENTICATED") {
       return fail({ code: "UNAUTHENTICATED", message: "Authentication required" }, 401);
@@ -98,6 +114,10 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   if (!section) {
     return fail({ code: "NOT_FOUND", message: "Section not found." }, 404);
   }
+  const editable = await canEditTestContent(testId);
+  if (!editable.ok) {
+    return fail({ code: "INVALID_STATE", message: publishedMutationMessage() }, 400);
+  }
 
   const body = await request.json().catch(() => null);
   const parsed = updateSectionSchema.safeParse(body);
@@ -115,6 +135,14 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     data: updateData,
   });
 
+  await logAuditEvent({
+    action: "test_section.update",
+    entityType: "TestSection",
+    entityId: updated.id,
+    actorId: actor.profile.id,
+    metadata: { testId, title: updated.title, module: updated.module },
+  });
+
   return ok({
     id: updated.id,
     title: updated.title,
@@ -129,8 +157,9 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 }
 
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  let actor;
   try {
-    await requireAdminActor();
+    actor = await requireAdminActor();
   } catch (error) {
     if (error instanceof Error && error.message === "UNAUTHENTICATED") {
       return fail({ code: "UNAUTHENTICATED", message: "Authentication required" }, 401);
@@ -153,8 +182,20 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
   if (!section) {
     return fail({ code: "NOT_FOUND", message: "Section not found." }, 404);
   }
+  const editable = await canEditTestContent(testId);
+  if (!editable.ok) {
+    return fail({ code: "INVALID_STATE", message: publishedMutationMessage() }, 400);
+  }
 
   await prisma.testSection.delete({ where: { id: sectionId } });
+
+  await logAuditEvent({
+    action: "test_section.delete",
+    entityType: "TestSection",
+    entityId: sectionId,
+    actorId: actor.profile.id,
+    metadata: { testId, title: section.title, module: section.module },
+  });
 
   return ok({ deleted: true });
 }

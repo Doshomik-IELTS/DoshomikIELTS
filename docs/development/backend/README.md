@@ -7,8 +7,10 @@ The IELTS++ backend powers an owned IELTS resource and mock-test platform. It su
 ## Code Quality Status
 
 - **TypeScript**: ✅ `pnpm typecheck` passes
-- **Lint**: ⚠️ 0 errors, 30 warnings (pre-existing unused imports - non-blocking)
-- **API Implementation**: 63 route files with 86 HTTP endpoints implemented
+- **Lint**: ✅ 0 errors (warnings are pre-existing unused imports - non-blocking)
+- **API Implementation**: 100+ route files with 100+ HTTP endpoints implemented
+- **Next.js**: 16.2.6 | React: 19.2.4 | Prisma: 6.19.3 | Zod: 4.4.3
+- **Tests**: ✅ `pnpm test:p0` passes (38/38)
 
 ## Implementation status (HTTP APIs)
 
@@ -54,12 +56,15 @@ The IELTS++ backend powers an owned IELTS resource and mock-test platform. It su
 | `GET` | `/api/referrals/me/credits` | ✅ Done | Learner's credit balance. |
 | `GET` | `/api/credits` | ✅ Done | Credit summary. |
 | `GET` | `/api/credits/ledger` | ✅ Done | Credit transaction history. |
+| `GET` | `/api/feedback` | ✅ Done | Admin: list beta feedback. |
+| `POST` | `/api/feedback` | ✅ Done | Submit beta feedback (any auth user). |
 | `POST` | `/api/media/upload-url` | ✅ Done | Signed upload URL for speaking audio. |
 | `GET` | `/api/media/[assetId]/download-url` | ✅ Done | Signed download URL. |
 | `GET` | `/api/admin/resources` | ✅ Done | Admin resource list. |
 | `POST` | `/api/admin/resources` | ✅ Done | Create resource. |
 | `GET` | `/api/admin/resources/[id]` | ✅ Done | Get resource. |
 | `PATCH` | `/api/admin/resources/[id]` | ✅ Done | Update resource. |
+| `POST` | `/api/admin/resources/[id]/publish` | ✅ Done | Explicit publish action with role check and version snapshot. |
 | `DELETE` | `/api/admin/resources/[id]` | ✅ Done | Delete resource. |
 | `GET` | `/api/admin/stats` | ✅ Done | Dashboard counts. |
 | `GET` | `/api/admin/tests` | ✅ Done | List tests. |
@@ -67,12 +72,15 @@ The IELTS++ backend powers an owned IELTS resource and mock-test platform. It su
 | `GET` | `/api/admin/tests/[id]` | ✅ Done | Get test with questions. |
 | `PATCH` | `/api/admin/tests/[id]` | ✅ Done | Update test. |
 | `DELETE` | `/api/admin/tests/[id]` | ✅ Done | Delete test. |
+| `POST` | `/api/admin/tests/[id]/validate` | ✅ Done | Validate CMS readiness before publish. |
+| `POST` | `/api/admin/tests/[id]/publish` | ✅ Done | Validate and publish atomically. |
+| `POST` | `/api/admin/tests/[id]/duplicate` | ✅ Done | Duplicate test as editable draft. |
 | `POST` | `/api/admin/tests/[id]/sections` | ✅ Done | Create test section. |
 | `GET` | `/api/admin/tests/[id]/sections` | ✅ Done | List test sections. |
 | `GET` | `/api/admin/reviews` | ✅ Done | Combined content/writing/speaking review queue. |
 | `GET` | `/api/admin/reviews/[id]` | ✅ Done | Review detail. |
 | `PATCH` | `/api/admin/reviews/[id]` | ✅ Done | Review actions for content and evaluation review. |
-| `POST` | `/api/admin/questions` | ✅ Done | Create question with answer key. |
+| `POST` | `/api/admin/questions` | ✅ Done | Create question with answer key and optional source span. |
 | `GET` | `/api/admin/questions/[id]` | ✅ Done | Get question details. |
 | `PATCH` | `/api/admin/questions/[id]` | ✅ Done | Update question. |
 | `DELETE` | `/api/admin/questions/[id]` | ✅ Done | Delete question. |
@@ -92,6 +100,22 @@ The IELTS++ backend powers an owned IELTS resource and mock-test platform. It su
 | `GET` | `/api/admin/referrals/credits` | ✅ Done | Credits overview. |
 | `POST` | `/api/admin/referrals/credits` | ✅ Done | Issue credits. |
 | `POST` | `/api/admin/referrals/credits/revoke` | ✅ Done | Revoke credits. |
+| `GET` | `/api/admin/media` | ✅ Done | List media assets with search/filter. |
+| `POST` | `/api/admin/media` | ✅ Done | Create media asset record. |
+| `PATCH` | `/api/admin/media/[id]` | ✅ Done | Update media asset metadata. |
+| `POST` | `/api/admin/generation/tests` | ✅ Done | Create test generation job. |
+| `GET` | `/api/admin/generation/tests/[id]` | ✅ Done | Get generation job detail. |
+| `PATCH` | `/api/admin/generation/tests/[id]` | ✅ Done | Update generation job status/output. |
+| `POST` | `/api/admin/generation/tests/[id]/generate-draft` | ✅ Done | Trigger LLM test generation. |
+| `POST` | `/api/admin/generation/tests/[id]/import-draft` | ✅ Done | Import generated draft. |
+| `GET` | `/api/admin/question-groups` | ✅ Done | List question groups by section. |
+| `POST` | `/api/admin/question-groups` | ✅ Done | Create question group. |
+| `GET` | `/api/admin/question-groups/[id]` | ✅ Done | Get question group detail. |
+| `PATCH` | `/api/admin/question-groups/[id]` | ✅ Done | Update question group. |
+| `DELETE` | `/api/admin/question-groups/[id]` | ✅ Done | Delete question group. |
+| `POST` | `/api/admin/question-groups/reorder` | ✅ Done | Reorder question groups. |
+| `GET` | `/api/admin/referrals/config` | ✅ Done | Get referral config. |
+| `POST` | `/api/admin/referrals/config` | ✅ Done | Create/update referral config. |
 | `POST` | `/api/dev-auth/login` | ✅ Done | Dev session login. |
 | `POST` | `/api/dev-auth/logout` | ✅ Done | Dev session logout. |
 | `POST` | `/api/dev-auth/register` | ✅ Done | Dev session registration. |
@@ -119,23 +143,27 @@ The IELTS++ backend powers an owned IELTS resource and mock-test platform. It su
 - Media storage: Supabase Storage.
 - Queue: BullMQ.
 - Queue broker: Redis.
-- LLM/transcription: configurable provider service layer (OpenAI/Anthropic + deterministic fallback).
+- LLM/transcription: configurable provider service layer (OpenAI/Anthropic/Gemini + deterministic fallback).
+- Error tracking: Sentry (optional).
 
 ## Main Backend Modules
 
 1. Auth and profile
-2. Resource library (with bookmark/save)
+2. Resource library (with bookmark/save, prerequisites, progression ordering)
 3. Progress tracking and achievements
 4. Spaced-repetition flashcards (SM-2 algorithm)
 5. Practice attempts
-6. Mock test engine (with per-section timers)
+6. Mock test engine (with per-section timers, question groups)
 7. Reading/listening scoring
 8. Writing/speaking evaluation (LLM + deterministic)
 9. Score prediction
 10. Referral and credits system
-11. Media upload/download
+11. Media upload/download (with admin media management)
 12. Background jobs
 13. Security, audit, and compliance
+14. Beta feedback collection
+15. LLM-powered test generation pipeline
+16. Question group management
 
 ## Build Order
 
@@ -143,19 +171,22 @@ The IELTS++ backend powers an owned IELTS resource and mock-test platform. It su
 2. Prisma schema and migrations.
 3. Profile APIs.
 4. Resource read APIs.
-5. Progress tracking APIs.
+5. Progress tracking APIs (with prerequisites and progression ordering).
 6. Flashcard system (decks, cards, SM-2 review).
 7. Practice attempt APIs.
-8. Mock test attempt APIs.
+8. Mock test attempt APIs (with question groups, per-section timers).
 9. Objective scoring for reading/listening.
 10. Async writing/speaking evaluation submission APIs.
 11. Full-test score prediction.
 12. Referral and credits system.
 13. Basic admin/reviewer protection and admin CRUD.
 14. Flashcard admin CRUD.
-15. Media upload/download signed URL APIs.
+15. Media upload/download signed URL APIs + admin media management.
 16. BullMQ worker handlers and deterministic provider.
-17. Production LLM/transcription provider integration.
+17. Production LLM/transcription provider integration (OpenAI/Anthropic/Gemini).
+18. Beta feedback collection APIs.
+19. LLM-powered test generation pipeline.
+20. Question group management APIs.
 
 ## Important Product Rules
 
@@ -176,32 +207,47 @@ The backend MVP is **medium-to-high complexity** because it combines authenticat
    - Section submission must not duplicate scores or expose answer keys.
    - Per-section timers require `durationMinutes` on each `TestSection`.
    - Final score prediction must be blocked until all four module scores exist.
+   - Question groups organize related questions within sections.
+   - `timeSpentSeconds` and `lastActiveAt` track attempt timing.
 
 2. **Async AI evaluation**
-   - Writing and Speaking evaluation should run through BullMQ jobs.
-   - LLM output must be validated before saving.
-   - Jobs need clear `queued`, `processing`, `succeeded`, `failed`, and `needs_review` states.
+   - Writing and Speaking evaluation run through BullMQ jobs.
+   - LLM output validated against Zod schemas before saving.
+   - Jobs have clear `queued`, `processing`, `succeeded`, `failed`, and `needs_review` states.
+   - Auto-completes attempt when all 4 modules have scores.
 
 3. **Speaking audio workflow**
-   - Recordings must use private Supabase Storage buckets.
-   - Upload/download must use signed URLs.
+   - Recordings use private Supabase Storage buckets.
+   - Upload/download use signed URLs.
    - Transcription and pronunciation analysis are optional/async.
-   - Text response should remain available as a fallback.
+   - Text response remains available as fallback.
 
 4. **Spaced repetition (SM-2)**
    - Card review logs track ease factor, interval, and next review date.
    - Profile tracks streak and longest streak.
    - Study sessions filter cards by `nextReview <= now`.
+   - Cards have tags and difficulty levels.
 
 5. **Referral and credits**
-   - Referral codes with configurable rewards.
-   - Credit ledger tracks all credit transactions.
+   - Referral codes with configurable rewards via `ReferralConfig` singleton.
+   - Credit ledger tracks all credit transactions with typed `CreditTxType`.
    - Redemption unlocks premium content.
+   - Supports `on_signup` and `on_first_purchase` reward triggers.
 
-6. **Content safety**
+6. **Resource progression**
+   - `ResourcePrerequisite` model enables locked content chains.
+   - `ResourceProgress` tracks per-resource completion (0-100%).
+   - `orderIndex` on resources enables ordered learning paths.
+
+7. **Content safety**
    - Listening content must include source/license metadata.
    - Generated content should not auto-publish.
    - Cambridge/commercial IELTS material must not be stored.
+
+8. **LLM test generation**
+   - `TestGenerationJob` tracks blueprint → generating → validating → review → published pipeline.
+   - Admin can generate drafts via LLM and import them.
+   - `TestVersion` snapshots track test revisions.
 
 ### Complexity-Based Backend Priorities
 
@@ -213,6 +259,7 @@ The backend MVP is **medium-to-high complexity** because it combines authenticat
 - Keep score prediction blocked until all required module scores exist.
 - Keep answer keys out of learner APIs.
 - Keep private media upload/download signed URL APIs ownership-checked.
+- Keep rate limiting active on auth, submission, evaluation, and media endpoints.
 
 #### P1 — Build If Stable
 
@@ -223,6 +270,8 @@ The backend MVP is **medium-to-high complexity** because it combines authenticat
 - Listening audio license metadata validation.
 - Audit logs for content/review actions.
 - Streak and achievement unlock logic.
+- Resource prerequisite/progression UI integration.
+- Beta feedback admin review workflow.
 
 #### P2 — Defer If Timeline Is Tight
 
@@ -231,6 +280,8 @@ The backend MVP is **medium-to-high complexity** because it combines authenticat
 - AI tutor/chat backend.
 - Human expert review marketplace.
 - Payments/subscriptions.
+- Full LLM test generation pipeline (currently scaffolded).
+- Question group reordering UI.
 
 ### Backend Risk Mitigation
 

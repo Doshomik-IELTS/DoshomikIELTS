@@ -46,6 +46,7 @@ export async function GET(request: Request) {
       select: {
         id: true,
         title: true,
+        description: true,
         type: true,
         status: true,
         estimatedDurationMinutes: true,
@@ -115,11 +116,12 @@ export async function POST(request: Request) {
 
   const body = json as {
     title?: string;
+    description?: string | null;
     type?: string;
     estimatedDurationMinutes?: number;
     sections?: SectionInput[];
   };
-  const { title, type, estimatedDurationMinutes, sections } = body;
+  const { title, description, type, estimatedDurationMinutes, sections } = body;
 
   if (!title) {
     return fail({ code: "VALIDATION_ERROR", message: "Title is required" }, 400);
@@ -128,6 +130,7 @@ export async function POST(request: Request) {
   const test = await prisma.test.create({
     data: {
       title,
+      description: description || null,
       type: (type as "practice" | "short_mock" | "full_mock") || "short_mock",
       estimatedDurationMinutes: estimatedDurationMinutes || null,
       status: "draft",
@@ -160,6 +163,7 @@ export async function POST(request: Request) {
   return ok({
     id: test.id,
     title: test.title,
+    description: test.description,
     type: test.type,
     status: test.status,
     createdAt: test.createdAt,

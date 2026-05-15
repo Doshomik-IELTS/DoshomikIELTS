@@ -80,6 +80,8 @@ Routes:
 - `/admin/tests`
 - `/admin/tests/new`
 - `/admin/tests/[id]`
+- `/admin/tests/[id]/builder` - Visual test builder with section editors
+- `/admin/tests/[id]/preview` - Preview test as learner would see it
 
 Features implemented:
 
@@ -91,6 +93,14 @@ Features implemented:
 - Status management: draft, review, published, archived.
 - **Section management** - Add sections to tests (`/admin/tests/[id]`).
 - **Question management** - Create questions with answer keys.
+- **Question groups** - Group related questions with shared instructions.
+- **Visual test builder** - Full section-by-section editing at `/admin/tests/[id]/builder`.
+- **Test preview** - Preview test at `/admin/tests/[id]/preview`.
+- **Section editors** - Module-specific editors for reading, listening, writing, speaking.
+- **Media asset picker** - Select listening audio from media library.
+- **Test generation panel** - LLM-powered test generation UI.
+- **Test import panel** - Import test from external source.
+- **Advanced tools** - Duplicate, validate, publish actions.
 
 Admin components:
 
@@ -98,6 +108,19 @@ Admin components:
 - `TestDetailEditor` - Test detail with sections view
 - `TestSectionEditor` - Section management UI
 - `QuestionEditor` - Question create/edit with answer key support
+- `QuestionGroupEditor` - Question group create/edit with shared instructions
+- `QuestionListEditor` - List of questions within a group/section
+- `SectionListEditor` - Ordered list of test sections
+- `ReadingSectionEditor` - Reading-specific section editor with passage
+- `ListeningSectionEditor` - Listening-specific section editor with audio
+- `WritingSectionEditor` - Writing-specific section editor with task config
+- `SpeakingSectionEditor` - Speaking-specific section editor with part config
+- `ReadingQuickAuthoringPanel` - Quick authoring for reading sections
+- `ListeningQuickAuthoringPanel` - Quick authoring for listening sections
+- `TestGenerationPanel` - LLM-powered test generation UI
+- `TestImportPanel` - Import test from external source
+- `TestAdvancedTools` - Advanced test management tools (duplicate, validate, publish)
+- `MediaAssetPicker` - Select media assets for listening audio
 
 ## Flashcard Admin
 
@@ -149,6 +172,19 @@ Implemented in `src/components/admin/`:
 | `TestDetailEditor` | Test detail with sections |
 | `TestSectionEditor` | Section management |
 | `QuestionEditor` | Question with answer key |
+| `QuestionGroupEditor` | Question group with shared instructions |
+| `QuestionListEditor` | Question list within group/section |
+| `SectionListEditor` | Ordered test sections |
+| `ReadingSectionEditor` | Reading section with passage |
+| `ListeningSectionEditor` | Listening section with audio |
+| `WritingSectionEditor` | Writing section with task config |
+| `SpeakingSectionEditor` | Speaking section with part config |
+| `ReadingQuickAuthoringPanel` | Quick reading authoring |
+| `ListeningQuickAuthoringPanel` | Quick listening authoring |
+| `TestGenerationPanel` | LLM test generation |
+| `TestImportPanel` | Test import |
+| `TestAdvancedTools` | Duplicate/validate/publish |
+| `MediaAssetPicker` | Media asset selection |
 
 ## Copyright Safety Warnings
 

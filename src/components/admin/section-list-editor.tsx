@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { apiFetch } from "@/lib/api/client";
 import type { IeltsModule } from "@prisma/client";
 import { IELTS_MODULES, MODULE_DEFAULT_DURATION } from "@/lib/tests/ielts-types";
+import type { QuestionGroupData } from "./question-list-editor";
 
 export type SectionData = {
   id: string;
@@ -20,6 +21,7 @@ export type SectionData = {
   questionCount: number;
   contentJson: Record<string, unknown> | null;
   mediaAssetId: string | null;
+  groups?: QuestionGroupData[];
 };
 
 type SectionEditorProps = {
@@ -38,6 +40,7 @@ export function SectionListEditor({ testId, sections, onSectionsChange }: Sectio
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<EditingSection>({});
   const [saving, setSaving] = useState(false);
+  const [draggedSectionId, setDraggedSectionId] = useState<string | null>(null);
 
   async function addSection() {
     if (!newTitle.trim()) return;
@@ -89,6 +92,52 @@ export function SectionListEditor({ testId, sections, onSectionsChange }: Sectio
     } catch (e) {
       console.error("Failed to delete section:", e);
     }
+  }
+
+  async function moveSection(sectionId: string, direction: -1 | 1) {
+    const currentIndex = sections.findIndex((section) => section.id === sectionId);
+    const nextIndex = currentIndex + direction;
+    if (currentIndex < 0 || nextIndex < 0 || nextIndex >= sections.length) return;
+    const next = [...sections];
+    const [moved] = next.splice(currentIndex, 1);
+    next.splice(nextIndex, 0, moved);
+    const reordered = next.map((section, index) => ({ ...section, orderIndex: index }));
+    onSectionsChange?.(reordered);
+    try {
+      await apiFetch(`/api/admin/tests/${testId}/sections/reorder`, {
+        method: "PATCH",
+        body: JSON.stringify({ sectionIds: reordered.map((section) => section.id) }),
+      });
+    } catch (e) {
+      console.error("Failed to reorder sections:", e);
+      onSectionsChange?.(sections);
+    }
+  }
+
+  async function reorderSections(next: SectionData[]) {
+    const reordered = next.map((section, index) => ({ ...section, orderIndex: index }));
+    onSectionsChange?.(reordered);
+    try {
+      await apiFetch(`/api/admin/tests/${testId}/sections/reorder`, {
+        method: "PATCH",
+        body: JSON.stringify({ sectionIds: reordered.map((section) => section.id) }),
+      });
+    } catch (e) {
+      console.error("Failed to reorder sections:", e);
+      onSectionsChange?.(sections);
+    }
+  }
+
+  async function dropSection(targetSectionId: string) {
+    if (!draggedSectionId || draggedSectionId === targetSectionId) return;
+    const from = sections.findIndex((section) => section.id === draggedSectionId);
+    const to = sections.findIndex((section) => section.id === targetSectionId);
+    if (from < 0 || to < 0) return;
+    const next = [...sections];
+    const [moved] = next.splice(from, 1);
+    next.splice(to, 0, moved);
+    setDraggedSectionId(null);
+    await reorderSections(next);
   }
 
   function startEdit(section: SectionData) {
@@ -153,7 +202,14 @@ export function SectionListEditor({ testId, sections, onSectionsChange }: Sectio
       ) : (
         <div className="space-y-3">
           {sections.map((section, idx) => (
-            <div key={section.id} className="rounded-lg border border-slate-200 bg-white">
+            <div
+              key={section.id}
+              draggable={editingId !== section.id}
+              onDragStart={() => setDraggedSectionId(section.id)}
+              onDragOver={(event) => event.preventDefault()}
+              onDrop={() => dropSection(section.id)}
+              className={`rounded-lg border border-slate-200 bg-white ${draggedSectionId === section.id ? "ring-2 ring-blue-200" : ""}`}
+            >
               {editingId === section.id ? (
                 <div className="space-y-3 p-4">
                   <h4 className="font-medium text-slate-700">Edit: {section.title}</h4>
@@ -212,6 +268,8 @@ export function SectionListEditor({ testId, sections, onSectionsChange }: Sectio
                     </div>
                   </div>
                   <div className="flex gap-2">
+                    <Button variant="outline" size="sm" onClick={() => moveSection(section.id, -1)} disabled={idx === 0}>Up</Button>
+                    <Button variant="outline" size="sm" onClick={() => moveSection(section.id, 1)} disabled={idx === sections.length - 1}>Down</Button>
                     <Button variant="outline" size="sm" onClick={() => startEdit(section)}>Edit</Button>
                     <Button variant="ghost" size="sm" onClick={() => deleteSection(section.id)} className="text-red-600">Delete</Button>
                   </div>

@@ -138,6 +138,12 @@ export async function PATCH(
               data: { status: ContentStatus.published, publishedAt: new Date() },
             });
           }
+          if (review.contentType === "test") {
+            await tx.test.update({
+              where: { id: review.contentId },
+              data: { status: ContentStatus.published, publishedAt: new Date() },
+            });
+          }
         });
 
         logAuditEvent({
@@ -155,6 +161,12 @@ export async function PATCH(
 
           if (review.contentType === "resource") {
             await tx.resource.update({
+              where: { id: review.contentId },
+              data: { status: ContentStatus.draft },
+            });
+          }
+          if (review.contentType === "test") {
+            await tx.test.update({
               where: { id: review.contentId },
               data: { status: ContentStatus.draft },
             });

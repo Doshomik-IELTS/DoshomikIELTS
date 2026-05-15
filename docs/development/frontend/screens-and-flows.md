@@ -4,15 +4,16 @@
 
 1. Visitor lands on homepage.
 2. Visitor registers or logs in.
-3. Learner completes profile.
-4. Learner studies resources.
-5. Learner completes focused practice.
-6. Learner starts mock test.
-7. Learner submits Listening and Reading sections.
-8. Learner submits Writing and Speaking responses.
-9. Learner waits for async evaluation.
-10. Learner views final score prediction after all modules complete.
-11. Learner returns to dashboard for next actions.
+3. Learner sees welcome/onboarding page (`/welcome`).
+4. Learner completes profile.
+5. Learner studies resources.
+6. Learner completes focused practice.
+7. Learner starts mock test.
+8. Learner submits Listening and Reading sections.
+9. Learner submits Writing and Speaking responses.
+10. Learner waits for async evaluation.
+11. Learner views final score prediction after all modules complete.
+12. Learner returns to dashboard for next actions.
 
 ## Public Landing Page
 
@@ -27,6 +28,27 @@ Sections:
   - Score prediction.
 - Copyright-safe original content message.
 - CTA to register.
+
+## Changelog Page
+
+Route: `/changelog`
+
+Sections:
+
+- Product update history.
+- Version/release entries with dates.
+- Feature additions, improvements, and fixes.
+- Reverse chronological order.
+
+## Welcome Page
+
+Route: `/welcome`
+
+Purpose:
+
+- Onboarding screen for new users.
+- Quick introduction to platform features.
+- CTA to complete profile or start learning.
 
 ## Auth Screens
 
@@ -269,6 +291,20 @@ Show:
 - Confidence (low/medium/high).
 - Disclaimer.
 - Link to detailed report (`/attempts/[id]/report`).
+
+## Evaluation Detail Flow
+
+Route: `/evaluations/[id]`
+
+Show:
+
+- Evaluation type (writing/speaking).
+- Status badge (queued/processing/succeeded/failed/needs_review).
+- Polling indicator while queued/processing.
+- For succeeded: criteria bands, overall band, feedback, strengths, weaknesses.
+- For failed: error message and retry option.
+- For needs_review: human review pending message.
+- Unofficial estimate disclaimer.
 
 ## Admin Flow
 

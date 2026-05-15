@@ -2,7 +2,7 @@
 
 ## Queue Stack
 
-Use BullMQ with Redis.
+Use BullMQ with Redis (via `ioredis`).
 
 Jobs should be used for long-running, expensive, or failure-prone work so learner submissions return quickly.
 
@@ -10,17 +10,29 @@ Jobs should be used for long-running, expensive, or failure-prone work so learne
 
 - Queue names are defined in `src/lib/queue/names.ts`.
 - Redis connection is defined in `src/lib/queue/connection.ts` and requires `REDIS_URL`.
-- `src/workers/index.ts` starts BullMQ workers for all queue names.
+- `src/workers/index.ts` starts BullMQ workers for all 6 queue names.
 - Writing/speaking evaluation endpoints create queued linked `LlmJob` rows in Postgres and enqueue BullMQ jobs when `REDIS_URL` is configured.
 - Writing/speaking worker handlers process jobs through `src/lib/evaluation/processors.ts`.
-- `src/lib/evaluation/provider.ts` selects between deterministic local provider (for MVP/testing) and production LLM provider based on environment configuration.
-- Production LLM provider (`src/lib/evaluation/llm-provider.ts`) supports OpenAI and Anthropic with Zod schema validation (`src/lib/evaluation/schemas.ts`).
-- When `LLM_PROVIDER` and `LLM_API_KEY` are set, the system uses the production provider; otherwise falls back to deterministic provider.
+- `src/lib/evaluation/provider.ts` selects between deterministic local provider (for MVP/testing) and production LLM provider (OpenAI/Anthropic/Gemini) based on environment configuration.
+- Worker auto-completes `MockTestAttempt` when all 4 module scores are present.
 
-**Current worker capabilities:**
-- Writing evaluation (Task 1 and Task 2)
-- Speaking evaluation (with text or transcript)
+**Defined queue names (6 total):**
+
+| Queue Name | Status |
+|---|---|
+| `writing-evaluation` | ✅ Worker implemented |
+| `speaking-transcription` | ⚠️ Queue defined, worker not implemented |
+| `speaking-evaluation` | ✅ Worker implemented |
+| `score-prediction` | ⚠️ Queue defined, worker not implemented |
+| `content-validation` | ⚠️ Queue defined, worker not implemented |
+| `media-processing` | ⚠️ Queue defined, worker not implemented |
+
+**Current worker capabilities (2 of 6 queues):**
+- Writing evaluation (Task 1 and Task 2) — processes `LlmJob` via `processLlmJob()`
+- Speaking evaluation (with text or transcript) — processes `LlmJob` via `processLlmJob()`
 - Auto-completion of mock test attempts when all modules are scored
+
+**Note:** The worker (`src/workers/index.ts`) only processes `writing-evaluation` and `speaking-evaluation` queues. The other 4 queues (`speaking-transcription`, `score-prediction`, `content-validation`, `media-processing`) are defined but their handlers are not yet implemented in the worker.
 
 ## Provider Selection
 
@@ -35,31 +47,24 @@ The system supports two evaluation providers:
 
 ### Production LLM Provider
 - Location: `src/lib/evaluation/llm-provider.ts`
-- Supports OpenAI and Anthropic models
+- Supports OpenAI, Anthropic, and Gemini models
 - Requires `LLM_PROVIDER` and `LLM_API_KEY` environment variables
 - Uses Zod schema validation for output (`src/lib/evaluation/schemas.ts`)
 - Activated when both `LLM_PROVIDER` and `LLM_API_KEY` are set
 
-**Environment Variables:**
-```bash
-# For production LLM
-LLM_PROVIDER=openai  # or 'anthropic'
-LLM_API_KEY=sk-...
-OPENAI_BASE_URL=...  # optional, for proxy/custom endpoints
-ANTHROPIC_BASE_URL=...  # optional, for proxy/custom endpoints
-
-# For Redis queue (required for async processing)
-REDIS_URL=redis://...
+**Enqueue Configuration:**
+```typescript
+// src/lib/queue/enqueue.ts
+// Exponential backoff: 3 attempts, 5s initial delay
+{ attempts: 3, backoff: { type: "exponential", delay: 5000 } }
 ```
 
 ## Evaluation Calibration
 
 The system tracks LLM evaluation accuracy via the `EvaluationCalibration` model:
 
-- Located in `src/lib/evaluation/calibration.ts`
 - Stores provider, model, prompt version, average deviation from human scores, and sample size
 - Enables tracking of evaluation quality over time
-- New in v1 (2026-05-10)
 
 ## Job Statuses
 
@@ -141,10 +146,12 @@ Responsibilities:
 
 ## Retry Rules
 
-Recommended defaults:
+Current implementation (from `src/lib/queue/enqueue.ts`):
 
+- **Max attempts:** 3
+- **Backoff strategy:** Exponential
+- **Initial delay:** 5000ms (5 seconds)
 - Retry transient provider/network failures.
-- Use exponential backoff.
 - Cap retries to prevent runaway cost.
 - Mark permanent validation problems as `failed`.
 - Mark suspicious or ambiguous evaluation results as `needs_review`.
@@ -161,6 +168,12 @@ Admin/reviewer behavior:
 
 - Failed jobs should be searchable.
 - `needs_review` jobs should expose input, output, and reason for review.
+
+### Auto-Completion
+
+When both writing and speaking evaluations complete successfully, the worker checks if all 4 module scores exist. If so, it automatically:
+1. Sets `MockTestAttempt.status` to `completed`
+2. Sets `MockTestAttempt.completedAt` to current timestamp
 
 ## LLM Provider Layer
 

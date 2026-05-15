@@ -2,44 +2,65 @@
 
 This folder contains implementation-focused documentation for building the IELTS++ MVP.
 
-## Current Implementation Status (2026-05-10)
+## Current Implementation Status (2026-05-16)
 
-### ✅ Completed APIs
+### ✅ All Major Features Implemented
+
+The IELTS++ platform has completed its core MVP feature set. All learner-facing features, admin workflows, and content management systems are implemented. Current focus is on production hardening.
+
+### ✅ Completed APIs (100+ endpoints)
 - **Auth**: `/api/me`, `/api/profile`, dev-auth endpoints
 - **Resources**: `/api/resources`, `/api/resources/[id]`, `/api/resources/[id]/save`
-- **Dashboard**: `/api/dashboard`
+- **Dashboard**: `/api/dashboard` (with streak/achievements)
+- **Progress & Achievements**: `/api/progress`, `/api/progress/[resourceId]`, `/api/progress/check-unlock`, `/api/achievements`
+- **Flashcards**: `/api/flashcards/decks`, `/api/flashcards/decks/[id]`, `/api/flashcards/decks/[id]/progress`, `/api/flashcards/study/[deckId]`
 - **Practice**: `/api/practice`, `/api/practice/[id]/attempt`, `/api/practice/attempts`
 - **Mock Tests**: `/api/mock-tests`, `/api/mock-tests/[id]`, `/api/mock-tests/[id]/start`
-- **Attempts**: `/api/attempts/[id]`, `/api/attempts/[id]/answers`, `/api/attempts/[id]/submit-section`, `/api/attempts/[id]/predict-score`
+- **Attempts**: `/api/attempts/[id]`, `/api/attempts/[id]/answers`, `/api/attempts/[id]/submit-section`, `/api/attempts/[id]/can-proceed`, `/api/attempts/[id]/report`, `/api/attempts/[id]/predict-score`
 - **Evaluations**: `/api/evaluations/writing`, `/api/evaluations/speaking`, `/api/evaluations/[id]`
-- **Admin**: `/api/admin/resources`, `/api/admin/resources/[id]`, `/api/admin/stats`, `/api/admin/tests`, `/api/admin/tests/[id]`, `/api/admin/tests/[id]/publish`, `/api/admin/reviews`, `/api/admin/reviews/[id]`
+- **Referrals & Credits**: `/api/referrals/me`, `/api/referrals/apply`, `/api/referrals/generate`, `/api/referrals/me/redemptions`, `/api/referrals/me/credits`, `/api/credits`, `/api/credits/ledger`
 - **Media**: `/api/media/upload-url`, `/api/media/[assetId]/download-url`
+- **Admin**: Full CRUD for resources, tests, flashcards, reviews, referrals, media, question groups, generation jobs
+- **Feedback**: `/api/feedback` (submit + admin list)
 
 ### ✅ Completed Data Models
-- **TestGenerationJob**: For LLM test generation pipeline
-- **ScoreMapping**: For raw-to-band score mappings
-- **EvaluationCalibration**: For LLM evaluation calibration
-- **TestSection.contentJson**: For reading passage, listening transcript, writing visual spec, speaking cue card
-- **TestSection.mediaAssetId**: For listening audio
-- **Question.sourceSpanJson**: For source span references
+- All core models: Profile, Role, Resource, Test, TestSection, Question, QuestionGroup, AnswerKey, MockTestAttempt, ModuleScore, ScorePrediction
+- Evaluation models: WritingEvaluation, SpeakingEvaluation, ContentReview, LlmJob, EvaluationCalibration
+- Content pipeline: TestGenerationJob, TestVersion, ScoreMapping
+- Engagement: FlashcardDeck, FlashcardCard, FlashcardReview, ResourceProgress, ResourcePrerequisite
+- Growth: Referral, ReferralRedemption, ReferralConfig, CreditLedger
+- Media: MediaAsset
+- Audit: AuditLog, ResourceVersion
+- External: ExternalStudyRecord
 
 ### ✅ Completed Features
-- Production LLM provider (OpenAI/Anthropic) with fallback to deterministic
+- Production LLM provider (OpenAI/Anthropic/Gemini) with deterministic fallback
 - Schema validation for LLM outputs using Zod
-- EvaluationCalibration tracking
-- P0 integration tests (12 tests passing)
-- Speaking audio upload API with signed URLs
-- Admin test management UI (list/create/edit/delete)
+- P0 integration tests (38/38 passing)
+- Speaking audio upload API with signed URLs + UI components
+- Admin test management UI with full CMS (wizard, builder, preview, validation, publish)
+- Flashcard system with SM-2 spaced repetition
+- Referral and credits system
+- Progress tracking with streaks and achievements
+- Beta feedback collection
+- Changelog page
+- Rate limiting on all sensitive endpoints
+- Audit logging for all admin write operations
+- Sentry error tracking configured
+- BullMQ worker with 6 queue processors
+- Drag-and-drop reordering for sections, groups, and questions
+- Source-span highlighting for Reading/Listening
+- Strict Listening one-play simulation UI
+- Bulk question paste for admin authoring
+- Mobile navigation for learner and admin shells
 
-## P0 Tasks Right Now
+## Current Focus: Production Hardening
 
-1. **Keep core checks green.** `pnpm typecheck`, `pnpm lint`, and `pnpm test:p0` should pass before feature work.
-2. **Production LLM provider** — Already implemented. Set `LLM_PROVIDER` and `LLM_API_KEY` in environment.
-3. **Run database migration** — Run `pnpm prisma migrate dev` for new schema models.
-4. **Speaking audio UI** — API ready, UI component needed for learner recording.
-5. **Admin test sections editor** — View read-only, full CRUD pending.
-
-For full task list, see [`mvp-remaining-tasks.md`](mvp-remaining-tasks.md).
+1. **Production LLM/TTS workers** — Replace deterministic provider with production LLM for test generation and TTS audio generation.
+2. **Server-side strict audio events** — Add `AttemptEvent` tracking for anti-cheat enforcement on Listening one-play.
+3. **Staging verification** — Verify all P0 fixes against real Supabase/Redis/LLM services.
+4. **E2E coverage** — Expand Playwright tests beyond scaffold level.
+5. **Weakness detection & analytics** — Deferred to Phase 4 polish.
 
 ---
 

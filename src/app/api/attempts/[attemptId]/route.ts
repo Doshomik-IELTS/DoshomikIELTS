@@ -31,6 +31,19 @@ export async function GET(request: Request, { params }: { params: Promise<{ atte
               title: true,
               durationMinutes: true,
               orderIndex: true,
+              instructions: true,
+              contentJson: true,
+              mediaAssetId: true,
+              groups: {
+                orderBy: { orderIndex: "asc" },
+                select: {
+                  id: true,
+                  title: true,
+                  instructions: true,
+                  questionType: true,
+                  orderIndex: true,
+                },
+              },
               questions: {
                 orderBy: { orderIndex: "asc" },
                 select: {
@@ -38,7 +51,9 @@ export async function GET(request: Request, { params }: { params: Promise<{ atte
                   prompt: true,
                   questionType: true,
                   optionsJson: true,
+                  sourceSpanJson: true,
                   orderIndex: true,
+                  groupId: true,
                 },
               },
             },

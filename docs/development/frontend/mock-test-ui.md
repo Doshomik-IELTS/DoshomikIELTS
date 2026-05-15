@@ -119,7 +119,9 @@ Optional post-MVP:
 
 ## Question Renderer
 
-Create a shared `QuestionRenderer` that supports:
+### `ObjectiveQuestionRenderer`
+
+Located at `src/components/ielts/objective-question-renderer.tsx`. Renders objective question types:
 
 - Multiple choice.
 - Matching.
@@ -129,10 +131,28 @@ Create a shared `QuestionRenderer` that supports:
 - Summary completion.
 - Short answer.
 - Grammar correction.
-- Writing prompt.
-- Speaking prompt.
 
-The renderer should receive learner-visible question data only. It must never require answer keys.
+### `IeltsSectionRenderer`
+
+Located at `src/components/ielts/ielts-section-renderer.tsx`. Orchestrates section rendering:
+
+- Renders section instructions and content.
+- Renders question groups with shared instructions.
+- Delegates to `ObjectiveQuestionRenderer` for objective questions.
+- Handles writing sections with `WritingEditor`.
+- Handles speaking sections with `SpeakingSubmission`.
+- Receives learner-visible question data only. Must never require answer keys.
+
+### Question Groups
+
+Questions can be organized into `QuestionGroup` entries within a section. Each group has:
+
+- Shared `title` and `instructions`.
+- `questionType` for the group.
+- `orderIndex` for ordering.
+- `displayJson` for display configuration.
+
+The renderer should display group instructions before the group's questions.
 
 ## Draft Safety
 

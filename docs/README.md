@@ -2,6 +2,8 @@
 
 This folder contains product, strategy, market, content, and development documentation for IELTS++.
 
+**Last updated:** 2026-05-16 — All major features implemented. Focus shifted to production hardening.
+
 ## Start Here
 
 1. [`development/README.md`](development/README.md) — development documentation index.

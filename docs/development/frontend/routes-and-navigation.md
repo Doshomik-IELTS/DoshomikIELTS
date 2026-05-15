@@ -24,6 +24,7 @@ Purpose:
 | Route | Purpose |
 |---|---|
 | `/` | Landing page and product CTA. |
+| `/changelog` | Product changelog and update history. |
 | `/login` | Login page. |
 | `/register` | Registration page. |
 | `/reset-password` | Password reset or magic-link flow. |
@@ -32,6 +33,7 @@ Purpose:
 
 | Route | Purpose |
 |---|---|
+| `/welcome` | Onboarding/welcome page for new users. |
 | `/dashboard` | Learner overview, progress, saved resources, recent attempts, streak, achievements. |
 | `/profile` | Learner profile settings. |
 | `/resources` | Resource library with filters/search and save button. |
@@ -47,7 +49,7 @@ Purpose:
 | `/attempts/[id]` | Active or submitted mock attempt page with per-section timer and writing editor. |
 | `/attempts/[id]/score` | Module scores and final prediction page. |
 | `/attempts/[id]/report` | Detailed attempt report with section results. |
-| `/evaluations/[id]` | Writing/Speaking evaluation status and result. |
+| `/evaluations/[id]` | Writing/Speaking evaluation status and result detail. |
 | `/referrals` | Referral program with code generation and credit balance. |
 
 ## Admin Routes
@@ -61,7 +63,8 @@ Purpose:
 | `/admin/tests` | Test list. |
 | `/admin/tests/new` | Create test metadata. |
 | `/admin/tests/[id]` | Edit test metadata and sections. |
-| `/admin/tests/[id]/builder` | Visual test builder with question editor. |
+| `/admin/tests/[id]/builder` | Visual test builder with section editors, question groups, media picker. |
+| `/admin/tests/[id]/preview` | Preview test as learner would see it. |
 | `/admin/flashcards` | Flashcard deck list with create/delete. |
 | `/admin/flashcards/[id]` | Deck editor with inline card CRUD. |
 | `/admin/reviews` | Review queue (content, writing, speaking). |
@@ -92,6 +95,7 @@ Redirect rules:
 ### Public Navigation
 
 - Home
+- Changelog
 - Resources preview or features
 - Login
 - Register/Get started

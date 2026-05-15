@@ -35,7 +35,11 @@ Located in `src/components/ui/`:
 | `Card` | ✅ Implemented | Card container |
 | `Badge` | ✅ Implemented | Status badges, supports variant |
 | `Skeleton` | ✅ Implemented | Loading placeholders |
-| `State` | ✅ Implemented | Loading/empty/error states |
+| `State` | ✅ Implemented | Loading/empty/error states (LoadingState, EmptyState, ErrorState) |
+| `StatCard` | ✅ Implemented | Stat display with label, value, icon (added 2026-05-15) |
+| `ContentPanel` | ✅ Implemented | Content container with header/body (added 2026-05-15) |
+| `PageHeader` | ✅ Implemented | Page title with optional subtitle/actions (added 2026-05-15) |
+| `Breadcrumbs` | ✅ Implemented | Navigation breadcrumbs (added 2026-05-15) |
 
 ## Shared App Components
 
@@ -46,104 +50,34 @@ Located in `src/components/`:
 - `PublicHeader` - Public pages header
 - `DashboardLayout` - Learner layout with sidebar
 - `AdminLayout` - Admin layout with navigation
+- `SidebarNav` - Learner sidebar navigation
+- `MobileNav` - Mobile navigation drawer
+- `PageHeader` - Page header with title/subtitle/actions
+- `Breadcrumbs` - Navigation breadcrumbs
 
-### IELTS-Specific Components
+### Dashboard Components
 
-Located in `src/components/ielts/`:
-
-- `EvaluationStatusBadge` - Shows evaluation status (queued/processing/succeeded/failed/needs_review)
-- `ScoreBadge` - Displays band scores
-- `SpeakingRecorder` - Audio recording component
-- `SpeakingSubmission` - Speaking submission with text/audio support
-
-### Admin Components
-
-Located in `src/components/admin/`:
-
-- `AdminResourceList` - Resource list with filters
-- `AdminTestList` - Test list with status filters
-- `ResourceEditor` - Resource create/edit form
-- `TestEditorForm` - Test metadata form
-- `TestDetailEditor` - Test detail with sections
-- `TestSectionEditor` - Section management
-- `QuestionEditor` - Question create/edit with answer key
-
-### Profile Components
-
-- `ProfileEditor` - Profile form with RHF+zod validation
+- `DashboardSummary` - Dashboard stats and progress
+- `StreakBadge` - Flame icon with current/longest streak
+- `AchievementsPanel` - Grid of earned/locked achievement badges
 
 ### Resource Components
 
 - `ResourceList` - Resource list with filters
 - `ResourceDetail` - Resource detail view
+- `ResourceSaveButton` - Bookmark toggle (icon + button variants)
 
-### Dashboard Components
+### Profile Components
 
-- `DashboardSummary` - Dashboard stats and progress
+- `ProfileEditor` - Profile form with RHF+zod validation
+
+### Feedback Components
+
+- `BetaFeedback` - Beta feedback submission form (added 2026-05-15)
 
 ### Auth Components
 
 - `LogoutButton` - Logout action
-
-Reference list:
-
-- Button
-- Input
-- Textarea
-- Label
-- Select
-- Checkbox
-- Radio Group
-- Card
-- Badge
-- Tabs
-- Dialog
-- Alert
-- Table
-- Progress
-- Skeleton
-- Dropdown Menu
-- Separator
-- Tooltip
-- Toast/Sonner
-
-## Shared App Components
-
-### Layout Components
-
-- `PublicHeader`
-- `DashboardLayout`
-- `AdminLayout`
-- `SidebarNav`
-- `MobileNav`
-- `PageHeader`
-- `Breadcrumbs`
-
-### State Components
-
-- `LoadingState`
-- `EmptyState`
-- `ErrorState`
-- `UnauthorizedState`
-- `ForbiddenState`
-- `EvaluationStatusBadge`
-- `ModuleProgressCard`
-- `ScoreBadge`
-
-### IELTS-Specific Components
-
-- `BandScoreBadge`
-- `ConfidenceBadge`
-- `UnofficialScoreDisclaimer`
-- `QuestionRenderer`
-- `AnswerInputRenderer`
-- `AudioPlayer`
-- `WritingEditor`
-- `WordCount`
-- `SpeakingRecorder`
-- `EvaluationFeedbackPanel`
-- `MockSectionNav`
-- `AttemptStatusTimeline`
 
 ## Status Colors
 

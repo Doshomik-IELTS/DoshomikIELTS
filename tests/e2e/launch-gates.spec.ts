@@ -1,9 +1,9 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 
 const DEMO_EMAIL = "demo@ieltspp.local";
 const DEMO_PASSWORD = "Test@1234!";
 
-async function loginAsDemo(page: any) {
+async function loginAsDemo(page: Page) {
   await page.goto("/login");
   await page.fill('input[id="email"]', DEMO_EMAIL);
   await page.fill('input[id="password"]', DEMO_PASSWORD);

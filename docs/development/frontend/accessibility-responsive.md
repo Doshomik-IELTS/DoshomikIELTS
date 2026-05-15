@@ -10,6 +10,12 @@ The codebase implements accessibility through:
 - **Score Display** - `ScoreBadge` shows band scores with clear labels and unofficial disclaimer.
 - **Forms** - Profile form uses RHF+zod with proper validation messages.
 - **Speaking Recorder** - Has accessible controls and status display.
+- **Writing Editor** - Live word count with visible progress bar and clear task-type labels.
+- **Test Timer** - Visible countdown with text status updates.
+- **Breadcrumbs** - Navigation breadcrumbs for deep page context.
+- **Page Headers** - Clear page titles with optional subtitles.
+- **Beta Feedback** - Accessible form with proper labels and validation.
+- **Question Renderers** - `ObjectiveQuestionRenderer` and `IeltsSectionRenderer` use semantic HTML with proper labels for all inputs.
 
 ## Accessibility Baseline
 
@@ -46,12 +52,15 @@ Avoid relying only on icons or colors.
 Optimize mobile for:
 
 - Landing page.
+- Changelog.
 - Auth.
+- Welcome/onboarding.
 - Dashboard.
 - Profile.
 - Resources.
 - Short practice.
 - Evaluation feedback review.
+- Referrals.
 
 ### Tablet/Desktop Priority
 

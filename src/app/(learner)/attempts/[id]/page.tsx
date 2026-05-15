@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { SpeakingSubmission } from "@/components/ielts/speaking-submission";
 import { TestTimer } from "@/components/ielts/test-timer";
 import { WritingEditor } from "@/components/ielts/writing-editor";
+import { IeltsSectionRenderer } from "@/components/ielts/ielts-section-renderer";
 
 interface AttemptDetail {
   id: string;
@@ -24,7 +25,11 @@ interface AttemptDetail {
     submitted: boolean;
     durationMinutes: number | null;
     savedAnswers: Record<string, string>;
-    questions: { id: string; prompt: string }[];
+    instructions: string | null;
+    contentJson: Record<string, unknown> | null;
+    mediaAssetId: string | null;
+    groups: { id: string; title: string; instructions: string; questionType: string; orderIndex: number }[];
+    questions: { id: string; groupId: string | null; prompt: string; questionType: string; optionsJson: Record<string, unknown> | null; sourceSpanJson?: Record<string, unknown> | null }[];
   }[];
   moduleProgress: { module: string; completed: boolean; band: number | null }[];
   prediction: { overallBand: number } | null;
@@ -127,6 +132,7 @@ function ActiveAttempt({ attempt, onRefresh }: { attempt: AttemptDetail; onRefre
   const draftStorageKey = `ieltspp:attempt:${attempt.id}:draft`;
   const [answers, setAnswers] = useState<AnswerState>(() => getInitialAnswers(attempt, draftStorageKey));
   const [lastSavedSnapshot, setLastSavedSnapshot] = useState(() => JSON.stringify(answers));
+  const [reviewing, setReviewing] = useState(false);
 
   const saveMutation = useApiMutation<unknown, { sectionId: string; answers: Record<string, string>; isDraft: boolean }>({
     mutationKey: ["save-answers"],
@@ -162,6 +168,10 @@ function ActiveAttempt({ attempt, onRefresh }: { attempt: AttemptDetail; onRefre
   }, [currentSnapshot, draftStorageKey, hasUnsavedChanges]);
 
   useEffect(() => {
+    setReviewing(false);
+  }, [currentSection]);
+
+  useEffect(() => {
     const warnBeforeUnload = (event: BeforeUnloadEvent) => {
       if (!hasUnsavedChanges) return;
       event.preventDefault();
@@ -174,6 +184,7 @@ function ActiveAttempt({ attempt, onRefresh }: { attempt: AttemptDetail; onRefre
   const section = attempt.sections[currentSection];
   const sectionAnswers = answers[section?.id] || {};
   const sectionHasAnswers = Object.values(sectionAnswers).some((value) => value.trim().length > 0);
+  const unansweredQuestions = section?.questions.filter((question) => !sectionAnswers[question.id]?.trim()) ?? [];
 
   async function saveDraft() {
     if (!section) return;
@@ -182,8 +193,16 @@ function ActiveAttempt({ attempt, onRefresh }: { attempt: AttemptDetail; onRefre
 
   async function submitSection() {
     if (!section) return;
+    if (!reviewing) {
+      setReviewing(true);
+      if (unansweredQuestions.length > 0) {
+        toast.warning(`${unansweredQuestions.length} question${unansweredQuestions.length === 1 ? "" : "s"} unanswered. Review before submitting.`);
+      }
+      return;
+    }
     await saveMutation.mutateAsync({ sectionId: section.id, answers: sectionAnswers, isDraft: false });
     await submitMutation.mutateAsync({ sectionId: section.id });
+    setReviewing(false);
   }
 
   async function handleTimeExpired() {
@@ -256,6 +275,34 @@ function ActiveAttempt({ attempt, onRefresh }: { attempt: AttemptDetail; onRefre
           </ContentPanel>
 
           <div className="space-y-4">
+            {reviewing && !section.submitted && (
+              <Card className="border-amber-200 bg-amber-50">
+                <CardHeader>
+                  <CardTitle className="text-base">Review before submitting</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3 text-sm">
+                  <p className="text-amber-800">
+                    {unansweredQuestions.length > 0
+                      ? `${unansweredQuestions.length} question${unansweredQuestions.length === 1 ? "" : "s"} still unanswered.`
+                      : "All questions in this section have an answer."}
+                  </p>
+                  <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                    {section.questions.map((question, index) => {
+                      const answered = Boolean(sectionAnswers[question.id]?.trim());
+                      return (
+                        <button
+                          key={question.id}
+                          type="button"
+                          className={`rounded border px-3 py-2 text-left ${answered ? "border-green-200 bg-white text-green-800" : "border-amber-300 bg-white text-amber-800"}`}
+                        >
+                          Question {index + 1}: {answered ? "Answered" : "Unanswered"}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
             {section.module === "speaking" ? (
               <Card>
                 <CardContent className="p-5">
@@ -286,27 +333,18 @@ function ActiveAttempt({ attempt, onRefresh }: { attempt: AttemptDetail; onRefre
                 </CardContent>
               </Card>
             ) : (
-              section.questions.map((question, index) => (
-                <Card key={question.id}>
-                  <CardContent className="p-5">
-                    <p className="text-sm font-medium text-slate-500 mb-2">Question {index + 1}</p>
-                    <p className="text-slate-700 mb-4">{question.prompt}</p>
-                    <textarea
-                      className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400 resize-y"
-                      placeholder="Type your answer..."
-                      value={sectionAnswers[question.id] || ""}
-                      disabled={section.submitted}
-                      rows={4}
-                      onChange={(event) =>
-                        setAnswers({
-                          ...answers,
-                          [section.id]: { ...sectionAnswers, [question.id]: event.target.value },
-                        })
-                      }
-                    />
-                  </CardContent>
-                </Card>
-              ))
+              <IeltsSectionRenderer
+                attemptId={attempt.id}
+                section={section}
+                answers={sectionAnswers}
+                disabled={section.submitted}
+                onAnswerChange={(questionId, value) =>
+                  setAnswers({
+                    ...answers,
+                    [section.id]: { ...sectionAnswers, [questionId]: value },
+                  })
+                }
+              />
             )}
           </div>
 
@@ -324,8 +362,19 @@ function ActiveAttempt({ attempt, onRefresh }: { attempt: AttemptDetail; onRefre
                 saveMutation.isPending || submitMutation.isPending || section.submitted || !sectionHasAnswers
               }
             >
-              {saveMutation.isPending || submitMutation.isPending ? "Submitting..." : "Submit Section"}
+              {saveMutation.isPending || submitMutation.isPending
+                ? "Submitting..."
+                : reviewing
+                  ? "Confirm Submit"
+                  : unansweredQuestions.length > 0
+                    ? `Review ${unansweredQuestions.length} unanswered`
+                    : "Review & Submit"}
             </Button>
+            {reviewing && !section.submitted && (
+              <Button type="button" variant="ghost" onClick={() => setReviewing(false)}>
+                Keep editing
+              </Button>
+            )}
           </div>
         </>
       )}

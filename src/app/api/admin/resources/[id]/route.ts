@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import { ensureUniqueResourceSlug, slugifyTitle } from "@/lib/slug";
 import { adminResourcePatchSchema } from "@/lib/validators/admin-resource";
+import { logAuditEvent } from "@/lib/audit";
 
 function adminErrorResponse(error: unknown) {
   if (error instanceof Error && error.message === "UNAUTHENTICATED") {
@@ -13,6 +14,36 @@ function adminErrorResponse(error: unknown) {
     return fail({ code: "FORBIDDEN", message: "Admin access required." }, 403);
   }
   return null;
+}
+
+function resourceSnapshot(resource: {
+  id: string;
+  title: string;
+  slug: string;
+  category: string;
+  difficulty: string;
+  body: string;
+  tags: string[];
+  examplesJson: Prisma.JsonValue | null;
+  status: string;
+  publishedAt: Date | null;
+  createdAt?: Date;
+  updatedAt: Date;
+}) {
+  return {
+    id: resource.id,
+    title: resource.title,
+    slug: resource.slug,
+    category: resource.category,
+    difficulty: resource.difficulty,
+    body: resource.body,
+    tags: resource.tags,
+    examplesJson: resource.examplesJson,
+    status: resource.status,
+    publishedAt: resource.publishedAt?.toISOString() ?? null,
+    createdAt: resource.createdAt?.toISOString() ?? null,
+    updatedAt: resource.updatedAt.toISOString(),
+  };
 }
 
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -119,37 +150,81 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     nextSlug = await ensureUniqueResourceSlug(base, id);
   }
 
+  const previousStatus = existing.status;
+  const updateData: Prisma.ResourceUpdateInput = {
+    ...(data.title !== undefined ? { title: data.title } : {}),
+    slug: nextSlug,
+    ...(data.category !== undefined ? { category: data.category } : {}),
+    ...(data.difficulty !== undefined ? { difficulty: data.difficulty } : {}),
+    ...(data.body !== undefined ? { body: data.body } : {}),
+    ...(data.tags !== undefined ? { tags: data.tags } : {}),
+    ...(data.examplesJson !== undefined
+      ? {
+          examplesJson:
+            data.examplesJson === null ? Prisma.JsonNull : data.examplesJson,
+        }
+      : {}),
+    ...(data.status !== undefined ? { status: data.status } : {}),
+    ...(data.status === "published" && !existing.publishedAt ? { publishedAt: new Date() } : {}),
+  };
+
   try {
-    const updated = await prisma.resource.update({
-      where: { id },
-      data: {
-        ...(data.title !== undefined ? { title: data.title } : {}),
-        slug: nextSlug,
-        ...(data.category !== undefined ? { category: data.category } : {}),
-        ...(data.difficulty !== undefined ? { difficulty: data.difficulty } : {}),
-        ...(data.body !== undefined ? { body: data.body } : {}),
-        ...(data.tags !== undefined ? { tags: data.tags } : {}),
-        ...(data.examplesJson !== undefined
-          ? {
-              examplesJson:
-                data.examplesJson === null ? Prisma.JsonNull : data.examplesJson,
-            }
-          : {}),
-        ...(data.status !== undefined ? { status: data.status } : {}),
-        ...(data.status === "published" && !existing.publishedAt ? { publishedAt: new Date() } : {}),
-      },
-      select: {
-        id: true,
-        title: true,
-        slug: true,
-        category: true,
-        difficulty: true,
-        body: true,
-        tags: true,
-        examplesJson: true,
-        status: true,
-        publishedAt: true,
-        updatedAt: true,
+    const updated = await prisma.$transaction(async (tx) => {
+      const resource = await tx.resource.update({
+        where: { id },
+        data: updateData,
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          category: true,
+          difficulty: true,
+          body: true,
+          tags: true,
+          examplesJson: true,
+          status: true,
+          publishedAt: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+
+      const latest = await tx.resourceVersion.findFirst({
+        where: { resourceId: id },
+        orderBy: { versionNumber: "desc" },
+        select: { versionNumber: true },
+      });
+
+      await tx.resourceVersion.create({
+        data: {
+          resourceId: id,
+          versionNumber: (latest?.versionNumber ?? 0) + 1,
+          snapshotJson: resourceSnapshot(resource) as Prisma.InputJsonValue,
+          changeNote:
+            data.status && data.status !== previousStatus
+              ? `Status changed from ${previousStatus} to ${data.status}`
+              : "Resource updated",
+          createdById: actor.profile.id,
+        },
+      });
+
+      return resource;
+    });
+
+    await logAuditEvent({
+      action:
+        data.status === "published" && previousStatus !== "published"
+          ? "resource.publish"
+          : data.status === "archived" && previousStatus !== "archived"
+            ? "resource.archive"
+            : "resource.update",
+      entityType: "Resource",
+      entityId: updated.id,
+      actorId: actor.profile.id,
+      metadata: {
+        title: updated.title,
+        previousStatus,
+        status: updated.status,
       },
     });
 

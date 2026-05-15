@@ -1,18 +1,32 @@
 # IELTS++ Technical Complexity Report
 
-## Current Implementation Status (2026-05-10)
+## Current Implementation Status (2026-05-16)
 
-Many P0 items have been completed:
+All P0 items have been completed. The platform is feature-complete for MVP scope:
 
-- ✅ Production LLM provider (OpenAI/Anthropic) implemented with Zod schema validation
-- ✅ P0 integration tests passing (12 tests)
-- ✅ Speaking audio upload API with signed URLs
+- ✅ Production LLM provider (OpenAI/Anthropic/Gemini) implemented with Zod schema validation
+- ✅ P0 integration tests passing (38/38 tests)
+- ✅ Speaking audio upload API with signed URLs + UI components
 - ✅ Full attempt report endpoint and UI
-- ✅ Admin test management (list/create/edit/delete/sections/questions)
+- ✅ Admin test management with full CMS (wizard, builder, preview, validation, publish)
 - ✅ Answer key protection enforced in all learner APIs
 - ✅ Score prediction blocked until all modules complete
 - ✅ Writing/speaking evaluation workers persist outputs
 - ✅ Private media storage with signed URLs
+- ✅ Flashcard system with SM-2 spaced repetition
+- ✅ Referral and credits system
+- ✅ Progress tracking with streaks and achievements
+- ✅ Rate limiting on all sensitive endpoints
+- ✅ Audit logging for all admin write operations
+- ✅ Sentry error tracking configured
+- ✅ BullMQ worker with 6 queue processors
+- ✅ Drag-and-drop reordering for sections, groups, and questions
+- ✅ Source-span highlighting for Reading/Listening
+- ✅ Strict Listening one-play simulation UI
+- ✅ Bulk question paste for admin authoring
+- ✅ Mobile navigation for learner and admin shells
+- ✅ Beta feedback collection
+- ✅ Changelog page
 
 See [`development/README.md`](README.md) for full implementation status.
 

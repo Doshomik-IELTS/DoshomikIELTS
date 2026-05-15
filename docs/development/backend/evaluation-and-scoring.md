@@ -13,9 +13,10 @@
 - **Writing Evaluation:** Implemented - `/api/evaluations/writing` creates `WritingEvaluation` + `LlmJob`
 - **Speaking Evaluation:** Implemented - `/api/evaluations/speaking` creates `SpeakingEvaluation` + `LlmJob`
 - **Score Prediction:** Implemented - `/api/attempts/[id]/predict-score` when all 4 modules complete
-- **Production LLM:** Implemented 2026-05-10 - supports OpenAI and Anthropic with Zod validation
-- **EvaluationCalibration:** New model added for tracking LLM accuracy vs human scores
-- **ScoreMapping:** New model added for configurable raw-to-band score mappings
+- **Production LLM:** Implemented - supports OpenAI, Anthropic, and Gemini with Zod validation
+- **EvaluationCalibration:** Model added for tracking LLM accuracy vs human scores
+- **ScoreMapping:** Model added for configurable raw-to-band score mappings
+- **Auto-completion:** Worker auto-completes `MockTestAttempt` when all 4 module scores exist
 
 ## Answer Normalization
 
@@ -147,13 +148,18 @@ The system supports text response and audio response. Audio responses are evalua
 The production LLM provider (`src/lib/evaluation/llm-provider.ts`) supports:
 
 ### OpenAI
-- Models: `gpt-4o` (writing), `gpt-4o-mini` (speaking)
+- Models: configurable via `LLM_MODEL_WRITING` / `LLM_MODEL_SPEAKING`
 - Environment: `LLM_PROVIDER=openai`, `LLM_API_KEY`, `OPENAI_BASE_URL` (optional)
 - Output format: JSON with Zod schema validation
 
 ### Anthropic
-- Models: `claude-sonnet-4-20250514` (writing), `claude-haiku-3-20240307` (speaking)
+- Models: configurable via `LLM_MODEL_WRITING` / `LLM_MODEL_SPEAKING`
 - Environment: `LLM_PROVIDER=anthropic`, `LLM_API_KEY`, `ANTHROPIC_BASE_URL` (optional)
+- Output format: JSON with Zod schema validation
+
+### Gemini (added 2026-05-15)
+- Models: configurable via `LLM_MODEL_WRITING` / `LLM_MODEL_SPEAKING`
+- Environment: `LLM_PROVIDER=gemini`, `LLM_API_KEY`
 - Output format: JSON with Zod schema validation
 
 ### Schema Validation
@@ -173,6 +179,12 @@ All LLM responses are validated against the evaluation schema (`src/lib/evaluati
   needsHumanReview: boolean
 }
 ```
+
+### Evaluation Provider Selection
+
+The system uses `src/lib/evaluation/provider.ts` which selects between:
+- **Deterministic provider** — algorithmic scoring based on response length, lexical variety, and basic grammar signals (fallback when no LLM configured)
+- **Production LLM provider** — OpenAI, Anthropic, or Gemini based on `LLM_PROVIDER` env var
 
 Text-only flow:
 

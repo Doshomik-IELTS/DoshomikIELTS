@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -15,8 +15,14 @@ import { SectionListEditor, type SectionData } from "@/components/admin/section-
 import { QuestionListEditor, type QuestionData } from "@/components/admin/question-list-editor";
 import { WritingSectionEditor } from "@/components/admin/writing-section-editor";
 import { SpeakingSectionEditor } from "@/components/admin/speaking-section-editor";
+import { ReadingSectionEditor } from "@/components/admin/reading-section-editor";
+import { ReadingQuickAuthoringPanel } from "@/components/admin/reading-quick-authoring-panel";
+import { ListeningSectionEditor } from "@/components/admin/listening-section-editor";
+import { ListeningQuickAuthoringPanel } from "@/components/admin/listening-quick-authoring-panel";
+import { QuestionGroupEditor } from "@/components/admin/question-group-editor";
 import { IELTS_MODULES } from "@/lib/tests/ielts-types";
 import type { IeltsModule } from "@prisma/client";
+import type { TestValidationIssue, TestValidationResult } from "@/lib/tests/validation";
 
 type TestDetail = {
   id: string;
@@ -48,6 +54,18 @@ async function deleteTest(id: string) {
   return apiFetch(`/api/admin/tests/${id}`, { method: "DELETE" });
 }
 
+async function validateTest(id: string) {
+  return apiFetch<TestValidationResult>(`/api/admin/tests/${id}/validate`, { method: "POST" });
+}
+
+async function publishTest(id: string) {
+  return apiFetch<{ test: TestDetail; validation: TestValidationResult }>(`/api/admin/tests/${id}/publish`, { method: "POST" });
+}
+
+async function duplicateTest(id: string) {
+  return apiFetch<{ test: { id: string } }>(`/api/admin/tests/${id}/duplicate`, { method: "POST" });
+}
+
 const STATUS_COLORS: Record<string, string> = {
   draft: "bg-slate-100 text-slate-700",
   published: "bg-green-100 text-green-700",
@@ -66,6 +84,8 @@ export default function AdminTestBuilderPage({ params }: { params: Promise<{ id:
   const [descValue, setDescValue] = useState("");
   const [saving, setSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<"" | "draft" | "published" | "saved">("");
+  const [validation, setValidation] = useState<TestValidationResult | null>(null);
+  const [duplicating, setDuplicating] = useState(false);
 
   useEffect(() => {
     params.then((p) => setTestId(p.id));
@@ -95,16 +115,16 @@ export default function AdminTestBuilderPage({ params }: { params: Promise<{ id:
       setTitleValue(test.title);
       setDescValue(test.description ?? "");
     }
-  }, [test?.id]);
+  }, [test]);
 
   useEffect(() => {
     if (!activeSectionId || sectionQuestions[activeSectionId]) return;
     fetchSectionQuestions(activeSectionId).then((res) => {
       setSectionQuestions((prev) => ({ ...prev, [activeSectionId!]: res.questions }));
     });
-  }, [activeSectionId]);
+  }, [activeSectionId, sectionQuestions]);
 
-  const saveMeta = useCallback(async () => {
+  async function saveMeta() {
     setSaving(true);
     setSaveStatus("");
     try {
@@ -117,7 +137,7 @@ export default function AdminTestBuilderPage({ params }: { params: Promise<{ id:
     } finally {
       setSaving(false);
     }
-  }, [titleValue, descValue]);
+  }
 
   async function handleSaveDraft() {
     setSaving(true);
@@ -133,14 +153,46 @@ export default function AdminTestBuilderPage({ params }: { params: Promise<{ id:
     }
   }
 
+  async function handleSubmitReview() {
+    setSaving(true);
+    setSaveStatus("");
+    try {
+      await metaMutation.mutateAsync({ status: "review" });
+      setSaveStatus("saved");
+      setTimeout(() => setSaveStatus(""), 2000);
+    } catch (e) {
+      console.error("Failed to submit for review:", e);
+    } finally {
+      setSaving(false);
+    }
+  }
+
   async function handlePublish() {
     setSaving(true);
     setSaveStatus("");
     try {
-      await metaMutation.mutateAsync({ status: "published", publishedAt: new Date().toISOString() });
+      const result = await validateTest(testId);
+      setValidation(result);
+      if (!result.valid) {
+        return;
+      }
+      await publishTest(testId);
+      qc.invalidateQueries({ queryKey: ["admin-test-builder", testId] });
       setSaveStatus("published");
     } catch (e) {
       console.error("Failed to publish:", e);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleValidate() {
+    setSaving(true);
+    try {
+      const result = await validateTest(testId);
+      setValidation(result);
+    } catch (e) {
+      console.error("Failed to validate:", e);
     } finally {
       setSaving(false);
     }
@@ -151,8 +203,21 @@ export default function AdminTestBuilderPage({ params }: { params: Promise<{ id:
     deleteMutation.mutate();
   }
 
+  async function handleDuplicate() {
+    setDuplicating(true);
+    try {
+      const result = await duplicateTest(testId);
+      router.push(`/admin/tests/${result.test.id}/builder`);
+    } catch (e) {
+      console.error("Failed to duplicate test:", e);
+    } finally {
+      setDuplicating(false);
+    }
+  }
+
   function handleSectionsChange(updated: SectionData[]) {
     if (!test) return;
+    qc.setQueryData<TestDetail>(["admin-test-builder", testId], { ...test, sections: updated });
     const removed = test.sections.filter((s) => !updated.find((u) => u.id === s.id));
     const newMap = { ...sectionQuestions };
     for (const r of removed) delete newMap[r.id];
@@ -160,6 +225,14 @@ export default function AdminTestBuilderPage({ params }: { params: Promise<{ id:
     if (removed.find((r) => r.id === activeSectionId)) {
       setActiveSectionId(updated[0]?.id ?? null);
     }
+  }
+
+  function handleGroupsChange(sectionId: string, groups: NonNullable<SectionData["groups"]>) {
+    if (!test) return;
+    qc.setQueryData<TestDetail>(["admin-test-builder", testId], {
+      ...test,
+      sections: test.sections.map((section) => section.id === sectionId ? { ...section, groups } : section),
+    });
   }
 
   const activeSection = test?.sections.find((s) => s.id === activeSectionId) ?? null;
@@ -174,6 +247,16 @@ export default function AdminTestBuilderPage({ params }: { params: Promise<{ id:
     if (s === "draft") return "✓ Saved as draft";
     if (s === "published") return "✓ Published";
     return null;
+  }
+
+  function sectionCompletion(section: SectionData, questions: QuestionData[]) {
+    const hasMaterial = Boolean(section.contentJson);
+    const hasQuestions = questions.length > 0 || section.questionCount > 0;
+    const hasAnswers = questions.some((question) => Boolean(question.answerKey));
+    const hasSources = section.module !== "reading" && section.module !== "listening"
+      ? true
+      : questions.some((question) => Boolean(question.sourceSpanJson));
+    return { hasMaterial, hasQuestions, hasAnswers, hasSources };
   }
 
   if (isLoading && !test) {
@@ -261,6 +344,18 @@ export default function AdminTestBuilderPage({ params }: { params: Promise<{ id:
             <Button variant="outline" size="sm" onClick={handleSaveDraft} disabled={saving}>
               Save Draft
             </Button>
+            <Button variant="outline" size="sm" onClick={handleValidate} disabled={saving}>
+              Validate
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleSubmitReview} disabled={saving}>
+              Submit Review
+            </Button>
+            <Link href={`/admin/tests/${testId}/preview`} target="_blank">
+              <Button variant="outline" size="sm">Preview</Button>
+            </Link>
+            <Button variant="outline" size="sm" onClick={handleDuplicate} disabled={duplicating}>
+              {duplicating ? "Duplicating..." : "Duplicate Draft"}
+            </Button>
             <Button size="sm" onClick={handlePublish} disabled={saving || test.status === "published"}>
               {test.status === "published" ? "Published" : "Save & Publish"}
             </Button>
@@ -273,6 +368,30 @@ export default function AdminTestBuilderPage({ params }: { params: Promise<{ id:
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-1">
+          {validation && (
+            <Card className={`mb-4 ${validation.valid ? "border-green-200 bg-green-50" : "border-amber-200 bg-amber-50"}`}>
+              <CardHeader>
+                <CardTitle className="text-base">
+                  {validation.valid ? "Ready to publish" : "Validation issues"}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {validation.valid ? (
+                  <p className="text-sm text-green-700">No blocking CMS issues found.</p>
+                ) : (
+                  <ul className="space-y-2 text-sm text-amber-900">
+                    {validation.issues.slice(0, 8).map((issue: TestValidationIssue, index: number) => (
+                      <li key={`${issue.sectionId ?? "test"}-${index}`}>{issue.message}</li>
+                    ))}
+                    {validation.issues.length > 8 && (
+                      <li>{validation.issues.length - 8} more issue(s).</li>
+                    )}
+                  </ul>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Test Structure</CardTitle>
@@ -314,6 +433,26 @@ export default function AdminTestBuilderPage({ params }: { params: Promise<{ id:
                         {s.partNumber ? ` · Part ${s.partNumber}` : ""}
                         {s.durationMinutes ? ` · ${s.durationMinutes} min` : ""}
                       </p>
+                      <div className="mt-2 flex flex-wrap gap-1">
+                        {(() => {
+                          const completion = sectionCompletion(s, sectionQuestions[s.id] ?? []);
+                          return [
+                            ["Material", completion.hasMaterial],
+                            ["Questions", completion.hasQuestions],
+                            ["Answers", completion.hasAnswers],
+                            ["Sources", completion.hasSources],
+                          ].map(([label, done]) => (
+                            <span
+                              key={String(label)}
+                              className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${
+                                done ? "bg-green-50 text-green-700" : "bg-amber-50 text-amber-700"
+                              }`}
+                            >
+                              {label}
+                            </span>
+                          ));
+                        })()}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -325,6 +464,46 @@ export default function AdminTestBuilderPage({ params }: { params: Promise<{ id:
         <div className="lg:col-span-2 space-y-4">
           {activeSection ? (
             <>
+              {activeSection.module === "reading" && (
+                <>
+                  <ReadingQuickAuthoringPanel
+                    testId={testId}
+                    section={activeSection}
+                    onImported={async () => {
+                      qc.invalidateQueries({ queryKey: ["admin-test-builder", testId] });
+                      const res = await fetchSectionQuestions(activeSection.id);
+                      setSectionQuestions((prev) => ({ ...prev, [activeSection.id]: res.questions }));
+                    }}
+                  />
+                  <ReadingSectionEditor
+                    testId={testId}
+                    section={activeSection}
+                    onContentUpdate={() => {
+                      qc.invalidateQueries({ queryKey: ["admin-test-builder", testId] });
+                    }}
+                  />
+                </>
+              )}
+              {activeSection.module === "listening" && (
+                <>
+                  <ListeningQuickAuthoringPanel
+                    testId={testId}
+                    section={activeSection}
+                    onImported={async () => {
+                      qc.invalidateQueries({ queryKey: ["admin-test-builder", testId] });
+                      const res = await fetchSectionQuestions(activeSection.id);
+                      setSectionQuestions((prev) => ({ ...prev, [activeSection.id]: res.questions }));
+                    }}
+                  />
+                  <ListeningSectionEditor
+                    testId={testId}
+                    section={activeSection}
+                    onContentUpdate={() => {
+                      qc.invalidateQueries({ queryKey: ["admin-test-builder", testId] });
+                    }}
+                  />
+                </>
+              )}
               {activeSection.module === "writing" && (
                 <WritingSectionEditor
                   testId={testId}
@@ -355,6 +534,16 @@ export default function AdminTestBuilderPage({ params }: { params: Promise<{ id:
               )}
 
               <Card>
+                <CardContent className="p-4">
+                  <QuestionGroupEditor
+                    sectionId={activeSection.id}
+                    groups={activeSection.groups ?? []}
+                    onGroupsChange={(groups) => handleGroupsChange(activeSection.id, groups)}
+                  />
+                </CardContent>
+              </Card>
+
+              <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-base">
                     <span className={`font-medium capitalize ${moduleColor(activeSection.module)}`}>
@@ -376,6 +565,8 @@ export default function AdminTestBuilderPage({ params }: { params: Promise<{ id:
                     sectionId={activeSection.id}
                     questions={activeQuestions}
                     module={activeSection.module as IeltsModule}
+                    groups={activeSection.groups ?? []}
+                    sectionContent={activeSection.contentJson}
                     onQuestionsChange={(qs) => setSectionQuestions((prev) => ({ ...prev, [activeSection.id]: qs }))}
                   />
                 </CardContent>

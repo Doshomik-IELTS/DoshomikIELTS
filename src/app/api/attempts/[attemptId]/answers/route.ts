@@ -59,11 +59,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ att
       const userAnswer = answers[question.id];
       if (userAnswer !== undefined && userAnswer !== null && userAnswer !== "") {
         totalQuestions++;
-        const correctAnswer = question.answerKey?.canonicalAnswer;
-        
-        const isCorrect = correctAnswer 
-          ? userAnswer.toLowerCase().trim() === correctAnswer.toLowerCase().trim()
-          : null;
+        const isCorrect = scoreObjectiveAnswer(userAnswer, question.answerKey);
         
         if (isCorrect) correctCount++;
 
@@ -99,4 +95,45 @@ export async function POST(request: Request, { params }: { params: Promise<{ att
     savedAnswers: Object.keys(answers).length,
     autoScored: totalQuestions > 0 ? { correct: correctCount, total: totalQuestions } : null,
   });
+}
+
+function scoreObjectiveAnswer(
+  userAnswer: string,
+  answerKey: {
+    canonicalAnswer: string;
+    acceptedAnswersJson: unknown;
+    scoringRuleJson: unknown;
+  } | null,
+) {
+  if (!answerKey?.canonicalAnswer) return null;
+
+  const rule = isRecord(answerKey.scoringRuleJson) ? answerKey.scoringRuleJson : {};
+  const answers = [
+    answerKey.canonicalAnswer,
+    ...Object.values(isRecord(answerKey.acceptedAnswersJson) ? answerKey.acceptedAnswersJson : {}).map(String),
+  ];
+  const maxWords = typeof rule.maxWords === "number" ? rule.maxWords : null;
+  if (maxWords && wordCount(userAnswer) > maxWords) return false;
+
+  return answers.some((answer) => normalizeAnswer(userAnswer, rule) === normalizeAnswer(answer, rule));
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return !!value && typeof value === "object" && !Array.isArray(value);
+}
+
+function normalizeAnswer(value: string, rule: Record<string, unknown>) {
+  let normalized = value.trim();
+  if (rule.ignorePunctuation !== false) {
+    normalized = normalized.replace(/[^\w\s]/g, "");
+  }
+  normalized = normalized.replace(/\s+/g, " ");
+  if (rule.caseSensitive !== true) {
+    normalized = normalized.toLowerCase();
+  }
+  return normalized;
+}
+
+function wordCount(value: string) {
+  return value.trim().split(/\s+/).filter(Boolean).length;
 }

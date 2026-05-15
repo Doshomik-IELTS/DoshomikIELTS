@@ -1,7 +1,7 @@
 # IELTS++ Launch Readiness Plan
 
-**Last updated:** 2026-05-14 (evening)
-**Status:** All P0 source fixes verified. P1 hardening items (integration tests, rate limiting, audit logs, Sentry) implemented. E2E scaffold created. Ready for staging smoke test before internal alpha.
+**Last updated:** 2026-05-16 (all P0 source fixes verified, P1 hardening complete, E2E scaffold created. Ready for staging smoke test before internal alpha.)
+**Status:** All P0 source fixes verified. P1 hardening items (integration tests, rate limiting, audit logs, Sentry) implemented. E2E scaffold created. Core MVP feature-complete. Ready for staging smoke test before internal alpha.
 
 This document turns the current code/documentation review into an execution checklist. The documentation describes a solid MVP, but the code is the source of truth for launch readiness. Launch is blocked until the core learner, admin, scoring, database, and quality checks work end to end in a production-like environment.
 
@@ -379,13 +379,13 @@ Public launch requires all items below to be checked.
 ### Engineering gates
 
 - [x] `pnpm typecheck` passes.
-- [x] `pnpm lint` passes.
+- [x] `pnpm lint` passes (0 errors).
 - [x] `pnpm test:p0` passes (38/38 tests).
 - [x] `pnpm build` passes in production-like CI.
 - [x] Prisma migrations deploy successfully to a fresh database.
 - [x] Worker processes queued evaluation jobs.
-- [ ] No known P0 security issue remains open.
-- [ ] No dev-auth bypass exists in production.
+- [x] No known P0 security issue remains open.
+- [x] No dev-auth bypass exists in production (dev auth returns 403 when `NODE_ENV=production`).
 
 ### Security and compliance gates
 

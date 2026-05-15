@@ -37,7 +37,9 @@ export function LoginForm({
     endpoint: "/api/dev-auth/login",
     onSuccess: (data) => {
       toast.success("Logged in successfully");
-      window.location.assign(data.role === "admin" && redirectTarget === "/dashboard" ? "/admin" : redirectTarget);
+      // Always redirect based on role - admin goes to /admin, learner goes to dashboard or nextPath
+      const redirectTo = data.role === "admin" ? "/admin" : (redirectTarget === "/admin" ? "/dashboard" : redirectTarget);
+      window.location.assign(redirectTo);
     },
     onError: (error) => {
       toast.error(error.message || "Login failed");

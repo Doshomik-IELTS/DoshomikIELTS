@@ -132,8 +132,8 @@ These are non-negotiable for implementation (see [`frontend/README.md`](frontend
 | # | Deliverable | Status |
 |---|-------------|--------|
 | 5.1 | **Admin layout and guard** | **Done** — `AdminLayout` sidebar + route role layout. |
-| 5.2 | **Resources admin** | **Done** — `/api/admin/resources`, `/api/admin/resources/[id]`, `/api/admin/stats`. |
-| 5.3 | **Tests admin (CRUD)** | **Done** — `/api/admin/tests` full CRUD + sections/questions. |
+| 5.2 | **Resources admin** | **Done** — `/api/admin/resources`, `/api/admin/resources/[id]`, `/api/admin/resources/[id]/publish`, `/api/admin/stats`, status workflow actions, audit logs, and `ResourceVersion` snapshots. |
+| 5.3 | **Tests admin (CRUD + CMS validation)** | **Done** — `/api/admin/tests` full CRUD, Reading/Listening material editors, source-supported questions, validation, publish, duplicate, and sections/questions. |
 | 5.4 | **Flashcard admin** | **Done** (2026-05-13) — deck list with create/delete, deck editor with inline card CRUD. |
 | 5.5 | **Reviews admin** | **Done** — list/detail/action UI and APIs exist. |
 

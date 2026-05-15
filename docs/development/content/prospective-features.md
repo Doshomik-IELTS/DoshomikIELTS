@@ -2,6 +2,17 @@
 
 Research date: May 2026
 
+Last updated: 2026-05-16
+
+## Implementation Status Summary
+
+- **Flashcards**: ✅ Fully implemented — admin deck/card CRUD, learner study flow, progress tracking API, spaced repetition scheduling
+- **Referrals**: ✅ Fully implemented — referral code generation, credit tracking, admin analytics, apply/revoke flows
+- **Achievements**: ✅ Implemented — achievements panel component, API route for fetching achievements
+- **Progress Tracking**: ✅ Implemented — progress API with resource tracking, unlock checks, flashcard deck progress
+- **Feedback**: ✅ Implemented — beta feedback component and API route for user feedback submission
+- **Changelog**: ✅ Implemented — changelog page displaying platform updates
+
 ## Purpose
 
 This document lists prospective features IELTS++ should include based on market research of similar IELTS preparation apps and platforms.
@@ -18,6 +29,12 @@ Features are grouped by priority:
 ## MVP Required Features
 
 These features are necessary for IELTS++ to be competitive in the current IELTS prep market.
+
+Implementation status summary:
+
+- Account/profile, resource library, admin resources, basic practice, mock-test start/attempt flow, learner-safe attempt APIs, Reading/Listening renderers, objective scoring, writing/speaking evaluation scaffolding, score prediction, and admin review workflow are implemented at MVP level.
+- The content CMS now supports test creation wizard, Reading/Listening quick authoring without JSON, question groups, structured scoring rules, source support, source highlighting, media attachment, validation blockers, preview, review, publish, version snapshots, duplicate-as-draft, mobile navigation, and bulk question paste.
+- Remaining major prospective work: production LLM/TTS generation workers, server-side strict audio events, weakness recommendations, richer analytics, full study plans, and premium/community features.
 
 ### 1. Account And Profile
 
@@ -117,10 +134,18 @@ Required behavior:
 - Track section status.
 - Time sections where applicable.
 - Show final result only after completion.
+- Warn about unanswered questions before section submit.
+- Show a section review screen before final submission.
+- In strict Listening simulation, allow one audio play in the learner UI.
 
 Why needed:
 
 - Full mock tests are a standard expectation across competitor platforms.
+
+Status:
+
+- Implemented at MVP level for structured attempts, section submit, timers, draft saves, Reading/Listening material, question groups, typed objective controls, unanswered review, and strict Listening simulation UI.
+- Server-side strict audio event enforcement remains future hardening.
 
 ---
 
@@ -135,6 +160,7 @@ Required features:
 - Estimated band score.
 - Explanation per question.
 - Source span or rationale.
+- Source-span highlighting in the learner passage where offsets or excerpts are stored.
 
 Supported question types:
 
@@ -150,6 +176,10 @@ Why needed:
 
 - Reading scoring is expected to be instant and accurate.
 
+Status:
+
+- Implemented for objective marking with accepted alternatives, structured scoring rules, source support, and learner highlighting.
+
 ---
 
 ### 6. Listening Auto-Scoring
@@ -164,10 +194,15 @@ Required features:
 - Estimated band score.
 - Explanation per question.
 - Audio controls.
+- Strict one-play simulation for mock-test mode.
 
 Why needed:
 
 - Listening is a standard mock/practice module and is easy to score objectively.
+
+Status:
+
+- Implemented for attached media, signed playback URL, transcript support, structured scoring rules, source support, and strict one-play browser UI.
 
 ---
 
@@ -283,10 +318,23 @@ Required admin features:
 - Review queue.
 - Approve/reject content.
 - Copyright safety warning.
+- Test creation wizard.
+- Reading/Listening quick authoring boxes.
+- Question groups.
+- Structured scoring controls.
+- Bulk question paste.
+- Source support and source highlighting.
+- Validation blocker dashboard.
+- Learner-style preview.
+- Duplicate published tests as draft versions.
 
 Why needed:
 
 - IELTS++ depends on original content and should not publish generated content without review.
+
+Status:
+
+- Implemented at MVP level for resources and tests. Production generation workers and deeper per-question-type full-screen editors remain future enhancements.
 
 ---
 
@@ -393,10 +441,17 @@ Include:
 - Audio player for listening.
 - Word count for writing.
 - Section status.
+- Source highlighting for Reading/Listening.
+- Review-before-submit behavior.
+- Mobile navigation.
 
 Why important:
 
 - Competitors emphasize real exam simulation and interface familiarity.
+
+Status:
+
+- Implemented at core MVP level. Reading notes, server-side strict audio events, and richer map/diagram interaction remain future polish.
 
 ---
 

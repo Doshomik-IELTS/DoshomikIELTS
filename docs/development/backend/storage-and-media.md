@@ -6,16 +6,20 @@ Use Supabase Storage for V1 media storage.
 
 ## Current Implementation Status
 
-- **Implemented (2026-05-10):**
+- **Implemented:**
   - `/api/media/upload-url` - Creates signed upload URL and MediaAsset record
   - `/api/media/[assetId]/download-url` - Creates signed download URL with access checks
   - Private bucket support via signed URLs
   - File type validation for audio uploads
   - Owner/admin/reviewer/evaluator access checks
+  - Admin media CRUD: `/api/admin/media` (GET, POST), `/api/admin/media/[id]` (PATCH)
 
 - **API Endpoints:**
-  - `POST /api/media/upload-url` - Request signed upload URL
-  - `GET /api/media/:assetId/download-url` - Get signed download URL
+  - `POST /api/media/upload-url` - Request signed upload URL (learner)
+  - `GET /api/media/:assetId/download-url` - Get signed download URL (learner)
+  - `GET /api/admin/media` - List media assets with search/filter (admin)
+  - `POST /api/admin/media` - Create media asset record (admin)
+  - `PATCH /api/admin/media/:id` - Update media metadata (admin)
 
 - **Supported Purposes:**
   - `speaking_recording` - Learner audio uploads
@@ -42,15 +46,19 @@ Recommended visibility:
 
 Every stored file should have a `MediaAsset` record with:
 
-- Bucket
-- Path
-- Purpose
-- Owner profile where applicable
-- Content type
-- Size
-- Duration where applicable
-- License metadata where applicable
-- Created timestamp
+- `id` (UUID)
+- `profileId` — owner (nullable for system-owned media)
+- `title` — human-readable name
+- `altText` — accessibility description
+- `transcriptText` — audio transcript text
+- `bucket` — Supabase Storage bucket name
+- `path` — file path within bucket
+- `purpose` — speaking_recording, listening_audio, generated_audio, reports
+- `contentType` — MIME type
+- `sizeBytes` — file size
+- `durationSeconds` — audio duration where applicable
+- `licenseMetadataJson` — license/source metadata where applicable
+- `createdAt` — creation timestamp
 
 ## Upload Flow
 

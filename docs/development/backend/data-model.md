@@ -1,16 +1,45 @@
 # Backend Data Model
 
-> **Status:** All models implemented in Prisma schema as of 2026-05-13
-> **Latest additions:** Profile streak/achievement fields, Achievement/ProfileAchievement models, FlashCardDeck/Card/CardReviewLog, Referral/ReferralRedemption/CreditLedger models (2026-05-13)
+> **Status:** All models implemented in Prisma schema as of 2026-05-15
+> **Latest additions:** QuestionGroup, TestVersion, ResourcePrerequisite, ReferralConfig, BetaFeedback models. New fields on Resource, MockTestAttempt, MediaAsset, FlashCard, FlashCardDeck, ResourceProgress. New enums: TaskType, SpeakingPart, ProgressStatus, ReferralStatus, RedemptionStatus, CreditTxType, RewardTrigger. (2026-05-15)
 
 ## General Rules
 
 - Use UUID primary keys.
-- Use `createdAt` and `updatedAt` on major records.
+- Use `createdAt` and `updatedAt` on major record.
 - Link app users to Supabase Auth users by `authUserId`.
 - Keep learner-visible content separate from answer keys.
 - Store LLM responses as structured JSON for later analysis.
 - Never store copied Cambridge/commercial IELTS content.
+
+## Enums
+
+### Core Enums
+
+| Enum | Values |
+|---|---|
+| `AppRole` | `learner`, `admin`, `reviewer`, `evaluator` |
+| `ContentStatus` | `draft`, `review`, `published`, `archived` |
+| `Difficulty` | `basic`, `intermediate`, `advanced` |
+| `ResourceCategory` | `basic_english`, `words`, `synonyms`, `grammar`, `reading_strategy`, `listening_strategy`, `writing_strategy`, `speaking_strategy` |
+| `TestType` | `practice`, `short_mock`, `full_mock` |
+| `IeltsModule` | `listening`, `reading`, `writing`, `speaking` |
+| `AttemptStatus` | `in_progress`, `submitted`, `evaluating`, `completed`, `failed` |
+| `JobStatus` | `queued`, `processing`, `succeeded`, `failed`, `needs_review` |
+| `ConfidenceLevel` | `low`, `medium`, `high` |
+| `GenerationStatus` | `blueprint`, `generating`, `validating`, `review`, `published`, `archived` |
+
+### Additional Enums (added 2026-05-15)
+
+| Enum | Values |
+|---|---|
+| `TaskType` | `task_1`, `task_2` |
+| `SpeakingPart` | `part_1`, `part_2`, `part_3` |
+| `ProgressStatus` | `not_started`, `in_progress`, `completed`, `skipped` |
+| `ReferralStatus` | `active`, `suspended`, `deactivated` |
+| `RedemptionStatus` | `pending`, `completed`, `cancelled` |
+| `CreditTxType` | `referral_bonus`, `redemption`, `admin_grant`, `admin_revoke`, `refund`, `promo` |
+| `RewardTrigger` | `on_signup`, `on_first_purchase` |
 
 ## Identity And Profile
 
@@ -55,19 +84,14 @@ Fields:
 
 ### `Referral`
 
-Referral program configuration.
+Referral program configuration per user.
 
 Fields:
 
 - `id`
-- `code`
-- `description`
-- `creditRewardAmount`
-- `maxRedemptions`
-- `redemptionCount`
-- `status`: `active`, `inactive`, `expired`
-- `expiresAt`
-- `createdById`
+- `referrerId` — unique, links to Profile
+- `code` — unique referral code
+- `status`: `active`, `suspended`, `deactivated`
 - `createdAt`
 - `updatedAt`
 
@@ -79,10 +103,12 @@ Fields:
 
 - `id`
 - `referralId`
-- `referrerProfileId`
-- `refereeProfileId`
-- `creditAmountAwarded`
-- `redeemedAt`
+- `refereeId` — the user who applied the code
+- `referrerReward` — credits awarded to referrer
+- `refereeReward` — credits awarded to referee
+- `status`: `pending`, `completed`, `cancelled`
+- `processedAt`
+- `createdAt`
 
 ### `CreditLedger`
 
@@ -93,10 +119,43 @@ Fields:
 - `id`
 - `profileId`
 - `amount` — positive for credit, negative for debit
-- `type`: `referral_reward`, `redemption`, `bonus`, `adjustment`
+- `type`: `referral_bonus`, `redemption`, `admin_grant`, `admin_revoke`, `refund`, `promo`
 - `description`
-- `referenceId` — links to ReferralRedemption or other source
+- `refId` — links to ReferralRedemption or other source
 - `createdAt`
+
+### `ReferralConfig` (added 2026-05-15)
+
+Singleton configuration for the referral program (id defaults to "singleton").
+
+Fields:
+
+- `id` — defaults to "singleton"
+- `referrerReward` — default credits for referrer (default 1)
+- `refereeReward` — default credits for referee (default 1)
+- `minPurchaseForReward` — optional minimum purchase threshold
+- `maxRedemptionsPerCode` — optional limit
+- `rewardTrigger`: `on_signup` or `on_first_purchase`
+- `enabled` — toggle referral program (default true)
+- `updatedAt`
+
+### `BetaFeedback` (added 2026-05-15)
+
+User-submitted beta feedback.
+
+Fields:
+
+- `id`
+- `profileId` — nullable (feedback from non-logged-in users)
+- `email` — nullable
+- `category` — `bug`, `feature`, `improvement`, `general`
+- `message`
+- `pageUrl` — optional
+- `metadataJson` — browser metadata (userAgent, etc.)
+- `status` — default "new"
+- `createdAt`
+
+Indexes on `status` and `createdAt`.
 
 ## Resource Library
 
@@ -112,12 +171,17 @@ Fields:
 - `body`
 - `examplesJson`
 - `tags`
-- `status`: `draft`, `review`, `publishing`, `published`, `archived`
+- `status`: `draft`, `review`, `published`, `archived`
+- `orderIndex` — for progression ordering (default 0)
 - `createdById`
 - `reviewedById`
 - `publishedAt`
 - `createdAt`
 - `updatedAt`
+
+Relations:
+- `prereqs` → `ResourcePrerequisite[]` (resources this depends on)
+- `dependents` → `ResourcePrerequisite[]` (resources that depend on this)
 
 ### `ResourceVersion`
 
@@ -181,10 +245,27 @@ Fields:
 - `id`
 - `profileId`
 - `resourceId`
-- `status`: `not_started`, `in_progress`, `completed`
+- `status`: `not_started`, `in_progress`, `completed`, `skipped`
+- `progress` — 0-100 percentage (added 2026-05-15)
 - `timeSpent` — seconds spent
+- `completedAt` — timestamp when completed (added 2026-05-15)
 - `updatedAt`
 - `createdAt`
+
+### `ResourcePrerequisite` (added 2026-05-15)
+
+Defines prerequisite relationships between resources for progression locking.
+
+Fields:
+
+- `id`
+- `resourceId` — the resource that has prerequisites
+- `prerequisiteId` — the required resource to complete first
+- `requiredScore` — minimum score required (if practice)
+- `minProgress` — minimum progress percentage required (default 100)
+- `createdAt`
+
+Unique constraint on `(resourceId, prerequisiteId)`.
 
 ## Flashcards
 
@@ -195,13 +276,14 @@ Spaced-repetition flashcard deck.
 Fields:
 
 - `id`
-- `profileId` — creator (learner who owns this deck)
 - `title`
 - `description`
-- `category`: `vocabulary`, `grammar`, `listening`, `reading`, `writing`, `speaking`
+- `category`: e.g. `vocabulary`, `grammar`, `listening`
 - `difficulty`: `basic`, `intermediate`, `advanced`
-- `isPublic` — shared decks vs private
-- `tags`
+- `status`: `draft`, `review`, `published`, `archived`
+- `tags` — string array
+- `createdById` — creator (nullable, deck can be system-owned)
+- `publishedAt`
 - `createdAt`
 - `updatedAt`
 
@@ -215,8 +297,9 @@ Fields:
 - `deckId`
 - `front` — question/prompt
 - `back` — answer
-- `examples` — JSON array of example sentences
-- `hints` — JSON array of hints
+- `examples` — string array of example sentences
+- `hints` — string array of hints
+- `tags` — string array (added 2026-05-15)
 - `difficulty`: `basic`, `intermediate`, `advanced`
 - `orderIndex`
 - `repetitions` — SM-2 repetition count (0 = new)
@@ -248,14 +331,18 @@ Fields:
 
 - `id`
 - `title`
+- `description` — optional test description
 - `type`: `practice`, `short_mock`, `full_mock`
 - `status`: `draft`, `review`, `published`, `archived`
 - `estimatedDurationMinutes`
-- `createdById`
-- `reviewedById`
+- `versionNumber` — current version (default 1)
+- `parentTestId` — for duplicated tests, links to original
 - `publishedAt`
 - `createdAt`
 - `updatedAt`
+
+Relations:
+- `versions` → `TestVersion[]`
 
 ### `TestSection`
 
@@ -271,6 +358,27 @@ Fields:
 - `orderIndex`
 - `contentJson`: reading passage, listening transcript, writing visual spec, speaking cue card
 - `mediaAssetId`: audio for listening sections
+
+Relations:
+- `groups` → `QuestionGroup[]`
+- `questions` → `Question[]`
+- `attempts` → `AttemptAnswer[]`
+
+### `TestVersion` (added 2026-05-15)
+
+Tracks test revision snapshots.
+
+Fields:
+
+- `id`
+- `testId`
+- `versionNumber`
+- `snapshotJson`
+- `changeNote`
+- `createdById`
+- `createdAt`
+
+Unique constraint on `(testId, versionNumber)`.
 
 ### `Passage`
 
@@ -296,12 +404,29 @@ Fields:
 - `sourceType`: `original`, `licensed`, `public_domain`, `tts_generated`, `in_house_recorded`
 - `licenseMetadataJson`
 
+### `QuestionGroup` (added 2026-05-15)
+
+Groups related questions within a test section (e.g., a set of T/F/NG questions sharing common instructions).
+
+Fields:
+
+- `id`
+- `sectionId`
+- `title`
+- `instructions`
+- `questionType`
+- `orderIndex`
+- `displayJson` — display configuration
+- `createdAt`
+- `updatedAt`
+
 ### `Question`
 
 Fields:
 
 - `id`
 - `sectionId`
+- `groupId` — optional, links to QuestionGroup
 - `passageId`
 - `questionType`
 - `prompt`
@@ -349,6 +474,8 @@ Fields:
 - `startedAt`
 - `submittedAt`
 - `completedAt`
+- `timeSpentSeconds` — total time spent (added 2026-05-15)
+- `lastActiveAt` — for timer checks (added 2026-05-15)
 
 ### `AttemptAnswer`
 
@@ -474,6 +601,9 @@ Fields:
 
 - `id`
 - `profileId`
+- `title` — human-readable name (added 2026-05-15)
+- `altText` — accessibility description (added 2026-05-15)
+- `transcriptText` — audio transcript text (added 2026-05-15)
 - `bucket`
 - `path`
 - `purpose`

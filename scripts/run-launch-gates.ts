@@ -1,4 +1,4 @@
-import { chromium } from "@playwright/test";
+import { chromium, type Page } from "@playwright/test";
 
 const BASE = "http://127.0.0.1:3002";
 const DEMO_EMAIL = "demo@ieltspp.local";
@@ -7,7 +7,7 @@ const ADMIN_EMAIL = "admin@ieltspp.local";
 
 const results: { gate: string | number; test: string; pass: boolean | null; url?: string; h1?: string | null; resourceCount?: number; testCount?: number; sections?: number; reason?: string; error?: string; errorMsg?: string; disclaimer?: string; label?: string; status?: number; hasScore?: boolean }[] = [];
 
-async function login(page: any, role = "demo") {
+async function login(page: Page, role = "demo") {
   const email = role === "admin" ? ADMIN_EMAIL : DEMO_EMAIL;
   await page.goto(`${BASE}/login`);
   await page.waitForLoadState("networkidle");

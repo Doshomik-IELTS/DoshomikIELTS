@@ -14,6 +14,9 @@ import {
   DIFFICULTY_OPTIONS,
   RESOURCE_CATEGORY_OPTIONS,
   RESOURCE_STATUS_OPTIONS,
+  difficultyLabel,
+  resourceCategoryLabel,
+  resourceStatusLabel,
 } from "@/lib/resources/constants";
 
 type Row = {
@@ -197,10 +200,10 @@ function AdminResourceListInner({
                     data.resources.map((r) => (
                       <tr key={r.id} className="border-b border-slate-100 last:border-0">
                         <td className="px-3 py-2.5 font-medium text-slate-900">{r.title}</td>
-                        <td className="px-3 py-2.5 text-slate-600">{r.category}</td>
-                        <td className="px-3 py-2.5 text-slate-600">{r.difficulty}</td>
+                        <td className="px-3 py-2.5 text-slate-600">{resourceCategoryLabel(r.category)}</td>
+                        <td className="px-3 py-2.5 text-slate-600">{difficultyLabel(r.difficulty)}</td>
                         <td className="px-3 py-2.5">
-                          <Badge variant="neutral">{r.status}</Badge>
+                          <Badge variant="neutral">{resourceStatusLabel(r.status)}</Badge>
                         </td>
                         <td className="px-3 py-2.5 text-slate-500">
                           {new Intl.DateTimeFormat("en", {

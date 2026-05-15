@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { SidebarNav } from "@/components/layout/sidebar-nav";
+import { MobileNav } from "@/components/layout/mobile-nav";
 import { BetaFeedback } from "@/components/feedback/beta-feedback";
 import { LogoutButton } from "@/components/auth/logout-button";
 
@@ -15,6 +16,7 @@ const learnerNav: { label: string; href: string }[] = [
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-slate-50">
+      <MobileNav brand="IELTS++" items={learnerNav} footer={<LogoutButton />} />
       <aside className="fixed inset-y-0 hidden w-64 border-r border-slate-200 bg-white p-6 md:block">
         <Link href="/dashboard" className="text-xl font-bold text-blue-800">
           IELTS++

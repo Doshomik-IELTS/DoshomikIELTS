@@ -3,6 +3,8 @@ import { requireAdminActor } from "@/lib/auth/admin-api";
 import { ok, fail } from "@/lib/api/response";
 import { z } from "zod";
 import type { Prisma } from "@prisma/client";
+import { logAuditEvent } from "@/lib/audit";
+import { canEditTestContent, publishedMutationMessage } from "@/lib/tests/mutability";
 
 const JSON_NULL = "JsonNull" as const;
 
@@ -23,6 +25,7 @@ const QUESTION_TYPES = [
   "map_labeling",
   "form_completion",
   "writing_task_1",
+  "writing_task_1_gt",
   "writing_task_2",
   "speaking_part1",
   "speaking_part2",
@@ -31,6 +34,7 @@ const QUESTION_TYPES = [
 
 const updateQuestionSchema = z.object({
   questionType: z.enum(QUESTION_TYPES).optional(),
+  groupId: z.string().uuid().nullable().optional(),
   prompt: z.string().min(1).optional(),
   optionsJson: z.record(z.string(), z.unknown()).nullable().optional(),
   explanation: z.string().nullable().optional(),
@@ -84,8 +88,9 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 }
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  let actor;
   try {
-    await requireAdminActor();
+    actor = await requireAdminActor();
   } catch (error) {
     if (error instanceof Error && error.message === "UNAUTHENTICATED") {
       return fail({ code: "UNAUTHENTICATED", message: "Authentication required" }, 401);
@@ -95,9 +100,16 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
   const { id } = await params;
 
-  const question = await prisma.question.findUnique({ where: { id } });
+  const question = await prisma.question.findUnique({
+    where: { id },
+    include: { section: { select: { testId: true } } },
+  });
   if (!question) {
     return fail({ code: "NOT_FOUND", message: "Question not found." }, 404);
+  }
+  const editable = await canEditTestContent(question.section.testId);
+  if (!editable.ok) {
+    return fail({ code: "INVALID_STATE", message: publishedMutationMessage() }, 400);
   }
 
   const body = await request.json().catch(() => null);
@@ -144,8 +156,17 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     include: { answerKey: true },
   });
 
+  await logAuditEvent({
+    action: "question.update",
+    entityType: "Question",
+    entityId: updated.id,
+    actorId: actor.profile.id,
+    metadata: { sectionId: updated.sectionId, questionType: updated.questionType },
+  });
+
   return ok({
     id: updated.id,
+    groupId: updated.groupId,
     questionType: updated.questionType,
     prompt: updated.prompt,
     optionsJson: updated.optionsJson,
@@ -163,8 +184,9 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 }
 
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  let actor;
   try {
-    await requireAdminActor();
+    actor = await requireAdminActor();
   } catch (error) {
     if (error instanceof Error && error.message === "UNAUTHENTICATED") {
       return fail({ code: "UNAUTHENTICATED", message: "Authentication required" }, 401);
@@ -174,12 +196,27 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
 
   const { id } = await params;
 
-  const question = await prisma.question.findUnique({ where: { id } });
+  const question = await prisma.question.findUnique({
+    where: { id },
+    include: { section: { select: { testId: true } } },
+  });
   if (!question) {
     return fail({ code: "NOT_FOUND", message: "Question not found." }, 404);
   }
+  const editable = await canEditTestContent(question.section.testId);
+  if (!editable.ok) {
+    return fail({ code: "INVALID_STATE", message: publishedMutationMessage() }, 400);
+  }
 
   await prisma.question.delete({ where: { id } });
+
+  await logAuditEvent({
+    action: "question.delete",
+    entityType: "Question",
+    entityId: id,
+    actorId: actor.profile.id,
+    metadata: { sectionId: question.sectionId, questionType: question.questionType },
+  });
 
   return ok({ deleted: true });
 }

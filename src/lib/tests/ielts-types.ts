@@ -50,7 +50,7 @@ export const MODULE_QUESTION_TYPES: Record<IeltsModule, QuestionTypeOption[]> = 
   ],
   writing: [
     { value: "writing_task_1", label: "Task 1 — Academic", description: "Describe visual information (graph, chart, diagram, table)" },
-    { value: "writing_task_2", label: "Task 1 — General Training", description: "Write a letter in a formal or semi-formal style" },
+    { value: "writing_task_1_gt", label: "Task 1 — General Training", description: "Write a letter in a formal or semi-formal style" },
     { value: "writing_task_2", label: "Task 2 — Essay", description: "Write an essay in response to an argument or problem" },
   ],
   speaking: [

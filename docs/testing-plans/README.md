@@ -2,7 +2,7 @@
 
 This folder is the home for **all testing and QA plans** for IELTS++—manual checklists, automated coverage intent, accessibility/responsive passes, and (as you add them) E2E, performance, security, and load plans.
 
-> **Implementation Note:** Backend APIs for practice, mock tests, evaluations, media, admin tests, and admin reviews now exist. `npm run typecheck`, `npm run lint`, and `npm run test:p0` are the baseline checks before expanding database-backed E2E coverage.
+> **Implementation Note (2026-05-16):** Backend APIs for practice, mock tests, evaluations, media, admin tests, and admin reviews are all implemented. `pnpm typecheck`, `pnpm lint`, and `pnpm test:p0` (38/38) pass. E2E scaffold created with 11 Playwright spec files. Integration test scaffold exists in `tests/integration/`. Next step: staging smoke tests against real services.
 
 ## Current documents
 
@@ -16,7 +16,7 @@ This folder is the home for **all testing and QA plans** for IELTS++—manual ch
 
 Examples of documents you might add later (stubs optional):
 
-- **E2E / Playwright** — smoke vs full suite, env matrix, data setup. *(Implementation: `tests/` or project `e2e/` as applicable.)*
+- **E2E / Playwright** — smoke vs full suite, env matrix, data setup. *(Implementation: 11 Playwright spec files scaffolded in `tests/` covering public pages, auth, dashboard, learner flows, detail pages, attempts, admin pages, welcome, and screenshots.)*
 - **Performance / load** — critical paths, thresholds, tooling.
 - **Content / evaluation quality** — human review rubrics, golden outputs (if separate from product docs).
 

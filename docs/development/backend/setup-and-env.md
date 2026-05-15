@@ -4,14 +4,15 @@
 
 V1 requires:
 
-- Next.js app runtime.
+- Next.js app runtime (Next.js 16.2.6).
 - Supabase project.
 - Supabase Auth enabled.
 - Supabase Postgres database.
 - Supabase Storage buckets.
 - Redis instance.
-- LLM provider account/key.
+- LLM provider account/key (OpenAI, Anthropic, or Gemini).
 - Optional transcription provider account/key.
+- Optional Sentry project (error tracking).
 
 ## Environment Variables
 
@@ -35,7 +36,7 @@ DIRECT_URL=
 # Redis / Queue
 REDIS_URL=
 
-# LLM Provider (set to "openai" or "anthropic" for production)
+# LLM Provider (set to "openai", "anthropic", or "gemini" for production)
 LLM_PROVIDER=
 LLM_API_KEY=
 LLM_MODEL_WRITING=
@@ -56,11 +57,14 @@ MAX_SPEAKING_AUDIO_MB=25
 MAX_SPEAKING_AUDIO_SECONDS=300
 SIGNED_URL_TTL_SECONDS=900
 
-# Security
-RATE_LIMIT_REDIS_PREFIX=
+# Sentry (optional - error tracking, not required for beta)
+# NEXT_PUBLIC_SENTRY_DSN=
+# SENTRY_AUTH_TOKEN=
+# SENTRY_ORG=
+# SENTRY_PROJECT=
 ```
 
-**Note:** When `LLM_PROVIDER` and `LLM_API_KEY` are set, the system uses the production LLM provider (OpenAI or Anthropic). When not set, it falls back to the deterministic local provider for development/testing.
+**Note:** When `LLM_PROVIDER` and `LLM_API_KEY` are set, the system uses the production LLM provider (OpenAI, Anthropic, or Gemini). When not set, it falls back to the deterministic local provider for development/testing.
 
 ## Local Development Setup
 
@@ -73,23 +77,44 @@ RATE_LIMIT_REDIS_PREFIX=
 7. Create Supabase Storage buckets (listening-audio, speaking-recordings, generated-audio, reports).
 8. Start Redis (required for BullMQ queue).
 9. Start Next.js dev server (`pnpm dev`).
-10. Start BullMQ worker process in separate terminal (`pnpm worker`).
+10. Start BullMQ worker process in separate terminal (`pnpm worker:dev`).
 
 ## Prisma Workflow
 
 Recommended commands:
 
 ```bash
-npx prisma generate
-npx prisma migrate dev
-npx prisma db seed
+pnpm prisma:generate    # Generate Prisma client
+pnpm db:migrate         # Run development migration (prisma migrate dev)
+pnpm db:seed            # Seed data (tsx prisma/seed.ts)
+pnpm db:deploy          # Deploy migrations to staging/production (prisma migrate deploy)
 ```
 
 Production migration should use:
 
 ```bash
+pnpm db:deploy
+# or directly:
 npx prisma migrate deploy
 ```
+
+## Available Scripts
+
+| Script | Description |
+|---|---|
+| `pnpm dev` | Start Next.js dev server |
+| `pnpm build` | Build for production |
+| `pnpm start` | Start production server |
+| `pnpm lint` | Run ESLint |
+| `pnpm typecheck` | TypeScript type checking (tsc --noEmit) |
+| `pnpm prisma:generate` | Generate Prisma client |
+| `pnpm db:migrate` | Run development migration |
+| `pnpm db:deploy` | Deploy migrations to production |
+| `pnpm db:seed` | Seed database |
+| `pnpm worker:dev` | Start BullMQ worker |
+| `pnpm test:p0` | Run P0 integration tests |
+| `pnpm test:e2e` | Run Playwright E2E tests |
+| `pnpm test:e2e:ui` | Run Playwright E2E with UI |
 
 ## Storage Bucket Setup
 
@@ -123,7 +148,7 @@ Minimum production setup:
 - Hosted Redis.
 - Separate worker process.
 - Environment variable management.
-- Error tracking/logging.
+- Error tracking/logging (Sentry recommended).
 - Database backups.
 
 Recommended environments:

@@ -3,6 +3,8 @@ import { requireAdminActor } from "@/lib/auth/admin-api";
 import { ok, fail } from "@/lib/api/response";
 import { z } from "zod";
 import type { Prisma } from "@prisma/client";
+import { logAuditEvent } from "@/lib/audit";
+import { canEditTestContent, publishedMutationMessage } from "@/lib/tests/mutability";
 
 const QUESTION_TYPES = [
   "multiple_choice_single",
@@ -21,6 +23,7 @@ const QUESTION_TYPES = [
   "map_labeling",
   "form_completion",
   "writing_task_1",
+  "writing_task_1_gt",
   "writing_task_2",
   "speaking_part1",
   "speaking_part2",
@@ -29,12 +32,14 @@ const QUESTION_TYPES = [
 
 const createQuestionSchema = z.object({
   sectionId: z.string().uuid(),
+  groupId: z.string().uuid().optional().nullable(),
   questionType: z.enum(QUESTION_TYPES),
   prompt: z.string().min(1),
   optionsJson: z.record(z.string(), z.unknown()).optional(),
   orderIndex: z.number().int().min(0).optional(),
   difficulty: z.enum(["basic", "intermediate", "advanced"]).optional(),
   explanation: z.string().optional(),
+  sourceSpanJson: z.record(z.string(), z.unknown()).optional(),
   answerKey: z.object({
     canonicalAnswer: z.string().min(1),
     acceptedAnswersJson: z.record(z.string(), z.unknown()).optional(),
@@ -72,12 +77,14 @@ export async function GET(request: Request) {
   return ok({
     questions: questions.map((q) => ({
       id: q.id,
+      groupId: q.groupId,
       questionType: q.questionType,
       prompt: q.prompt,
       optionsJson: q.optionsJson,
       orderIndex: q.orderIndex,
       difficulty: q.difficulty,
       explanation: q.explanation,
+      sourceSpanJson: q.sourceSpanJson,
       answerKey: q.answerKey ? {
         canonicalAnswer: q.answerKey.canonicalAnswer,
         acceptedAnswersJson: q.answerKey.acceptedAnswersJson,
@@ -89,8 +96,9 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  let actor;
   try {
-    await requireAdminActor();
+    actor = await requireAdminActor();
   } catch (error) {
     if (error instanceof Error && error.message === "UNAUTHENTICATED") {
       return fail({ code: "UNAUTHENTICATED", message: "Authentication required" }, 401);
@@ -110,6 +118,10 @@ export async function POST(request: Request) {
   if (!section) {
     return fail({ code: "NOT_FOUND", message: "Section not found." }, 404);
   }
+  const editable = await canEditTestContent(section.testId);
+  if (!editable.ok) {
+    return fail({ code: "INVALID_STATE", message: publishedMutationMessage() }, 400);
+  }
 
   const maxOrder = await prisma.question.findFirst({
     where: { sectionId: data.sectionId },
@@ -120,12 +132,14 @@ export async function POST(request: Request) {
   const question = await prisma.question.create({
     data: {
       sectionId: data.sectionId,
+      groupId: data.groupId ?? undefined,
       questionType: data.questionType,
       prompt: data.prompt,
       optionsJson: data.optionsJson as Prisma.InputJsonValue | undefined,
       orderIndex: data.orderIndex ?? (maxOrder?.orderIndex ?? -1) + 1,
       difficulty: data.difficulty ?? "basic",
       explanation: data.explanation,
+      sourceSpanJson: data.sourceSpanJson as Prisma.InputJsonValue | undefined,
       ...(data.answerKey ? {
         answerKey: {
           create: {
@@ -140,17 +154,29 @@ export async function POST(request: Request) {
     include: { answerKey: true },
   });
 
+  await logAuditEvent({
+    action: "question.create",
+    entityType: "Question",
+    entityId: question.id,
+    actorId: actor.profile.id,
+    metadata: { sectionId: data.sectionId, questionType: question.questionType },
+  });
+
   return ok({
     id: question.id,
+    groupId: question.groupId,
     questionType: question.questionType,
     prompt: question.prompt,
     optionsJson: question.optionsJson,
     orderIndex: question.orderIndex,
     difficulty: question.difficulty,
     explanation: question.explanation,
+    sourceSpanJson: question.sourceSpanJson,
     answerKey: question.answerKey ? {
       canonicalAnswer: question.answerKey.canonicalAnswer,
       acceptedAnswersJson: question.answerKey.acceptedAnswersJson,
+      scoringRuleJson: question.answerKey.scoringRuleJson,
+      explanation: question.answerKey.explanation,
     } : null,
   }, { status: 201 });
 }

@@ -4,12 +4,14 @@
 
 Components implemented in `src/components/ielts/`:
 
-- `WritingEditor` - Writing response with live word count, progress bar, auto-save (added 2026-05-13)
+- `WritingEditor` - Writing response with live word count, progress bar, auto-save
 - `SpeakingRecorder` - Audio recording with playback
 - `SpeakingSubmission` - Text/audio submission support
-- `TestTimer` - Countdown timer with auto-submit on expiry (added 2026-05-13)
+- `TestTimer` - Countdown timer with auto-submit on expiry
 - `EvaluationStatusBadge` - Status display (queued/processing/succeeded/failed/needs_review)
 - `ScoreBadge` - Band score display
+- `IeltsSectionRenderer` - Section rendering with question groups
+- `ObjectiveQuestionRenderer` - Objective question rendering (MC, T/F/NG, matching, etc.)
 
 ## Writing UI
 

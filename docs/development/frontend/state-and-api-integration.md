@@ -96,6 +96,8 @@ Required learner integrations:
 - `GET /api/credits/ledger` - Credit transaction history
 - `POST /api/media/upload-url` - Get signed upload URL
 - `GET /api/media/:assetId/download-url` - Get signed download URL
+- `POST /api/feedback` - Submit beta feedback (any auth user)
+- `GET /api/feedback` - List beta feedback (admin/reviewer only)
 - `GET /api/health` - Health check
 
 Admin integrations:
@@ -113,8 +115,40 @@ Admin integrations:
 - `GET /api/admin/tests/[id]` - Get test with sections/questions
 - `PATCH /api/admin/tests/[id]` - Update test
 - `DELETE /api/admin/tests/[id]` - Delete test
+- `POST /api/admin/tests/[id]/validate` - Validate CMS readiness
+- `POST /api/admin/tests/[id]/publish` - Validate and publish atomically
+- `POST /api/admin/tests/[id]/duplicate` - Duplicate test as editable draft
 - `POST /api/admin/tests/[id]/sections` - Create section
 - `GET /api/admin/tests/[id]/sections` - List test sections
+- `POST /api/admin/tests/[id]/sections/reorder` - Reorder sections
+- `POST /api/admin/tests/import` - Import test from external source
+
+**Questions:**
+- `POST /api/admin/questions` - Create question with answer key
+- `GET /api/admin/questions/[id]` - Get question details
+- `PATCH /api/admin/questions/[id]` - Update question
+- `DELETE /api/admin/questions/[id]` - Delete question
+- `POST /api/admin/questions/reorder` - Reorder questions within a section
+
+**Question Groups (added 2026-05-15):**
+- `GET /api/admin/question-groups` - List question groups by section
+- `POST /api/admin/question-groups` - Create question group
+- `GET /api/admin/question-groups/[id]` - Get question group detail
+- `PATCH /api/admin/question-groups/[id]` - Update question group
+- `DELETE /api/admin/question-groups/[id]` - Delete question group
+- `POST /api/admin/question-groups/reorder` - Reorder question groups
+
+**Media (added 2026-05-15):**
+- `GET /api/admin/media` - List media assets with search/filter
+- `POST /api/admin/media` - Create media asset record
+- `PATCH /api/admin/media/[id]` - Update media asset metadata
+
+**Test Generation (added 2026-05-15):**
+- `POST /api/admin/generation/tests` - Create test generation job
+- `GET /api/admin/generation/tests/[id]` - Get generation job detail
+- `PATCH /api/admin/generation/tests/[id]` - Update generation job
+- `POST /api/admin/generation/tests/[id]/generate-draft` - Trigger LLM generation
+- `POST /api/admin/generation/tests/[id]/import-draft` - Import generated draft
 
 **Questions:**
 - `POST /api/admin/questions` - Create question with answer key
@@ -139,13 +173,16 @@ Admin integrations:
 
 **Referrals:**
 - `GET /api/admin/referrals` - Referral program analytics
-- `POST /api/admin/referrals` - Create/update referral config
+- `POST /api/admin/referrals` - Create/update referral
+- `GET /api/admin/referrals/[code]` - Get referral detail
 - `GET /api/admin/referrals/[code]/status` - Referral status
 - `PATCH /api/admin/referrals/[code]/status` - Update status
 - `GET /api/admin/referrals/analytics` - Analytics
 - `GET /api/admin/referrals/credits` - Credits overview
 - `POST /api/admin/referrals/credits` - Issue credits
 - `POST /api/admin/referrals/credits/revoke` - Revoke credits
+- `GET /api/admin/referrals/config` - Get referral config (singleton)
+- `POST /api/admin/referrals/config` - Create/update referral config
 
 **Stats:**
 - `GET /api/admin/stats` - Dashboard counts

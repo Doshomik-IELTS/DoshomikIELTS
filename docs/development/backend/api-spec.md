@@ -42,8 +42,9 @@ Common HTTP statuses:
 
 ## Implementation Status
 
-> **Last updated:** 2026-05-13
-> **Code Quality**: TypeScript ✅ passes, Lint ✅ 0 errors (30 warnings - pre-existing unused imports)
+> **Last updated:** 2026-05-15
+> **Code Quality**: TypeScript ✅ passes, Lint ✅ 0 errors (warnings - pre-existing unused imports)
+> **Next.js**: 16.2.6 | **Prisma**: 6.19.3 | **Zod**: 4.4.3
 
 ✅ = Implemented | ⚠️ = Partial | ❌ = Not implemented
 
@@ -352,6 +353,7 @@ Creates a short-lived signed download URL after owner/admin/reviewer/evaluator a
 - `POST /api/admin/resources` ✅ — Create
 - `GET /api/admin/resources/[id]` ✅ — Get single
 - `PATCH /api/admin/resources/[id]` ✅ — Update
+- `POST /api/admin/resources/[id]/publish` ✅ — Publish with role check, audit log, and `ResourceVersion` snapshot
 - `DELETE /api/admin/resources/[id]` ✅ — Delete
 - `GET /api/admin/stats` ✅ — Dashboard counts
 
@@ -362,15 +364,21 @@ Creates a short-lived signed download URL after owner/admin/reviewer/evaluator a
 - `GET /api/admin/tests/[id]` ✅ — Get test with sections/questions
 - `PATCH /api/admin/tests/[id]` ✅ — Update test and nested sections/questions
 - `DELETE /api/admin/tests/[id]` ✅ — Delete
+- `POST /api/admin/tests/[id]/validate` ✅ — Validate CMS readiness before publish
+- `POST /api/admin/tests/[id]/publish` ✅ — Validate and publish atomically
+- `POST /api/admin/tests/[id]/duplicate` ✅ — Duplicate test as editable draft
 - `POST /api/admin/tests/[id]/sections` ✅ — Create test section
 - `GET /api/admin/tests/[id]/sections` ✅ — List test sections
+- `POST /api/admin/tests/[id]/sections/reorder` ✅ — Reorder sections
+- `POST /api/admin/tests/import` ✅ — Import test from external source
 
 ### Questions
 
-- `POST /api/admin/questions` ✅ — Create question with optional answer key
+- `POST /api/admin/questions` ✅ — Create question with optional answer key and source span
 - `GET /api/admin/questions/[id]` ✅ — Get question details
 - `PATCH /api/admin/questions/[id]` ✅ — Update question
 - `DELETE /api/admin/questions/[id]` ✅ — Delete question
+- `POST /api/admin/questions/reorder` ✅ — Reorder questions within a section
 
 ### Flashcards
 
@@ -393,12 +401,157 @@ Creates a short-lived signed download URL after owner/admin/reviewer/evaluator a
 
 - `GET /api/admin/referrals` ✅ — Referral program analytics
 - `POST /api/admin/referrals` ✅ — Create/update referral program config
+- `GET /api/admin/referrals/[code]` ✅ — Get referral detail
 - `GET /api/admin/referrals/[code]/status` ✅ — Referral status
 - `PATCH /api/admin/referrals/[code]/status` ✅ — Update referral status
 - `GET /api/admin/referrals/analytics` ✅ — Referral analytics
 - `GET /api/admin/referrals/credits` ✅ — Credits overview
 - `POST /api/admin/referrals/credits` ✅ — Issue credits
 - `POST /api/admin/referrals/credits/revoke` ✅ — Revoke credits
+- `GET /api/admin/referrals/config` ✅ — Get referral config (singleton)
+- `POST /api/admin/referrals/config` ✅ — Create/update referral config
+
+---
+
+## Beta Feedback
+
+### `POST /api/feedback` ✅
+
+Submit beta feedback. Available to any authenticated user (learner or admin).
+
+Request fields:
+- `category` (required): `bug`, `feature`, `improvement`, `general`
+- `message` (required): minimum 10 characters
+- `email` (optional): overrides user's profile email
+- `pageUrl` (optional): current page URL
+
+Response includes feedback `id` and `success` flag.
+
+### `GET /api/feedback` ✅
+
+List beta feedback entries. **Admin/reviewer only.**
+
+Returns up to 100 most recent feedback entries, ordered by `createdAt` descending.
+
+---
+
+## Admin Media Management
+
+### `GET /api/admin/media` ✅
+
+List media assets with search and filter. **Admin only.**
+
+Query params:
+- `search`: searches title, path, transcriptText
+- `purpose`: filter by purpose
+- `limit`: max results (default 20, max 100)
+
+### `POST /api/admin/media` ✅
+
+Create a media asset record. **Admin only.**
+
+Request fields:
+- `bucket` (required)
+- `path` (required)
+- `purpose` (required)
+- `contentType` (required)
+- `title` (optional)
+- `altText` (optional)
+- `transcriptText` (optional)
+- `sizeBytes` (optional)
+- `durationSeconds` (optional)
+- `licenseMetadataJson` (optional)
+
+### `PATCH /api/admin/media/[id]` ✅
+
+Update media asset metadata. **Admin only.**
+
+Updatable fields: `title`, `altText`, `transcriptText`, `durationSeconds`, `licenseMetadataJson`.
+
+---
+
+## Test Generation (LLM-Powered)
+
+### `POST /api/admin/generation/tests` ✅
+
+Create a new test generation job. **Admin only.**
+
+Request fields:
+- `module` (required): `listening`, `reading`, `writing`, `speaking`
+- `testType` (optional, default `short_mock`): `practice`, `short_mock`, `full_mock`
+- `blueprintJson` (optional): generation blueprint/spec
+
+### `GET /api/admin/generation/tests/[id]` ✅
+
+Get generation job detail. **Admin only.**
+
+### `PATCH /api/admin/generation/tests/[id]` ✅
+
+Update generation job status/output. **Admin only.**
+
+Updatable fields: `status`, `outputJson`, `validationJson`, `errorJson`.
+
+### `POST /api/admin/generation/tests/[id]/generate-draft` ✅
+
+Trigger LLM-based test generation for a job. **Admin only.**
+
+### `POST /api/admin/generation/tests/[id]/import-draft` ✅
+
+Import a generated draft into the test system. **Admin only.**
+
+---
+
+## Question Groups
+
+Question groups organize related questions within a test section (e.g., a set of T/F/NG questions sharing a common instruction).
+
+### `GET /api/admin/question-groups` ✅
+
+List question groups for a section. **Admin only.**
+
+Query param: `sectionId` (required).
+
+### `POST /api/admin/question-groups` ✅
+
+Create a question group. **Admin only.**
+
+Request fields:
+- `sectionId` (required)
+- `title` (required)
+- `instructions` (required)
+- `questionType` (required)
+- `orderIndex` (optional)
+- `displayJson` (optional)
+
+### `GET /api/admin/question-groups/[id]` ✅
+
+Get question group detail. **Admin only.**
+
+### `PATCH /api/admin/question-groups/[id]` ✅
+
+Update question group. **Admin only.**
+
+### `DELETE /api/admin/question-groups/[id]` ✅
+
+Delete question group. **Admin only.**
+
+### `POST /api/admin/question-groups/reorder` ✅
+
+Reorder question groups within a section. **Admin only.**
+
+---
+
+## Referral Config
+
+### `GET /api/admin/referrals/config` ✅
+
+Get the singleton referral configuration. **Admin only.**
+
+### `POST /api/admin/referrals/config` ✅
+
+Create or update referral configuration. **Admin only.**
+
+Fields: `referrerReward`, `refereeReward`, `minPurchaseForReward`, `maxRedemptionsPerCode`, `rewardTrigger` (`on_signup` or `on_first_purchase`), `enabled`.
 
 ---
 

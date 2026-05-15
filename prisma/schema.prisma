@@ -185,15 +185,33 @@ model ResourceVersion {
 model Test {
   id        String        @id @default(uuid())
   title     String
+  description String?
   type      TestType      @default(short_mock)
   status    ContentStatus @default(draft)
   estimatedDurationMinutes Int?
+  versionNumber Int       @default(1)
+  parentTestId String?
   publishedAt DateTime?
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
 
   sections TestSection[]
   attempts MockTestAttempt[]
+  versions TestVersion[]
+}
+
+model TestVersion {
+  id            String   @id @default(uuid())
+  testId        String
+  versionNumber Int
+  snapshotJson  Json
+  changeNote    String?
+  createdById   String?
+  createdAt     DateTime @default(now())
+
+  test Test @relation(fields: [testId], references: [id], onDelete: Cascade)
+
+  @@unique([testId, versionNumber])
 }
 
 model TestSection {
@@ -209,13 +227,30 @@ model TestSection {
   mediaAssetId    String?     // audio for listening sections
 
   test      Test       @relation(fields: [testId], references: [id], onDelete: Cascade)
+  groups    QuestionGroup[]
   questions Question[]
   attempts  AttemptAnswer[]
+}
+
+model QuestionGroup {
+  id            String   @id @default(uuid())
+  sectionId     String
+  title         String
+  instructions  String
+  questionType  String
+  orderIndex    Int
+  displayJson   Json?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  section   TestSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  questions Question[]
 }
 
 model Question {
   id          String     @id @default(uuid())
   sectionId   String
+  groupId     String?
   questionType String
   prompt      String
   optionsJson Json?
@@ -225,6 +260,7 @@ model Question {
   sourceSpanJson Json?   // {startOffset, endOffset, excerpt, reference}
 
   section    TestSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  group      QuestionGroup? @relation(fields: [groupId], references: [id], onDelete: SetNull)
   answerKey  AnswerKey?
   answers    AttemptAnswer[]
 }
@@ -327,6 +363,9 @@ model ScorePrediction {
 model MediaAsset {
   id              String   @id @default(uuid())
   profileId       String?
+  title           String?
+  altText         String?
+  transcriptText  String?
   bucket          String
   path            String
   purpose         String

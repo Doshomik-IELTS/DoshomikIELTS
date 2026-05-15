@@ -198,19 +198,24 @@ If destructive changes are required:
 The MVP database is organized into these domains:
 
 1. Identity and roles.
-2. Resources and content (including saved/bookmarked resources).
-3. Tests, sections, questions, and answer keys.
+2. Resources and content (including saved/bookmarked resources, prerequisites, progression ordering).
+3. Tests, sections, question groups, questions, and answer keys.
 4. Practice attempts.
 5. Mock test attempts.
 6. Module scores and score prediction.
 7. Writing and Speaking evaluations.
-8. Media metadata.
+8. Media metadata (with title, altText, transcriptText fields).
 9. Async jobs (LLM jobs).
 10. Review and audit logs.
 11. Content review workflow.
 12. External study records.
-13. Test generation jobs.
+13. Test generation jobs (LLM-powered test creation pipeline).
 14. Score mappings and evaluation calibration.
+15. Flashcards and spaced-repetition review logs.
+16. Achievements and profile achievements.
+17. Referral program (codes, redemptions, config singleton, credit ledger).
+18. Beta feedback collection.
+19. Resource progress tracking with prerequisite unlocking.
 
 ---
 
@@ -291,7 +296,8 @@ Key fields:
 - `body`
 - `examplesJson`
 - `tags`
-- `status`
+- `status` (`draft`, `review`, `published`, `archived`)
+- `orderIndex` — for progression ordering
 - `createdById`
 - `publishedAt`
 
@@ -358,11 +364,12 @@ Examples:
 Purpose:
 
 - Stores learner-visible questions/prompts.
+- Can belong to a `QuestionGroup` for related question sets.
 
 Question types:
 
 - Multiple choice.
-- Matching.
+- Matching headings.
 - True/False/Not Given.
 - Yes/No/Not Given.
 - Sentence completion.
@@ -375,6 +382,14 @@ Rules:
 
 - Questions are learner-visible.
 - Do not store answer-key-only data in the learner question payload.
+- Questions can optionally belong to a `QuestionGroup` for shared instructions.
+
+### `QuestionGroup` (added 2026-05-15)
+
+Purpose:
+
+- Groups related questions within a test section (e.g., a set of T/F/NG questions sharing common instructions).
+- Contains shared title, instructions, and display configuration.
 
 ### `AnswerKey`
 
@@ -630,6 +645,52 @@ Can be added when review workflow becomes more advanced.
 For MVP:
 
 - Content status fields plus audit logs are enough.
+
+---
+
+## Test Versioning
+
+### `TestVersion` (added 2026-05-15)
+
+Purpose:
+
+- Tracks test revision snapshots for audit and rollback.
+- Created when tests are published or significantly updated.
+
+---
+
+## Resource Progression
+
+### `ResourcePrerequisite` (added 2026-05-15)
+
+Purpose:
+
+- Defines prerequisite relationships between resources.
+- Enables locked content that unlocks after completing other resources.
+- Supports `requiredScore` and `minProgress` thresholds.
+
+---
+
+## Referral Configuration
+
+### `ReferralConfig` (added 2026-05-15)
+
+Purpose:
+
+- Singleton configuration for the referral program.
+- Controls reward amounts, triggers (`on_signup` / `on_first_purchase`), and program enablement.
+
+---
+
+## Beta Feedback
+
+### `BetaFeedback` (added 2026-05-15)
+
+Purpose:
+
+- Collects user feedback during beta period.
+- Categories: bug, feature, improvement, general.
+- Admin/reviewer can view all feedback entries.
 
 ---
 

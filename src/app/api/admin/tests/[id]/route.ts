@@ -21,6 +21,9 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       sections: {
         orderBy: { orderIndex: "asc" },
         include: {
+          groups: {
+            orderBy: { orderIndex: "asc" },
+          },
           questions: {
             orderBy: { orderIndex: "asc" },
             include: {
@@ -44,6 +47,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   return ok({
     id: test.id,
     title: test.title,
+    description: test.description,
     type: test.type,
     status: test.status,
     estimatedDurationMinutes: test.estimatedDurationMinutes,
@@ -59,14 +63,26 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       instructions: section.instructions,
       durationMinutes: section.durationMinutes,
       orderIndex: section.orderIndex,
+      contentJson: section.contentJson,
+      mediaAssetId: section.mediaAssetId,
       questionCount: section.questions.length,
+      groups: section.groups.map((group) => ({
+        id: group.id,
+        title: group.title,
+        instructions: group.instructions,
+        questionType: group.questionType,
+        orderIndex: group.orderIndex,
+        displayJson: group.displayJson,
+      })),
       questions: section.questions.map((q) => ({
         id: q.id,
+        groupId: q.groupId,
         questionType: q.questionType,
         prompt: q.prompt,
         options: q.optionsJson,
         orderIndex: q.orderIndex,
         difficulty: q.difficulty,
+        sourceSpanJson: q.sourceSpanJson,
         answerKey: q.answerKey
           ? {
               canonicalAnswer: q.answerKey.canonicalAnswer,
@@ -101,21 +117,45 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
   const body = json as {
     title?: string;
+    description?: string | null;
     type?: string;
     status?: string;
     estimatedDurationMinutes?: number;
   };
-  const { title, type, status, estimatedDurationMinutes } = body;
+  const { title, description, type, status, estimatedDurationMinutes } = body;
 
-  const test = await prisma.test.findUnique({ where: { id } });
+  const test = await prisma.test.findUnique({
+    where: { id },
+    include: { _count: { select: { attempts: true } } },
+  });
 
   if (!test) {
     return fail({ code: "NOT_FOUND", message: "Test not found" }, 404);
   }
 
+  const mutatesPublishedContent =
+    test.status === "published" &&
+    test._count.attempts > 0 &&
+    (title !== undefined ||
+      description !== undefined ||
+      type !== undefined ||
+      estimatedDurationMinutes !== undefined ||
+      (status !== undefined && status !== "archived"));
+
+  if (mutatesPublishedContent) {
+    return fail(
+      {
+        code: "INVALID_STATE",
+        message: "Published tests with learner attempts cannot be edited. Duplicate it as a draft version instead.",
+      },
+      400,
+    );
+  }
+
   const updateData: Record<string, unknown> = {};
 
   if (title !== undefined) updateData.title = title;
+  if (description !== undefined) updateData.description = description;
   if (type !== undefined) updateData.type = type;
   if (estimatedDurationMinutes !== undefined)
     updateData.estimatedDurationMinutes = estimatedDurationMinutes;
@@ -127,9 +167,35 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     updateData.status = status;
   }
 
-  const updated = await prisma.test.update({
-    where: { id },
-    data: updateData,
+  const updated = await prisma.$transaction(async (tx) => {
+    const testUpdate = await tx.test.update({
+      where: { id },
+      data: updateData,
+    });
+
+    if (status === "review") {
+      const existingReview = await tx.contentReview.findFirst({
+        where: { contentType: "test", contentId: id },
+        select: { id: true },
+      });
+      if (existingReview) {
+        await tx.contentReview.update({
+          where: { id: existingReview.id },
+          data: { status: "review", notes: "Submitted from test builder." },
+        });
+      } else {
+        await tx.contentReview.create({
+          data: {
+            contentType: "test",
+            contentId: id,
+            status: "review",
+            notes: "Submitted from test builder.",
+          },
+        });
+      }
+    }
+
+    return testUpdate;
   });
 
   logAuditEvent({
@@ -143,6 +209,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   return ok({
     id: updated.id,
     title: updated.title,
+    description: updated.description,
     type: updated.type,
     status: updated.status,
     estimatedDurationMinutes: updated.estimatedDurationMinutes,
