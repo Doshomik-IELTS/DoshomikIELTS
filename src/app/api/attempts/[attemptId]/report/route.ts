@@ -18,6 +18,28 @@ export async function GET(request: Request, { params }: { params: Promise<{ atte
       test: true,
       moduleScores: true,
       scorePrediction: true,
+      writingEvaluations: {
+        select: {
+          id: true,
+          status: true,
+          overallBand: true,
+          needsHumanReview: true,
+          criteriaBandsJson: true,
+          feedbackJson: true,
+          taskType: true,
+        },
+      },
+      speakingEvaluations: {
+        select: {
+          id: true,
+          status: true,
+          overallBand: true,
+          needsHumanReview: true,
+          criteriaBandsJson: true,
+          feedbackJson: true,
+          part: true,
+        },
+      },
     },
   });
 
@@ -56,5 +78,27 @@ export async function GET(request: Request, { params }: { params: Promise<{ atte
     completedAt: attempt.completedAt?.toISOString() ?? null,
     moduleScores: scores,
     scorePrediction: prediction,
+    evaluations: [
+      ...attempt.writingEvaluations.map((e) => ({
+        id: e.id,
+        type: "writing" as const,
+        status: e.status,
+        overallBand: e.overallBand,
+        needsHumanReview: e.needsHumanReview,
+        criteriaBands: e.criteriaBandsJson,
+        feedback: e.feedbackJson,
+        taskType: e.taskType,
+      })),
+      ...attempt.speakingEvaluations.map((e) => ({
+        id: e.id,
+        type: "speaking" as const,
+        status: e.status,
+        overallBand: e.overallBand,
+        needsHumanReview: e.needsHumanReview,
+        criteriaBands: e.criteriaBandsJson,
+        feedback: e.feedbackJson,
+        part: e.part,
+      })),
+    ],
   });
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { apiFetch } from "@/lib/api/client";
 
@@ -21,9 +21,19 @@ export function SpeakingRecorder({ onRecordingComplete }: SpeakingRecorderProps)
   const [error, setError] = useState<string | null>(null);
   const [recorded, setRecorded] = useState(false);
   const [mediaAssetId, setMediaAssetId] = useState<string | null>(null);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [playing, setPlaying] = useState(false);
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const blobRef = useRef<Blob | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (audioUrl) URL.revokeObjectURL(audioUrl);
+    };
+  }, [audioUrl]);
 
   async function startRecording() {
     try {
@@ -43,7 +53,10 @@ export function SpeakingRecorder({ onRecordingComplete }: SpeakingRecorderProps)
 
       mediaRecorder.onstop = async () => {
         const blob = new Blob(chunksRef.current, { type: "audio/webm" });
-        await uploadAudio(blob);
+        blobRef.current = blob;
+        const url = URL.createObjectURL(blob);
+        setAudioUrl(url);
+        setRecorded(true);
         stream.getTracks().forEach((track) => track.stop());
       };
 
@@ -62,7 +75,13 @@ export function SpeakingRecorder({ onRecordingComplete }: SpeakingRecorderProps)
     }
   }
 
-  async function uploadAudio(blob: Blob) {
+  async function uploadAudio() {
+    const blob = blobRef.current;
+    if (!blob) {
+      setError("No recording to upload");
+      return;
+    }
+
     setUploading(true);
     setError(null);
 
@@ -90,12 +109,24 @@ export function SpeakingRecorder({ onRecordingComplete }: SpeakingRecorderProps)
       }
 
       setMediaAssetId(uploadRes.mediaAssetId);
-      setRecorded(true);
       onRecordingComplete?.(uploadRes.mediaAssetId);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Upload failed");
     } finally {
       setUploading(false);
+    }
+  }
+
+  function togglePlayback() {
+    const audio = audioRef.current;
+    if (!audio || !audioUrl) return;
+    if (playing) {
+      audio.pause();
+      setPlaying(false);
+    } else {
+      audio.currentTime = 0;
+      audio.play();
+      setPlaying(true);
     }
   }
 
@@ -105,11 +136,11 @@ export function SpeakingRecorder({ onRecordingComplete }: SpeakingRecorderProps)
         {!recorded ? (
           <>
             {!recording ? (
-              <Button onClick={startRecording} disabled={uploading}>
+              <Button onClick={startRecording} disabled={uploading} aria-label="Start audio recording">
                 Start Recording
               </Button>
             ) : (
-              <Button variant="outline" onClick={stopRecording}>
+              <Button variant="outline" onClick={stopRecording} aria-label="Stop audio recording">
                 Stop Recording
               </Button>
             )}
@@ -120,7 +151,11 @@ export function SpeakingRecorder({ onRecordingComplete }: SpeakingRecorderProps)
             onClick={() => {
               setRecorded(false);
               setMediaAssetId(null);
+              if (audioUrl) URL.revokeObjectURL(audioUrl);
+              setAudioUrl(null);
+              blobRef.current = null;
             }}
+            aria-label="Record audio again"
           >
             Record Again
           </Button>
@@ -128,27 +163,53 @@ export function SpeakingRecorder({ onRecordingComplete }: SpeakingRecorderProps)
       </div>
 
       {recording && (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2" role="status" aria-live="polite">
           <span className="h-3 w-3 animate-pulse rounded-full bg-red-500" />
           <span className="text-sm text-red-600">Recording...</span>
         </div>
       )}
 
+      {recorded && audioUrl && (
+        <div className="space-y-2">
+          <audio
+            ref={audioRef}
+            src={audioUrl}
+            onEnded={() => setPlaying(false)}
+          />
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={togglePlayback}
+              disabled={uploading}
+              aria-label={playing ? "Stop audio playback" : "Play recording preview"}
+            >
+              {playing ? "Stop" : "Play Preview"}
+            </Button>
+            {!mediaAssetId && (
+              <Button onClick={uploadAudio} disabled={uploading} aria-label="Upload audio recording">
+                {uploading ? "Uploading..." : "Upload Recording"}
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
+
       {uploading && (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2" role="status" aria-live="polite">
           <span className="h-3 w-3 animate-pulse rounded-full bg-amber-500" />
           <span className="text-sm text-amber-600">Uploading...</span>
         </div>
       )}
 
       {recorded && mediaAssetId && (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2" role="status" aria-live="polite">
           <span className="h-3 w-3 rounded-full bg-green-500" />
-          <span className="text-sm text-green-600">Recording saved</span>
+          <span className="text-sm text-green-600">Recording uploaded</span>
         </div>
       )}
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-red-600" role="alert">{error}</p>}
     </div>
   );
 }

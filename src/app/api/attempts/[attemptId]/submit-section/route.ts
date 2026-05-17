@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { requireCurrentUser } from "@/lib/auth/session";
 import { ok, fail } from "@/lib/api/response";
+import { enqueueLlmJob } from "@/lib/queue/enqueue";
 import type { IeltsModule, Prisma } from "@prisma/client";
 
 export async function POST(request: Request, { params }: { params: Promise<{ attemptId: string }> }) {
@@ -42,8 +43,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ att
     return fail({ code: "VALIDATION_ERROR", message: "Invalid JSON body" }, 400);
   }
 
-  const body = json as { sectionId?: string };
-  const { sectionId } = body;
+  const body = json as { sectionId?: string; responseText?: string };
+  const { sectionId, responseText } = body;
 
   if (!sectionId) {
     return fail({ code: "VALIDATION_ERROR", message: "Section ID required" }, 400);
@@ -101,6 +102,48 @@ export async function POST(request: Request, { params }: { params: Promise<{ att
         confidence: "medium",
       },
     });
+  }
+
+  // Trigger writing evaluation when a writing section is submitted
+  if (section.module === "writing" && responseText) {
+    const taskType = inferTaskType(section.title, section.contentJson);
+    const wordCount = responseText.split(/\s+/).filter(Boolean).length;
+
+    const { job } = await prisma.$transaction(async (tx) => {
+      const evaluation = await tx.writingEvaluation.create({
+        data: {
+          profileId: actor.profile.id,
+          attemptId,
+          sectionId,
+          taskType,
+          responseText,
+          wordCount,
+          status: "queued",
+        },
+      });
+
+      const job = await tx.llmJob.create({
+        data: {
+          type: "writing_evaluation",
+          status: "queued",
+          inputJson: {
+            evaluationId: evaluation.id,
+            taskType,
+            responseText,
+            wordCount,
+          },
+        },
+      });
+
+      await tx.writingEvaluation.update({
+        where: { id: evaluation.id },
+        data: { llmJobId: job.id },
+      });
+
+      return { evaluation, job };
+    });
+
+    await enqueueLlmJob(job.type, job.id);
   }
 
   await prisma.attemptAnswer.updateMany({
@@ -181,4 +224,14 @@ function calculateBandFromPercentage(percentage: number, module: string): number
     return 1;
   }
   return 0;
+}
+
+function inferTaskType(title: string | null, contentJson: Prisma.JsonValue): "task_1" | "task_2" {
+  const titleLower = (title ?? "").toLowerCase();
+  if (titleLower.includes("task 2") || titleLower.includes("task_2") || titleLower.includes("task2")) {
+    return "task_2";
+  }
+  const content = contentJson as Record<string, unknown> | null;
+  if (content?.taskType === "task_2") return "task_2";
+  return "task_1";
 }

@@ -13,6 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { apiFetch } from "@/lib/api/client";
 import { StreakBadge } from "@/components/dashboard/streak-badge";
 import { AchievementsPanel, type Achievement } from "@/components/dashboard/achievements-panel";
+import { ScoreTrend, ScoreTrendSkeleton } from "@/components/dashboard/score-trend";
 
 interface DashboardData {
   profile: {
@@ -36,6 +37,14 @@ interface DashboardData {
     startedAt: string;
     completedAt: string | null;
     overallBand: number | null;
+  }[];
+  scoreHistory: {
+    date: string;
+    listening: number | null;
+    reading: number | null;
+    writing: number | null;
+    speaking: number | null;
+    overall: number | null;
   }[];
 }
 
@@ -208,6 +217,12 @@ export function DashboardSummary() {
           </CardContent>
         </Card>
       )}
+
+      {data.scoreHistory && data.scoreHistory.length > 0 ? (
+        <ScoreTrend history={data.scoreHistory} />
+      ) : isLoading ? (
+        <ScoreTrendSkeleton />
+      ) : null}
 
       {recentAttempts.length > 0 && (
         <Card>

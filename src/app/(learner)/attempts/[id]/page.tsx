@@ -151,7 +151,7 @@ function ActiveAttempt({ attempt, onRefresh }: { attempt: AttemptDetail; onRefre
     onError: (error: Error) => toast.error(error.message),
   });
 
-  const submitMutation = useApiMutation<unknown, { sectionId: string }>({
+  const submitMutation = useApiMutation<unknown, { sectionId: string; responseText?: string }>({
     mutationKey: ["submit-section"],
     endpoint: `/api/attempts/${attempt.id}/submit-section`,
     onSuccess: () => {
@@ -216,7 +216,8 @@ function ActiveAttempt({ attempt, onRefresh }: { attempt: AttemptDetail; onRefre
       return;
     }
     await saveMutation.mutateAsync({ sectionId: section.id, answers: sectionAnswers, isDraft: false });
-    await submitMutation.mutateAsync({ sectionId: section.id });
+    const writingText = isWriting ? sectionAnswers["writing"] : undefined;
+    await submitMutation.mutateAsync({ sectionId: section.id, responseText: writingText });
     setReviewing(false);
   }
 
@@ -225,7 +226,8 @@ function ActiveAttempt({ attempt, onRefresh }: { attempt: AttemptDetail; onRefre
     toast.warning("Time is up! Submitting your answers...");
     try {
       await saveMutation.mutateAsync({ sectionId: section.id, answers: sectionAnswers, isDraft: false });
-      await submitMutation.mutateAsync({ sectionId: section.id });
+      const writingText = isWriting ? sectionAnswers["writing"] : undefined;
+      await submitMutation.mutateAsync({ sectionId: section.id, responseText: writingText });
     } catch {
       toast.error("Auto-submit failed. Please submit manually.");
     }

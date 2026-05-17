@@ -1,0 +1,86 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env.local
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/ieltsplusplus
+      - DIRECT_URL=postgresql://postgres:postgres@db:5432/ieltsplusplus
+      - REDIS_URL=redis://redis:6379
+      - STRAPI_BASE_URL=http://strapi:1337
+      - STRAPI_ADMIN_URL=http://strapi:1337/admin
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - ieltspp
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ieltsplusplus
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ieltspp
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ieltspp
+
+  strapi:
+    profiles:
+      - cms
+    build:
+      context: ./strapi-cms
+      dockerfile: Dockerfile
+    ports:
+      - "1337:1337"
+    environment:
+      DATABASE_CLIENT: postgres
+      DATABASE_HOST: db
+      DATABASE_PORT: 5432
+      DATABASE_NAME: ieltsplusplus
+      DATABASE_USERNAME: postgres
+      DATABASE_PASSWORD: postgres
+    volumes:
+      - strapi-data:/opt/app/public
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - ieltspp
+
+volumes:
+  pgdata:
+  redisdata:
+  strapi-data:
+
+networks:
+  ieltspp:
+    driver: bridge

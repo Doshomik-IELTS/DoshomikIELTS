@@ -2,14 +2,19 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
+import Link from "next/link";
 import { apiFetch } from "@/lib/api/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/ui/page-header";
 import { State } from "@/components/ui/state";
+import { FeedbackDisplay } from "@/components/ielts/feedback-display";
 
 type ModuleScore = {
   module: string;
+  rawScore: number | null;
+  maxRawScore: number | null;
   estimatedBand: number;
   confidence: string;
 };
@@ -24,6 +29,18 @@ type ScorePrediction = {
   disclaimer: string;
 };
 
+type EvaluationDetail = {
+  id: string;
+  type: "writing" | "speaking";
+  status: string;
+  overallBand: number | null;
+  needsHumanReview: boolean;
+  criteriaBands: Record<string, number> | null;
+  feedback: { summary?: string; strengths?: string[]; improvements?: string[]; nextTask?: string } | null;
+  taskType?: string;
+  part?: string;
+};
+
 type AttemptReport = {
   id: string;
   status: string;
@@ -32,13 +49,21 @@ type AttemptReport = {
   completedAt: string | null;
   moduleScores: ModuleScore[];
   scorePrediction: ScorePrediction | null;
+  evaluations: EvaluationDetail[];
 };
+
+function bandColor(band: number | null): string {
+  if (band == null) return "text-slate-400";
+  if (band >= 7) return "text-green-600";
+  if (band >= 5.5) return "text-amber-600";
+  return "text-red-600";
+}
 
 export default function AttemptReportPage() {
   const params = useParams();
   const id = params.id as string;
 
-  const { data, isLoading, error } = useQuery<AttemptReport>({
+  const { data, isLoading, error, refetch } = useQuery<AttemptReport>({
     queryKey: ["attempt-report", id],
     queryFn: () => apiFetch<AttemptReport>(`/api/attempts/${id}/report`),
   });
@@ -46,10 +71,7 @@ export default function AttemptReportPage() {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <PageHeader
-          title="Test Report"
-          description="Loading your results..."
-        />
+        <PageHeader title="Test Report" description="Loading your results..." />
         <State title="Loading..." variant="loading" />
       </div>
     );
@@ -63,13 +85,14 @@ export default function AttemptReportPage() {
           title="Could not load report"
           description="Please try refreshing the page."
           variant="error"
-          action={<Button variant="outline" onClick={() => window.location.reload()}>Retry</Button>}
+          action={<Button variant="outline" onClick={() => refetch()}>Retry</Button>}
         />
       </div>
     );
   }
 
-  const { moduleScores, scorePrediction } = data;
+  const { moduleScores, scorePrediction, evaluations } = data;
+  const completedEvaluations = evaluations?.filter((e) => e.status === "succeeded" || e.status === "needs_review") ?? [];
 
   return (
     <div className="space-y-6">
@@ -89,7 +112,9 @@ export default function AttemptReportPage() {
           </CardHeader>
           <CardContent>
             <div className="text-center">
-              <p className="text-6xl font-bold text-blue-700">{scorePrediction.overallBand}</p>
+              <p className={`text-6xl font-bold ${bandColor(scorePrediction.overallBand)}`}>
+                {scorePrediction.overallBand.toFixed(1)}
+              </p>
               <p className="mt-2 text-sm text-blue-600">Unofficial Estimate</p>
             </div>
           </CardContent>
@@ -108,7 +133,14 @@ export default function AttemptReportPage() {
               <CardTitle className="text-base capitalize">{score.module}</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold text-slate-900">{score.estimatedBand}</p>
+              <p className={`text-3xl font-bold ${bandColor(score.estimatedBand)}`}>
+                {score.estimatedBand.toFixed(1)}
+              </p>
+              {score.rawScore != null && score.maxRawScore != null && (
+                <p className="mt-1 text-xs text-slate-500">
+                  {score.rawScore}/{score.maxRawScore} correct
+                </p>
+              )}
               <p className="mt-1 text-xs text-slate-500 capitalize">
                 Confidence: {score.confidence}
               </p>
@@ -132,7 +164,9 @@ export default function AttemptReportPage() {
               ].map(([label, band]) => (
                 <div key={label} className="text-center">
                   <dt className="text-sm text-slate-500">{label}</dt>
-                  <dd className="text-2xl font-bold text-slate-900">{band}</dd>
+                  <dd className={`text-2xl font-bold ${bandColor(band)}`}>
+                    {(band as number).toFixed(1)}
+                  </dd>
                 </div>
               ))}
             </dl>
@@ -142,6 +176,44 @@ export default function AttemptReportPage() {
           </CardContent>
         </Card>
       )}
+
+      {completedEvaluations.length > 0 && (
+        <div className="space-y-4">
+          <h2 className="text-lg font-semibold text-slate-900">Detailed Feedback</h2>
+          {completedEvaluations.map((eval_) => (
+            <div key={eval_.id} className="space-y-3">
+              <div className="flex items-center gap-3">
+                <Badge variant="neutral" className="capitalize">{eval_.type}</Badge>
+                {eval_.taskType && <Badge variant="neutral">{eval_.taskType.replace("_", " ")}</Badge>}
+                {eval_.part && <Badge variant="neutral" className="capitalize">{eval_.part.replace("_", " ")}</Badge>}
+                {eval_.overallBand != null && (
+                  <span className={`text-lg font-bold ${bandColor(eval_.overallBand)}`}>
+                    Band {eval_.overallBand.toFixed(1)}
+                  </span>
+                )}
+                {eval_.needsHumanReview && (
+                  <Badge variant="danger">Needs Review</Badge>
+                )}
+              </div>
+              <FeedbackDisplay
+                feedback={eval_.feedback}
+                criteriaBands={eval_.criteriaBands}
+                overallBand={eval_.overallBand}
+                type={eval_.type}
+              />
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="flex gap-3">
+        <Link href="/mock-tests">
+          <Button variant="outline">Back to Tests</Button>
+        </Link>
+        <Link href={`/attempts/${id}/score`}>
+          <Button variant="ghost">View Score Summary</Button>
+        </Link>
+      </div>
     </div>
   );
 }

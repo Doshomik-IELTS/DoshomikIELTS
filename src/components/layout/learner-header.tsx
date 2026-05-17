@@ -13,6 +13,7 @@ const learnerNav: { label: string; href: string }[] = [
   { label: "Resources", href: "/resources" },
   { label: "Practice", href: "/practice" },
   { label: "Mock Tests", href: "/mock-tests" },
+  { label: "Progress", href: "/progress" },
   { label: "Referrals", href: "/referrals" },
   { label: "Profile", href: "/profile" },
 ];

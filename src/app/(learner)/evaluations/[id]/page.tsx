@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 import { State } from "@/components/ui/state";
+import { FeedbackDisplay } from "@/components/ielts/feedback-display";
 import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 
 interface EvaluationDetail {
@@ -171,16 +172,12 @@ export default function EvaluationPage() {
           ) : null}
 
           {evaluation.feedbackJson ? (
-            <Card>
-              <CardHeader>
-                <CardTitle>Feedback</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="max-h-64 overflow-y-auto rounded-md bg-slate-50 p-4 text-sm text-slate-800 whitespace-pre-wrap">
-                  {JSON.stringify(evaluation.feedbackJson, null, 2)}
-                </div>
-              </CardContent>
-            </Card>
+            <FeedbackDisplay
+              feedback={evaluation.feedbackJson as { summary?: string; strengths?: string[]; improvements?: string[]; nextTask?: string }}
+              criteriaBands={evaluation.criteriaBands as Record<string, number> | null}
+              overallBand={evaluation.overallBand as number | null}
+              type={type}
+            />
           ) : null}
 
           {status === "failed" && (

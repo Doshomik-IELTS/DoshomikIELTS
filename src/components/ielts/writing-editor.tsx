@@ -83,24 +83,24 @@ export function WritingEditor({
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <span className="text-sm font-medium text-slate-700">{config.label}</span>
+        <span id={`writing-label-${taskType}`} className="text-sm font-medium text-slate-700">{config.label}</span>
         <div className="flex items-center gap-4 text-sm text-slate-500">
           {draftSaved && (
-            <span className="text-green-600 flex items-center gap-1">
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <span className="text-green-600 flex items-center gap-1" role="status" aria-live="polite">
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
               Draft saved
             </span>
           )}
-          <span className={isNearWarning ? "text-amber-600 font-medium" : ""}>
+          <span id={`word-count-${taskType}`} className={isNearWarning ? "text-amber-600 font-medium" : ""}>
             {wordCount} words
           </span>
           <span>{charCount} chars</span>
         </div>
       </div>
 
-      <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+      <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden" role="progressbar" aria-valuenow={wordCount} aria-valuemin={0} aria-valuemax={config.minWords} aria-label="Word count progress">
         <div
           className={`h-full rounded-full transition-all duration-300 ${progressColor}`}
           style={{ width: `${progressPercent}%` }}
@@ -112,6 +112,7 @@ export function WritingEditor({
         onChange={(e) => onChange(e.target.value)}
         disabled={disabled}
         rows={config.rows}
+        aria-labelledby={`writing-label-${taskType} word-count-${taskType}`}
         placeholder={
           taskType === "task1"
             ? "Write at least 150 words describing the information in the graph/chart/diagram..."

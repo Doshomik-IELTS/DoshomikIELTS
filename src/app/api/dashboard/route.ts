@@ -10,7 +10,7 @@ export async function GET() {
 
   const profileId = current.profile.id;
 
-  const [profile, savedResourcesCount, recentAttempts, moduleScores] = await Promise.all([
+  const [profile, savedResourcesCount, recentAttempts, moduleScores, allCompletedAttempts] = await Promise.all([
     prisma.profile.findUnique({
       where: { id: profileId },
       select: {
@@ -55,6 +55,22 @@ export async function GET() {
         attemptId: true,
       },
     }),
+    prisma.mockTestAttempt.findMany({
+      where: { profileId, status: "completed" },
+      orderBy: { completedAt: "asc" },
+      select: {
+        completedAt: true,
+        scorePrediction: {
+          select: {
+            listeningBand: true,
+            readingBand: true,
+            writingBand: true,
+            speakingBand: true,
+            overallBand: true,
+          },
+        },
+      },
+    }),
   ]);
 
   const latestScoresByModule = moduleScores.reduce(
@@ -75,6 +91,17 @@ export async function GET() {
 
   const completedAttempts = recentAttempts.filter((a) => a.status === "completed").length;
   const inProgressAttempts = recentAttempts.filter((a) => a.status === "in_progress").length;
+
+  const scoreHistory = allCompletedAttempts
+    .filter((a) => a.completedAt && a.scorePrediction)
+    .map((a) => ({
+      date: a.completedAt!.toISOString(),
+      listening: a.scorePrediction!.listeningBand,
+      reading: a.scorePrediction!.readingBand,
+      writing: a.scorePrediction!.writingBand,
+      speaking: a.scorePrediction!.speakingBand,
+      overall: a.scorePrediction!.overallBand,
+    }));
 
   return ok({
     profile: {
@@ -99,5 +126,6 @@ export async function GET() {
       completedAt: a.completedAt?.toISOString() ?? null,
       overallBand: a.scorePrediction?.overallBand ?? null,
     })),
+    scoreHistory,
   });
 }
