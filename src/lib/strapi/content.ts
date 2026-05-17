@@ -17,6 +17,8 @@ export type StrapiResourceSummary = {
   slug: string;
   category: string;
   difficulty: string;
+  banglaTitle: string | null;
+  banglaSummary: string | null;
   tags: string[];
   createdAt: string | null;
   saved?: boolean;
@@ -24,7 +26,9 @@ export type StrapiResourceSummary = {
 
 export type StrapiResourceDetail = StrapiResourceSummary & {
   body: string;
+  banglaTranslation: string | null;
   examplesJson: unknown;
+  vocabularyItemsJson: unknown;
   publishedAt: string | null;
 };
 
@@ -223,8 +227,12 @@ function resourceFromEntry(raw: unknown): StrapiResourceDetail | null {
     slug: stringValue(r.slug, documentId),
     category: stringValue(r.category, "basic_english"),
     difficulty: stringValue(r.difficulty, "basic"),
+    banglaTitle: stringValue(r.banglaTitle, null as never),
+    banglaSummary: stringValue(r.banglaSummary, null as never),
     body: stringValue(r.body),
+    banglaTranslation: stringValue(r.banglaTranslation, null as never),
     examplesJson: componentCollection(r.examples),
+    vocabularyItemsJson: componentCollection(r.vocabularyItems),
     tags: tagsValue(r.tags, r.tagItems),
     createdAt: stringValue(r.createdAt, null as never),
     publishedAt: stringValue(r.publishedAt, null as never),
@@ -256,6 +264,8 @@ export async function fetchStrapiResources(params: {
       slug: resource.slug,
       category: resource.category,
       difficulty: resource.difficulty,
+      banglaTitle: resource.banglaTitle,
+      banglaSummary: resource.banglaSummary,
       tags: resource.tags,
       createdAt: resource.createdAt,
       saved: resource.saved,

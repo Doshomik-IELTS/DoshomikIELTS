@@ -1,5 +1,46 @@
 import type { ResourceCategory } from "@prisma/client";
 
+export const RESOURCE_CATEGORY_LABELS: Record<string, string> = {
+  basic_english: "Basic English",
+  words: "Vocabulary / words",
+  synonyms: "Synonyms",
+  antonyms: "Antonyms",
+  collocations: "Collocations",
+  idioms_phrases: "Idioms & phrases",
+  phrasal_verbs: "Phrasal verbs",
+  word_forms: "Word forms",
+  pronunciation: "Pronunciation",
+  grammar: "Grammar",
+  spelling: "Spelling",
+  punctuation: "Punctuation",
+  sentence_structure: "Sentence structure",
+  common_mistakes: "Common mistakes",
+  common_topics: "Common topics",
+  common_topics_qa: "Common topics Q&A",
+  reading_strategy: "Reading strategy",
+  reading_question_types: "Reading question types",
+  listening_strategy: "Listening strategy",
+  listening_question_types: "Listening question types",
+  writing_strategy: "Writing strategy",
+  writing_task_1_academic: "Writing Task 1 Academic",
+  writing_task_1_general: "Writing Task 1 General",
+  writing_task_2: "Writing Task 2",
+  speaking_strategy: "Speaking strategy",
+  speaking_part_1: "Speaking Part 1",
+  speaking_part_2: "Speaking Part 2",
+  speaking_part_3: "Speaking Part 3",
+  question_ideas: "Question ideas",
+  sample_questions: "Sample questions",
+  sample_answers: "Sample answers",
+  scenarios: "Scenarios",
+  band_descriptors: "Band descriptors",
+  exam_strategy: "Exam strategy",
+  study_plan: "Study plan",
+  academic_ielts: "Academic IELTS",
+  general_training_ielts: "General Training IELTS",
+  video_course: "Video course",
+};
+
 export const RESOURCE_CATEGORY_OPTIONS: { value: ResourceCategory; label: string }[] = [
   { value: "basic_english", label: "Basic English" },
   { value: "words", label: "Vocabulary / words" },
@@ -28,7 +69,7 @@ export const RESOURCE_CATEGORY_HELP: Record<ResourceCategory, string> = {
 };
 
 export function resourceCategoryLabel(value: string) {
-  return RESOURCE_CATEGORY_OPTIONS.find((option) => option.value === value)?.label ?? value;
+  return RESOURCE_CATEGORY_LABELS[value] ?? RESOURCE_CATEGORY_OPTIONS.find((option) => option.value === value)?.label ?? value;
 }
 
 export function difficultyLabel(value: string) {

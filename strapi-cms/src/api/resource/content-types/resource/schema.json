@@ -26,18 +26,40 @@
         "basic_english",
         "words",
         "synonyms",
+        "antonyms",
+        "collocations",
+        "idioms_phrases",
+        "phrasal_verbs",
+        "word_forms",
+        "pronunciation",
         "grammar",
         "spelling",
+        "punctuation",
+        "sentence_structure",
+        "common_mistakes",
         "common_topics",
         "common_topics_qa",
         "reading_strategy",
+        "reading_question_types",
         "listening_strategy",
+        "listening_question_types",
         "writing_strategy",
+        "writing_task_1_academic",
+        "writing_task_1_general",
+        "writing_task_2",
         "speaking_strategy",
+        "speaking_part_1",
+        "speaking_part_2",
+        "speaking_part_3",
         "question_ideas",
         "sample_questions",
+        "sample_answers",
         "scenarios",
+        "band_descriptors",
+        "exam_strategy",
+        "study_plan",
         "academic_ielts",
+        "general_training_ielts",
         "video_course"
       ],
       "required": true
@@ -58,6 +80,15 @@
     },
     "summary": {
       "type": "text"
+    },
+    "banglaTitle": {
+      "type": "string"
+    },
+    "banglaSummary": {
+      "type": "text"
+    },
+    "banglaTranslation": {
+      "type": "richtext"
     },
     "module": {
       "type": "enumeration",
@@ -87,6 +118,11 @@
       "type": "component",
       "repeatable": true,
       "component": "content.example"
+    },
+    "vocabularyItems": {
+      "type": "component",
+      "repeatable": true,
+      "component": "content.vocabulary-item"
     },
     "tags": {
       "type": "json"

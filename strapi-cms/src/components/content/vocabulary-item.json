@@ -1,0 +1,51 @@
+{
+  "collectionName": "components_content_vocabulary_items",
+  "info": {
+    "displayName": "Vocabulary Item",
+    "description": "Word, synonym, phrase, or collocation with optional Bangla support."
+  },
+  "attributes": {
+    "term": {
+      "type": "string",
+      "required": true
+    },
+    "partOfSpeech": {
+      "type": "enumeration",
+      "enum": [
+        "noun",
+        "verb",
+        "adjective",
+        "adverb",
+        "phrase",
+        "idiom",
+        "collocation",
+        "phrasal_verb",
+        "other"
+      ]
+    },
+    "pronunciation": {
+      "type": "string"
+    },
+    "definition": {
+      "type": "text"
+    },
+    "banglaMeaning": {
+      "type": "text"
+    },
+    "synonyms": {
+      "type": "text"
+    },
+    "antonyms": {
+      "type": "text"
+    },
+    "exampleSentence": {
+      "type": "text"
+    },
+    "banglaExample": {
+      "type": "text"
+    },
+    "usageNote": {
+      "type": "text"
+    }
+  }
+}

@@ -487,7 +487,15 @@ export interface ApiIeltsInfoPageIeltsInfoPage
   attributes: {
     body: Schema.Attribute.RichText & Schema.Attribute.Required;
     category: Schema.Attribute.Enumeration<
-      ['fees', 'centers', 'preparation', 'referral', 'other']
+      [
+        'fees',
+        'centers',
+        'preparation',
+        'referral',
+        'test_dates',
+        'requirements',
+        'other',
+      ]
     > &
       Schema.Attribute.Required;
     createdAt: Schema.Attribute.DateTime;
@@ -503,6 +511,7 @@ export interface ApiIeltsInfoPageIeltsInfoPage
     orderIndex: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
     publishedAt: Schema.Attribute.DateTime;
     slug: Schema.Attribute.UID<'title'> & Schema.Attribute.Required;
+    structuredData: Schema.Attribute.JSON;
     title: Schema.Attribute.String & Schema.Attribute.Required;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -544,17 +553,22 @@ export interface ApiMockTestSectionMockTestSection
       Schema.Attribute.Required &
       Schema.Attribute.DefaultTo<0>;
     partNumber: Schema.Attribute.Integer;
+    passageText: Schema.Attribute.RichText;
     publishedAt: Schema.Attribute.DateTime;
     questionGroups: Schema.Attribute.Relation<
       'oneToMany',
       'api::question-group.question-group'
     >;
     questions: Schema.Attribute.Relation<'oneToMany', 'api::question.question'>;
+    sourceAttribution: Schema.Attribute.Text;
+    speakingPrompt: Schema.Attribute.RichText;
     test: Schema.Attribute.Relation<'manyToOne', 'api::mock-test.mock-test'>;
     title: Schema.Attribute.String & Schema.Attribute.Required;
+    transcript: Schema.Attribute.RichText;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    writingPrompt: Schema.Attribute.RichText;
   };
 }
 
@@ -577,6 +591,7 @@ export interface ApiMockTestMockTest extends Struct.CollectionTypeSchema {
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     description: Schema.Attribute.RichText;
+    editorNotes: Schema.Attribute.Text;
     estimatedDurationMinutes: Schema.Attribute.Integer;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
@@ -585,11 +600,14 @@ export interface ApiMockTestMockTest extends Struct.CollectionTypeSchema {
     > &
       Schema.Attribute.Private;
     publishedAt: Schema.Attribute.DateTime;
+    reviewChecklist: Schema.Attribute.JSON;
     sections: Schema.Attribute.Relation<
       'oneToMany',
       'api::mock-test-section.mock-test-section'
     >;
     slug: Schema.Attribute.UID<'title'> & Schema.Attribute.Required;
+    sourceAttribution: Schema.Attribute.Text;
+    tags: Schema.Attribute.Component<'content.tag', true>;
     title: Schema.Attribute.String & Schema.Attribute.Required;
     type: Schema.Attribute.Enumeration<
       ['practice', 'short_mock', 'full_mock']
@@ -637,6 +655,7 @@ export interface ApiQuestionGroupQuestionGroup
       'manyToOne',
       'api::mock-test-section.mock-test-section'
     >;
+    sharedOptions: Schema.Attribute.Component<'content.option', true>;
     title: Schema.Attribute.String;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -676,6 +695,7 @@ export interface ApiQuestionQuestion extends Struct.CollectionTypeSchema {
       'api::question.question'
     > &
       Schema.Attribute.Private;
+    media: Schema.Attribute.Media<'images' | 'files' | 'audios'>;
     options: Schema.Attribute.Component<'content.option', true>;
     orderIndex: Schema.Attribute.Integer &
       Schema.Attribute.Required &
@@ -700,6 +720,7 @@ export interface ApiQuestionQuestion extends Struct.CollectionTypeSchema {
       'manyToOne',
       'api::mock-test-section.mock-test-section'
     >;
+    sourceAttribution: Schema.Attribute.Text;
     sourceSpan: Schema.Attribute.JSON;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -719,17 +740,53 @@ export interface ApiResourceResource extends Struct.CollectionTypeSchema {
     draftAndPublish: true;
   };
   attributes: {
+    accessTier: Schema.Attribute.Enumeration<['free', 'paid', 'internal']> &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'free'>;
+    banglaSummary: Schema.Attribute.Text;
+    banglaTitle: Schema.Attribute.String;
+    banglaTranslation: Schema.Attribute.RichText;
     body: Schema.Attribute.RichText & Schema.Attribute.Required;
     category: Schema.Attribute.Enumeration<
       [
         'basic_english',
         'words',
         'synonyms',
+        'antonyms',
+        'collocations',
+        'idioms_phrases',
+        'phrasal_verbs',
+        'word_forms',
+        'pronunciation',
         'grammar',
+        'spelling',
+        'punctuation',
+        'sentence_structure',
+        'common_mistakes',
+        'common_topics',
+        'common_topics_qa',
         'reading_strategy',
+        'reading_question_types',
         'listening_strategy',
+        'listening_question_types',
         'writing_strategy',
+        'writing_task_1_academic',
+        'writing_task_1_general',
+        'writing_task_2',
         'speaking_strategy',
+        'speaking_part_1',
+        'speaking_part_2',
+        'speaking_part_3',
+        'question_ideas',
+        'sample_questions',
+        'sample_answers',
+        'scenarios',
+        'band_descriptors',
+        'exam_strategy',
+        'study_plan',
+        'academic_ielts',
+        'general_training_ielts',
+        'video_course',
       ]
     > &
       Schema.Attribute.Required;
@@ -741,6 +798,8 @@ export interface ApiResourceResource extends Struct.CollectionTypeSchema {
     > &
       Schema.Attribute.Required &
       Schema.Attribute.DefaultTo<'basic'>;
+    editorNotes: Schema.Attribute.Text;
+    estimatedStudyMinutes: Schema.Attribute.Integer;
     examples: Schema.Attribute.Component<'content.example', true>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
@@ -752,18 +811,30 @@ export interface ApiResourceResource extends Struct.CollectionTypeSchema {
       'images' | 'files' | 'audios' | 'videos',
       true
     >;
+    module: Schema.Attribute.Enumeration<
+      ['general', 'listening', 'reading', 'writing', 'speaking']
+    > &
+      Schema.Attribute.DefaultTo<'general'>;
     orderIndex: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
     prerequisites: Schema.Attribute.Relation<
       'manyToMany',
       'api::resource.resource'
     >;
     publishedAt: Schema.Attribute.DateTime;
+    reviewChecklist: Schema.Attribute.JSON;
     slug: Schema.Attribute.UID<'title'> & Schema.Attribute.Required;
+    sourceAttribution: Schema.Attribute.Text;
+    summary: Schema.Attribute.Text;
+    tagItems: Schema.Attribute.Component<'content.tag', true>;
     tags: Schema.Attribute.JSON;
     title: Schema.Attribute.String & Schema.Attribute.Required;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    vocabularyItems: Schema.Attribute.Component<
+      'content.vocabulary-item',
+      true
+    >;
   };
 }
 

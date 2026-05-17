@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { MobileNav } from "@/components/layout/mobile-nav";
-import { SidebarNav } from "@/components/layout/sidebar-nav";
+import { AdminHeaderNav } from "@/components/layout/admin-header-nav";
 
 const adminNav: { label: string; href: string }[] = [
   { label: "Overview", href: "/admin" },
@@ -14,14 +14,22 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-slate-50">
       <MobileNav brand="IELTS++ Admin" items={adminNav} backHref="/dashboard" backLabel="Learner app" />
-      <aside className="fixed inset-y-0 hidden w-64 border-r border-slate-200 bg-white p-6 md:block">
-        <Link href="/admin" className="text-xl font-bold text-blue-800">
-          IELTS++ Admin
-        </Link>
-        <SidebarNav items={adminNav} backHref="/dashboard" backLabel="Learner app" />
-      </aside>
-      <main className="md:pl-64">
-        <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">{children}</div>
+      <header className="sticky top-0 z-40 hidden border-b border-slate-200 bg-white/95 backdrop-blur md:block">
+        <div className="mx-auto flex h-16 max-w-7xl items-center gap-6 px-6 lg:px-8">
+          <Link href="/admin" className="shrink-0 text-lg font-bold text-blue-800">
+            IELTS++ Admin
+          </Link>
+          <AdminHeaderNav items={adminNav} />
+          <Link
+            href="/dashboard"
+            className="ml-auto shrink-0 rounded-md px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-950"
+          >
+            Learner app
+          </Link>
+        </div>
+      </header>
+      <main>
+        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">{children}</div>
       </main>
     </div>
   );
