@@ -27,13 +27,6 @@ export class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error("[ErrorBoundary]", error, errorInfo);
-    if (typeof window !== "undefined" && (window as Record<string, unknown>).Sentry) {
-      try {
-        (window as Record<string, unknown>).Sentry.captureException?.(error);
-      } catch {
-        // Sentry not initialized
-      }
-    }
   }
 
   render() {

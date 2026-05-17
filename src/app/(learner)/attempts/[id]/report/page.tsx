@@ -157,15 +157,15 @@ export default function AttemptReportPage() {
           <CardContent>
             <dl className="grid grid-cols-2 gap-4 sm:grid-cols-4">
               {[
-                ["Listening", scorePrediction.listeningBand],
-                ["Reading", scorePrediction.readingBand],
-                ["Writing", scorePrediction.writingBand],
-                ["Speaking", scorePrediction.speakingBand],
+                ["Listening", scorePrediction.listeningBand] as const,
+                ["Reading", scorePrediction.readingBand] as const,
+                ["Writing", scorePrediction.writingBand] as const,
+                ["Speaking", scorePrediction.speakingBand] as const,
               ].map(([label, band]) => (
                 <div key={label} className="text-center">
                   <dt className="text-sm text-slate-500">{label}</dt>
                   <dd className={`text-2xl font-bold ${bandColor(band)}`}>
-                    {(band as number).toFixed(1)}
+                    {band.toFixed(1)}
                   </dd>
                 </div>
               ))}

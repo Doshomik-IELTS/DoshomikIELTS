@@ -220,12 +220,12 @@ export default function ScorePage({ params }: { params: Promise<{ id: string }> 
             </CardHeader>
             <CardContent>
               <dl className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-                {[
-                  ["Listening", scorePrediction.listeningBand],
-                  ["Reading", scorePrediction.readingBand],
-                  ["Writing", scorePrediction.writingBand],
-                  ["Speaking", scorePrediction.speakingBand],
-                ].map(([label, band]) => (
+              {[
+                ["Listening", scorePrediction.listeningBand] as const,
+                ["Reading", scorePrediction.readingBand] as const,
+                ["Writing", scorePrediction.writingBand] as const,
+                ["Speaking", scorePrediction.speakingBand] as const,
+              ].map(([label, band]) => (
                   <div key={label as string} className="text-center">
                     <dt className="text-sm text-slate-500">{label}</dt>
                     <dd className={`text-3xl font-bold ${bandColor(band as number)}`}>

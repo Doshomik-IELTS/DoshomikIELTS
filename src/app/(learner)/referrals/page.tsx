@@ -8,6 +8,8 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { State } from "@/components/ui/state";
 import { apiFetch } from "@/lib/api/client";
+import { useState } from "react";
+import { toast } from "sonner";
 
 interface ReferralData {
   code: string;
@@ -56,10 +58,6 @@ async function fetchCredits(): Promise<CreditsData> {
   return apiFetch<CreditsData>("/api/referrals/me/credits");
 }
 
-async function copyToClipboard(text: string) {
-  await navigator.clipboard.writeText(text);
-}
-
 function txTypeLabel(type: string): string {
   const map: Record<string, string> = {
     referral_bonus: "Referral bonus",
@@ -79,6 +77,8 @@ function txTypeColor(type: string): "success" | "danger" | "neutral" | "warning"
 }
 
 export default function ReferralsPage() {
+  const [copied, setCopied] = useState<string | null>(null);
+
   const { data: referral, isLoading: refLoading } = useQuery({
     queryKey: ["referral"],
     queryFn: fetchReferral,
@@ -93,6 +93,13 @@ export default function ReferralsPage() {
     queryKey: ["referral-credits"],
     queryFn: fetchCredits,
   });
+
+  async function handleCopy(text: string, label: string) {
+    await navigator.clipboard.writeText(text);
+    setCopied(label);
+    toast.success(`${label} copied to clipboard`);
+    setTimeout(() => setCopied(null), 2000);
+  }
 
   if (refLoading) return <ReferralsSkeleton />;
 
@@ -130,9 +137,9 @@ export default function ReferralsPage() {
               <Button
                 size="sm"
                 variant="outline"
-                onClick={() => copyToClipboard(referral.code)}
+                onClick={() => handleCopy(referral.code, "Code")}
               >
-                Copy
+                {copied === "Code" ? "Copied" : "Copy"}
               </Button>
             </div>
           </CardContent>
@@ -146,25 +153,9 @@ export default function ReferralsPage() {
               <Button
                 size="sm"
                 variant="outline"
-                onClick={() => copyToClipboard(fullShareUrl)}
+                onClick={() => handleCopy(fullShareUrl, "Link")}
               >
-                Copy
-              </Button>
-            </div>
-            <div className="mt-3 flex gap-2">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => copyToClipboard(fullShareUrl)}
-              >
-                Share via WhatsApp
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => copyToClipboard(fullShareUrl)}
-              >
-                Share via Email
+                {copied === "Link" ? "Copied" : "Copy"}
               </Button>
             </div>
           </CardContent>

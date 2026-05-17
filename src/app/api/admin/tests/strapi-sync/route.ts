@@ -12,13 +12,13 @@ export async function POST() {
     return fail({ code: "UNAUTHENTICATED", message: "Authentication required" }, 401);
   }
 
-  if (!canAccessAdminRoutes(actor.roles)) {
+  if (!canAccessAdminRoutes(actor.profile.roles)) {
     return fail({ code: "FORBIDDEN", message: "Admin access required" }, 403);
   }
 
   const strapiTests = await fetchStrapiMockTests();
   if (!strapiTests) {
-    return fail({ code: "SERVICE_UNAVAILABLE", message: "Strapi is not configured or unreachable" }, 503);
+    return fail({ code: "INTERNAL_ERROR", message: "Strapi is not configured or unreachable" }, 503);
   }
 
   const imported: { id: string; title: string; alreadyExists: boolean }[] = [];
