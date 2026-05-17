@@ -10,6 +10,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { State } from "@/components/ui/state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 
 type ModuleScore = {
   module: string;
@@ -75,6 +76,13 @@ function bandColor(band: number | null): string {
   return "text-red-600";
 }
 
+function bandIndicator(band: number | null): string {
+  if (band == null) return "";
+  if (band >= 7) return "✓ ";
+  if (band >= 5.5) return "~ ";
+  return "✗ ";
+}
+
 export default function ScorePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
 
@@ -122,6 +130,14 @@ export default function ScorePage({ params }: { params: Promise<{ id: string }> 
 
   return (
     <div className="space-y-6">
+      <Breadcrumbs
+        items={[
+          { label: "Dashboard", href: "/dashboard" },
+          { label: "Mock Tests", href: "/mock-tests" },
+          { label: data.testTitle },
+          { label: "Score" },
+        ]}
+      />
       <PageHeader
         title={data.testTitle}
         description={
@@ -181,7 +197,7 @@ export default function ScorePage({ params }: { params: Promise<{ id: string }> 
             <CardContent>
               <div className="text-center">
                 <p className={`text-7xl font-bold ${bandColor(scorePrediction.overallBand)}`} aria-label={`Overall band score: ${scorePrediction.overallBand.toFixed(1)} out of 9`}>
-                  {scorePrediction.overallBand.toFixed(1)}
+                  {bandIndicator(scorePrediction.overallBand)}{scorePrediction.overallBand.toFixed(1)}
                 </p>
                 <p className="mt-2 text-sm text-blue-600">Unofficial Estimate</p>
                 <p className={`mt-1 text-xs ${confidenceColor(scorePrediction.confidence)}`}>
@@ -199,7 +215,7 @@ export default function ScorePage({ params }: { params: Promise<{ id: string }> 
                 </CardHeader>
                 <CardContent>
                   <p className={`text-4xl font-bold ${bandColor(score.estimatedBand)}`} aria-label={`${score.module} band: ${score.estimatedBand.toFixed(1)}`}>
-                    {score.estimatedBand.toFixed(1)}
+                    {bandIndicator(score.estimatedBand)}{score.estimatedBand.toFixed(1)}
                   </p>
                   {score.rawScore != null && score.maxRawScore != null && (
                     <p className="mt-1 text-xs text-slate-500">
@@ -229,7 +245,7 @@ export default function ScorePage({ params }: { params: Promise<{ id: string }> 
                   <div key={label as string} className="text-center">
                     <dt className="text-sm text-slate-500">{label}</dt>
                     <dd className={`text-3xl font-bold ${bandColor(band as number)}`}>
-                      {(band as number).toFixed(1)}
+                      {bandIndicator(band as number)}{(band as number).toFixed(1)}
                     </dd>
                   </div>
                 ))}

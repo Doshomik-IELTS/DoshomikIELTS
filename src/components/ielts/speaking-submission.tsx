@@ -29,10 +29,15 @@ export function SpeakingSubmission({
   const [mediaAssetId, setMediaAssetId] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [inputMode, setInputMode] = useState<"text" | "audio">("text");
 
   async function submit() {
-    if (!text.trim() && !mediaAssetId) {
-      setError("Please provide either a text response or record audio");
+    if (inputMode === "text" && !text.trim()) {
+      setError("Please type your response");
+      return;
+    }
+    if (inputMode === "audio" && !mediaAssetId) {
+      setError("Please record your response");
       return;
     }
 
@@ -46,8 +51,8 @@ export function SpeakingSubmission({
           attemptId,
           sectionId,
           part,
-          responseText: text.trim() || null,
-          mediaAssetId: mediaAssetId || null,
+          responseText: inputMode === "text" ? text.trim() : null,
+          mediaAssetId: inputMode === "audio" ? mediaAssetId : null,
         }),
       });
 
@@ -65,27 +70,43 @@ export function SpeakingSubmission({
 
   return (
     <div className="space-y-6">
-      <div className="space-y-2">
-        <Label htmlFor="response">Your Response</Label>
-        <Textarea
-          id="response"
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          placeholder="Type your response here..."
-          rows={6}
-          disabled={submitting}
-        />
-        <p className="text-xs text-slate-500">
-          Or record your response using the audio recorder below.
-        </p>
+      <div className="flex gap-2">
+        <Button
+          variant={inputMode === "text" ? "default" : "outline"}
+          size="sm"
+          onClick={() => setInputMode("text")}
+        >
+          Type Response
+        </Button>
+        <Button
+          variant={inputMode === "audio" ? "default" : "outline"}
+          size="sm"
+          onClick={() => setInputMode("audio")}
+        >
+          Record Audio
+        </Button>
       </div>
 
-      <div className="border-t border-slate-200 pt-4">
-        <Label>Audio Recording</Label>
-        <SpeakingRecorder
-          onRecordingComplete={(id) => setMediaAssetId(id)}
-        />
-      </div>
+      {inputMode === "text" ? (
+        <div className="space-y-2">
+          <Label htmlFor="response">Your Response</Label>
+          <Textarea
+            id="response"
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder="Type your response here..."
+            rows={6}
+            disabled={submitting}
+          />
+        </div>
+      ) : (
+        <div className="space-y-2">
+          <Label>Audio Recording</Label>
+          <SpeakingRecorder
+            onRecordingComplete={(id) => setMediaAssetId(id)}
+          />
+        </div>
+      )}
 
       {error && <p className="text-sm text-red-600">{error}</p>}
 

@@ -70,13 +70,14 @@ export function ObjectiveQuestionRenderer({
       ) : null}
 
       {isChoiceType(question.questionType) && options.length > 0 ? (
-        <div className="grid gap-2">
+        <fieldset className="grid gap-2" disabled={disabled}>
+          <legend className="sr-only">{question.prompt}</legend>
           {options.map((option) => (
             <label
               key={option.key}
               className={`flex cursor-pointer items-start gap-3 rounded border p-3 text-sm ${
                 value === option.key ? "border-blue-300 bg-blue-50" : "border-slate-200 bg-white"
-              } ${disabled ? "cursor-not-allowed opacity-60" : ""}`}
+              }`}
             >
               <input
                 type="radio"
@@ -84,7 +85,6 @@ export function ObjectiveQuestionRenderer({
                 name={question.id}
                 value={option.key}
                 checked={value === option.key}
-                disabled={disabled}
                 onChange={(event) => onChange(event.target.value)}
               />
               <span>
@@ -92,7 +92,7 @@ export function ObjectiveQuestionRenderer({
               </span>
             </label>
           ))}
-        </div>
+        </fieldset>
       ) : isCompletionType(question.questionType) ? (
         <Input
           value={value}

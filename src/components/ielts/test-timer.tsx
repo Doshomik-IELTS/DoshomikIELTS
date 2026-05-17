@@ -57,7 +57,12 @@ export function TestTimer({ attemptId, totalDuration, onTimeExpired, onSync }: T
     : `${minutes}:${seconds.toString().padStart(2, "0")}`;
 
   return (
-    <div className={`flex items-center gap-2 px-4 py-2 rounded-lg font-mono text-lg ${isCritical ? "bg-red-100 text-red-700 animate-pulse" : isWarning ? "bg-yellow-100 text-yellow-800" : "bg-gray-100 text-gray-800"}`}>
+    <div
+      role="timer"
+      aria-live="polite"
+      aria-label={`${minutes} minutes ${seconds} seconds remaining`}
+      className={`flex items-center gap-2 px-4 py-2 rounded-lg font-mono text-lg ${isCritical ? "bg-red-100 text-red-700 animate-pulse" : isWarning ? "bg-yellow-100 text-yellow-800" : "bg-slate-100 text-slate-800"}`}
+    >
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>

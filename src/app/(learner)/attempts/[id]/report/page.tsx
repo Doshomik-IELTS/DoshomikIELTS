@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/ui/page-header";
 import { State } from "@/components/ui/state";
 import { FeedbackDisplay } from "@/components/ielts/feedback-display";
+import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 
 type ModuleScore = {
   module: string;
@@ -59,6 +60,13 @@ function bandColor(band: number | null): string {
   return "text-red-600";
 }
 
+function bandIndicator(band: number | null): string {
+  if (band == null) return "";
+  if (band >= 7) return "✓ ";
+  if (band >= 5.5) return "~ ";
+  return "✗ ";
+}
+
 export default function AttemptReportPage() {
   const params = useParams();
   const id = params.id as string;
@@ -96,6 +104,14 @@ export default function AttemptReportPage() {
 
   return (
     <div className="space-y-6">
+      <Breadcrumbs
+        items={[
+          { label: "Dashboard", href: "/dashboard" },
+          { label: "Mock Tests", href: "/mock-tests" },
+          { label: data.testTitle },
+          { label: "Report" },
+        ]}
+      />
       <PageHeader
         title={data.testTitle}
         description={
@@ -113,7 +129,7 @@ export default function AttemptReportPage() {
           <CardContent>
             <div className="text-center">
               <p className={`text-6xl font-bold ${bandColor(scorePrediction.overallBand)}`}>
-                {scorePrediction.overallBand.toFixed(1)}
+                {bandIndicator(scorePrediction.overallBand)}{scorePrediction.overallBand.toFixed(1)}
               </p>
               <p className="mt-2 text-sm text-blue-600">Unofficial Estimate</p>
             </div>
@@ -134,7 +150,7 @@ export default function AttemptReportPage() {
             </CardHeader>
             <CardContent>
               <p className={`text-3xl font-bold ${bandColor(score.estimatedBand)}`}>
-                {score.estimatedBand.toFixed(1)}
+                {bandIndicator(score.estimatedBand)}{score.estimatedBand.toFixed(1)}
               </p>
               {score.rawScore != null && score.maxRawScore != null && (
                 <p className="mt-1 text-xs text-slate-500">
@@ -165,7 +181,7 @@ export default function AttemptReportPage() {
                 <div key={label} className="text-center">
                   <dt className="text-sm text-slate-500">{label}</dt>
                   <dd className={`text-2xl font-bold ${bandColor(band)}`}>
-                    {band.toFixed(1)}
+                    {bandIndicator(band)}{band.toFixed(1)}
                   </dd>
                 </div>
               ))}
@@ -188,7 +204,7 @@ export default function AttemptReportPage() {
                 {eval_.part && <Badge variant="neutral" className="capitalize">{eval_.part.replace("_", " ")}</Badge>}
                 {eval_.overallBand != null && (
                   <span className={`text-lg font-bold ${bandColor(eval_.overallBand)}`}>
-                    Band {eval_.overallBand.toFixed(1)}
+                    Band {bandIndicator(eval_.overallBand)}{eval_.overallBand.toFixed(1)}
                   </span>
                 )}
                 {eval_.needsHumanReview && (

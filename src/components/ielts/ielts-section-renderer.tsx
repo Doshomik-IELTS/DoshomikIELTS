@@ -300,7 +300,7 @@ export function IeltsSectionRenderer({
   const ungroupedQuestions = section.questions.filter((question) => !question.groupId || !groupedIds.has(question.groupId));
 
   return (
-    <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(360px,0.9fr)]">
+    <div className="grid gap-5 lg:grid-cols-2">
       <div className="space-y-4">
         <SectionMaterial section={section} sourceSpans={sourceSpans} attemptId={attemptId} />
       </div>
