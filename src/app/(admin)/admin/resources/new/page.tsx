@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 import { canAccessAdminRoutes } from "@/lib/auth/roles";
 import { getCurrentUser } from "@/lib/auth/session";
-import { AdminLayout } from "@/components/layout/admin-layout";
 import { StrapiAuthoringPanel } from "@/components/admin/strapi-authoring-panel";
 
 export default async function AdminNewResourcePage() {
@@ -11,14 +10,10 @@ export default async function AdminNewResourcePage() {
   }
 
   return (
-    <AdminLayout>
-      <div className="container">
-        <StrapiAuthoringPanel
-          collection="resources"
-          title="Create resources in Strapi"
-          description="The custom IELTS++ resource editor has been replaced by Strapi. Use the Strapi Resource collection to create and publish learner resources."
-        />
-      </div>
-    </AdminLayout>
+    <StrapiAuthoringPanel
+      collection="resources"
+      title="Create resources in Strapi"
+      description="Use the Strapi Resource collection to create, edit, publish, and unpublish learner resources."
+    />
   );
 }

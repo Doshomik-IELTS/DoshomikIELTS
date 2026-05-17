@@ -11,6 +11,10 @@ export const TEST_TYPE_VALUES = TEST_TYPE_OPTIONS.map((o) => o.value) as [
   ...TestType[],
 ];
 
+export function testTypeLabel(value: string) {
+  return TEST_TYPE_OPTIONS.find((option) => option.value === value)?.label ?? value;
+}
+
 export const TEST_STATUS_OPTIONS = [
   { value: "draft", label: "Draft" },
   { value: "review", label: "In review" },

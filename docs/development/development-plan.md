@@ -131,7 +131,7 @@ These are non-negotiable for implementation (see [`frontend/README.md`](frontend
 
 | # | Deliverable | Status |
 |---|-------------|--------|
-| 5.1 | **Admin layout and guard** | **Done** — `AdminLayout` sidebar + route role layout. |
+| 5.1 | **Admin layout and guard** | **Done** — `AdminLayout` sidebar is applied once from the admin route-group layout; route role layout enforces admin/reviewer/evaluator access. |
 | 5.2 | **Resources authoring** | **Done** — Strapi Resource collection is the authoring UI; `/admin/resources*` routes open Strapi entry panels. Legacy Prisma APIs remain fallback/local tooling. |
 | 5.3 | **Tests authoring** | **Done** — Strapi Mock Test, Section, Question Group, and Question content types are the authoring UI; app materializes Strapi tests into Prisma on attempt start. |
 | 5.4 | **Flashcard admin** | **Done** (2026-05-13) — deck list with create/delete, deck editor with inline card CRUD. |

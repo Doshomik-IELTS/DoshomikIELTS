@@ -100,23 +100,22 @@ Redirect rules:
 - Login
 - Register/Get started
 
-### Learner Sidebar / Header
+### Learner Header
 
-- Dashboard
-- Resources
-- Flash Cards
-- Practice
-- Mock Tests
-- Attempts/History
-- Referrals
-- Profile
-- Logout
+Normal learner pages use a sticky top header on desktop and mobile:
+
+- Brand link to Dashboard.
+- Primary links: Dashboard, Resources, Practice, Mock Tests.
+- Secondary/account links: Referrals, Profile, Logout.
+- Header CTA: Start mock.
+
+Active attempt pages suppress the global learner header so the test UI can focus on timer, section progress, save state, and exit behavior.
 
 ### Admin Sidebar
 
 - Admin Dashboard
-- Resources
-- Tests
+- Strapi Resources
+- Strapi Mock Tests
 - Flash Cards
 - Reviews
 - Back to learner app

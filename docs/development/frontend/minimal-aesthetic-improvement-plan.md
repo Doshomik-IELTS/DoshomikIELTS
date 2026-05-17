@@ -2,7 +2,7 @@
 
 _Date: 2026-05-10_
 
-> Historical note, updated 2026-05-17: resource and mock-test authoring has moved to Strapi. Any recommendations below about `/admin/resources` or `/admin/tests` now apply only to the lightweight Strapi entry panels, legacy fallback screens, review workflows, or shared layout polish.
+> Historical note, updated 2026-05-17: resource and mock-test authoring has moved to Strapi. Any recommendations below about `/admin/resources` or `/admin/tests` now apply only to the lightweight Strapi entry panels, legacy fallback screens, review workflows, or shared layout polish. Learner desktop navigation now uses `LearnerHeader`; admin layout is centralized in `src/app/(admin)/layout.tsx`.
 
 ## Goal
 
@@ -25,13 +25,12 @@ The landing page already has a clearer visual direction. Inner pages are functio
 
 ## Current Aesthetic Issues
 
-### 1. Layout shells are inconsistent
+### 1. Layout shells were inconsistent — implemented/superseded
 
-- `DashboardLayout` and `AdminLayout` both provide sidebars, but some nested pages render another `DashboardLayout` inside a route group that is already wrapped by the learner layout.
-  - Examples: `src/app/(learner)/attempts/[id]/report/page.tsx`, `src/app/(learner)/evaluations/[id]/page.tsx`.
-- Admin review pages use `DashboardLayout` instead of `AdminLayout`, so admin surfaces do not feel like one coherent product area.
-  - Examples: `src/app/(admin)/admin/reviews/page.tsx`, `src/app/(admin)/admin/reviews/[id]/page.tsx`.
-- Several pages add `p-8` inside an already padded layout, creating uneven gutters.
+- `DashboardLayout` now uses `LearnerHeader` instead of a desktop learner sidebar.
+- Active attempt pages suppress global learner navigation for focus.
+- `src/app/(admin)/layout.tsx` now applies `AdminLayout` once for all admin pages.
+- Several older notes below remain useful as historical polish context.
 
 ### 2. Missing shared page composition primitives
 
@@ -190,16 +189,14 @@ Files to update:
 - `src/components/layout/dashboard-layout.tsx`
 - `src/components/layout/admin-layout.tsx`
 - `src/app/(learner)/layout.tsx`
-- `src/app/(admin)/admin/reviews/page.tsx`
-- `src/app/(admin)/admin/reviews/[id]/page.tsx`
-- learner pages currently wrapping themselves with `DashboardLayout`
+- `src/components/layout/learner-header.tsx`
 
 Tasks:
 
-1. Ensure learner route group applies `DashboardLayout` once only.
-2. Ensure all admin pages use `AdminLayout`, including review list/detail.
-3. Add active sidebar link styles using the current path in a small client nav component.
-4. Add mobile navigation for learner/admin routes, at least a compact top bar with menu links.
+1. Ensure learner route group applies `DashboardLayout` once only. **Implemented.**
+2. Ensure all admin pages use `AdminLayout`, including review list/detail. **Implemented via route-group layout.**
+3. Add active navigation link styles using the current path in a small client nav component. **Implemented in `LearnerHeader` and `SidebarNav`.**
+4. Add mobile navigation for learner/admin routes, at least a compact top bar with menu links. **Implemented.**
 5. Normalize main content width: default `max-w-6xl`, reading pages `max-w-3xl`, admin tables `max-w-7xl`.
 6. Remove redundant `p-8` / `container py-8` wrappers where layout already provides spacing.
 
@@ -303,7 +300,7 @@ Files/components to update:
 
 Tasks:
 
-1. Use `AdminLayout` consistently.
+1. Use `AdminLayout` consistently. **Implemented via `src/app/(admin)/layout.tsx`.**
 2. Add admin `PageHeader` with breadcrumbs and actions.
 3. Replace one-off tables with shared `DataTable` styling.
 4. Use status badge variants for draft/review/published/archived/queued/needs-review.

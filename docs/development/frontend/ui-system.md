@@ -48,10 +48,11 @@ Located in `src/components/`:
 ### Layout Components
 
 - `PublicHeader` - Public pages header
-- `DashboardLayout` - Learner layout with sidebar
-- `AdminLayout` - Admin layout with navigation
-- `SidebarNav` - Learner sidebar navigation
-- `MobileNav` - Mobile navigation drawer
+- `LearnerHeader` - Authenticated learner top navigation with desktop links and mobile menu
+- `DashboardLayout` - Learner layout shell using `LearnerHeader`
+- `AdminLayout` - Admin layout with desktop sidebar and mobile navigation
+- `SidebarNav` - Admin/sidebar navigation helper
+- `MobileNav` - Mobile navigation drawer used by admin shell
 - `PageHeader` - Page header with title/subtitle/actions
 - `Breadcrumbs` - Navigation breadcrumbs
 

@@ -4,8 +4,8 @@ import { SidebarNav } from "@/components/layout/sidebar-nav";
 
 const adminNav: { label: string; href: string }[] = [
   { label: "Overview", href: "/admin" },
-  { label: "Resources", href: "/admin/resources" },
-  { label: "Tests", href: "/admin/tests" },
+  { label: "Strapi Resources", href: "/admin/resources" },
+  { label: "Strapi Mock Tests", href: "/admin/tests" },
   { label: "Flashcards", href: "/admin/flashcards" },
   { label: "Reviews", href: "/admin/reviews" },
 ];

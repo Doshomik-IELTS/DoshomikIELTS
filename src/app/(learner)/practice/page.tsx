@@ -8,6 +8,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { State } from "@/components/ui/state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useApiQuery } from "@/lib/hooks/api";
+import { difficultyLabel } from "@/lib/resources/constants";
 
 interface PracticeItem {
   id: string;
@@ -132,7 +133,7 @@ export default function PracticePage() {
                   <div className="flex items-start justify-between gap-2 mb-3">
                     <p className="font-semibold text-slate-900 line-clamp-2">{item.title}</p>
                     <Badge variant={difficultyVariant[item.difficulty] ?? "neutral"} className="shrink-0 capitalize">
-                      {item.difficulty}
+                      {difficultyLabel(item.difficulty)}
                     </Badge>
                   </div>
                   <p className="text-sm text-slate-600 line-clamp-2 mb-3">{item.preview}</p>

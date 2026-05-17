@@ -89,16 +89,16 @@ export default async function AdminPage() {
     <div className="space-y-8">
       <PageHeader
         title="Admin overview"
-        description="Create content, finish test drafts, and review items before publishing."
+        description="Open Strapi authoring, monitor fallback content, and manage app review workflows."
         actions={
           <div className="flex flex-wrap gap-2">
             <Link href="/admin/resources/new" className={buttonVariants()}>
               <Plus className="h-4 w-4" />
-              New resource
+              Open Strapi Resources
             </Link>
             <Link href="/admin/tests/new" className={buttonVariants({ variant: "outline" })}>
               <Plus className="h-4 w-4" />
-              New test
+              Open Strapi Mock Tests
             </Link>
           </div>
         }
@@ -130,9 +130,9 @@ export default async function AdminPage() {
         <WorkflowCard
           href="/admin/resources"
           icon={<BookOpen className="h-5 w-5" />}
-          title="Manage resources"
+          title="Strapi resources"
           value={draft + review + published}
-          description="Create, update, publish, or archive learner resources."
+          description="Open Strapi authoring; Prisma counts show fallback/local resource rows."
         />
       </div>
 
@@ -144,14 +144,14 @@ export default async function AdminPage() {
         <StatLink href="/admin/tests?status=review" label="Tests in review" value={testsInReview} />
         <StatLink href="/admin/tests?status=published" label="Published tests" value={publishedTests} />
         <StatLink href="/admin/flashcards" label="Flashcard decks" value="Open" />
-        <StatLink href="/admin/tests/new" label="Create test" value="New" />
+        <StatLink href="/admin/tests/new" label="Open Strapi tests" value="Open" />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between gap-3">
-              <CardTitle className="text-base">Recent tests</CardTitle>
+              <CardTitle className="text-base">Recent fallback tests</CardTitle>
               <Link href="/admin/tests" className="text-sm font-medium text-blue-700 hover:underline">
                 View all
               </Link>
@@ -164,13 +164,13 @@ export default async function AdminPage() {
                 <p className="mt-0.5 text-sm text-slate-500">{test.status} - {new Intl.DateTimeFormat("en", { dateStyle: "medium" }).format(test.updatedAt)}</p>
               </Link>
             ))}
-            {recentTests.length === 0 && <p className="py-3 text-sm text-slate-500">No tests yet.</p>}
+            {recentTests.length === 0 && <p className="py-3 text-sm text-slate-500">No fallback tests yet.</p>}
           </CardContent>
         </Card>
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between gap-3">
-              <CardTitle className="text-base">Recent resources</CardTitle>
+              <CardTitle className="text-base">Recent fallback resources</CardTitle>
               <Link href="/admin/resources" className="text-sm font-medium text-blue-700 hover:underline">
                 View all
               </Link>
@@ -183,7 +183,7 @@ export default async function AdminPage() {
                 <p className="mt-0.5 text-sm text-slate-500">{resource.status} - {new Intl.DateTimeFormat("en", { dateStyle: "medium" }).format(resource.updatedAt)}</p>
               </Link>
             ))}
-            {recentResources.length === 0 && <p className="py-3 text-sm text-slate-500">No resources yet.</p>}
+            {recentResources.length === 0 && <p className="py-3 text-sm text-slate-500">No fallback resources yet.</p>}
           </CardContent>
         </Card>
       </div>
@@ -191,7 +191,7 @@ export default async function AdminPage() {
       {testsWithBlockers.length > 0 && (
         <Card className="border-amber-200">
           <CardHeader>
-            <CardTitle className="text-base">Tests needing fixes</CardTitle>
+            <CardTitle className="text-base">Fallback tests needing fixes</CardTitle>
           </CardHeader>
           <CardContent className="divide-y divide-amber-100">
             {testsWithBlockers.slice(0, 5).map((test) => (
@@ -205,8 +205,8 @@ export default async function AdminPage() {
       )}
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <QuickLink href="/admin/tests" icon={<ClipboardCheck className="h-4 w-4" />} label="Test library" />
-        <QuickLink href="/admin/resources" icon={<FileText className="h-4 w-4" />} label="Resource library" />
+        <QuickLink href="/admin/tests" icon={<ClipboardCheck className="h-4 w-4" />} label="Strapi mock tests" />
+        <QuickLink href="/admin/resources" icon={<FileText className="h-4 w-4" />} label="Strapi resources" />
         <QuickLink href="/admin/flashcards" icon={<Layers3 className="h-4 w-4" />} label="Flashcards" />
         <QuickLink href="/dashboard" icon={<BookOpen className="h-4 w-4" />} label="Learner dashboard" />
       </div>

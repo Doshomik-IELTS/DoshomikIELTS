@@ -1,5 +1,6 @@
 "use client";
 
+import { Bookmark, BookmarkCheck } from "lucide-react";
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -62,13 +63,9 @@ export function ResourceSaveButton({
         aria-label={saved ? "Remove from saved" : "Save resource"}
       >
         {saved ? (
-          <svg className="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M5 3h14a1 1 0 0 1 1 1v17.268a2 2 0 0 1-.646 1.425l-5.762 5.243A2 2 0 0 1 12.51 29H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" />
-          </svg>
+          <BookmarkCheck className="h-5 w-5 text-blue-600" />
         ) : (
-          <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M5 3h14a1 1 0 0 1 1 1v17.268a2 2 0 0 1-.646 1.425l-5.762 5.243A2 2 0 0 1 12.51 29H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" />
-          </svg>
+          <Bookmark className="h-5 w-5 text-slate-400" />
         )}
       </button>
     );
@@ -85,16 +82,12 @@ export function ResourceSaveButton({
         "..."
       ) : saved ? (
         <>
-          <svg className="w-4 h-4 mr-1.5" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M5 3h14a1 1 0 0 1 1 1v17.268a2 2 0 0 1-.646 1.425l-5.762 5.243A2 2 0 0 1 12.51 29H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" />
-          </svg>
+          <BookmarkCheck className="h-4 w-4" />
           Saved
         </>
       ) : (
         <>
-          <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M5 3h14a1 1 0 0 1 1 1v17.268a2 2 0 0 1-.646 1.425l-5.762 5.243A2 2 0 0 1 12.51 29H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" />
-          </svg>
+          <Bookmark className="h-4 w-4" />
           Save Resource
         </>
       )}

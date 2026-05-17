@@ -27,8 +27,9 @@ Recommended stack:
 | **Profile** vertical slice | ✅ Complete - Reference implementation: RHF+zod, Sonner, API hooks (`src/components/profile/profile-editor.tsx`). |
 | **Login/Register/Reset** | ✅ Complete - Dev auth endpoints with forms (`src/app/(auth)/login`, `src/app/(auth)/register`, `src/app/(auth)/reset-password`). |
 | **Welcome** | ✅ Complete - Onboarding/welcome page (`src/app/(learner)/welcome/page.tsx`). |
-| **Dashboard** | ✅ Complete - Includes streak, longest streak, progress bar, module score cards, recent attempts, achievements panel (`src/components/dashboard/dashboard-summary.tsx`, `streak-badge.tsx`, `achievements-panel.tsx`). |
-| **Resources** | ✅ Complete — list/detail/save with icon bookmark button; reads Strapi when configured, Prisma fallback. |
+| **Learner Shell** | ✅ Complete - Sticky desktop/mobile header via `LearnerHeader`; active attempts suppress global nav for focus. |
+| **Dashboard** | ✅ Complete - Includes next-best-action strip, streak, longest streak, progress bar, module score cards, recent attempts, achievements panel (`src/components/dashboard/dashboard-summary.tsx`, `streak-badge.tsx`, `achievements-panel.tsx`). |
+| **Resources** | ✅ Complete — list/detail/save with lucide bookmark button; reads Strapi when configured, Prisma fallback. |
 | **Flashcards** | ✅ Complete — deck grid, deck detail, SM-2 study session with flip cards and quality rating (`src/app/(learner)/flashcards/`). |
 | **Practice** | ✅ Complete - List/attempt/result pages exist with proper loading/error states. |
 | **Mock Tests** | ✅ Complete - List/detail/start/attempt pages; reads Strapi tests when configured and materializes them into Prisma on attempt start. |
@@ -45,6 +46,7 @@ Recommended stack:
 | **Beta Feedback** | ✅ Complete - Feedback submission component (`src/components/feedback/beta-feedback.tsx`). |
 | **Changelog** | ✅ Complete - Changelog page (`/changelog`). |
 | **Learner Analytics** | ✅ Complete - PostHog initialization, authenticated learner identity bridge, and key learner events behind env vars. |
+| **Admin Shell** | ✅ Complete - Admin route-group layout wraps all admin pages with consistent admin navigation. |
 | **Admin Resources** | ✅ Complete - Strapi authoring panel; legacy custom editor remains for fallback code paths. |
 | **Admin Tests** | ✅ Complete - Strapi authoring panel; legacy custom builder/import/preview remains for fallback Prisma tests. |
 | **Admin Flashcards** | ✅ Complete - Deck list with create/delete, deck editor with inline card CRUD (`src/app/(admin)/admin/flashcards/`, `/admin/flashcards/[id]`). |
@@ -60,13 +62,14 @@ Recommended stack:
 1. [`routes-and-navigation.md`](routes-and-navigation.md) — route map, layouts, protection rules, and navigation.
 2. [`ui-system.md`](ui-system.md) — design system, shared components, responsive rules, and accessibility baseline.
 3. [`minimal-aesthetic-improvement-plan.md`](minimal-aesthetic-improvement-plan.md) — audit findings and phased plan to polish inner pages.
-4. [`screens-and-flows.md`](screens-and-flows.md) — learner/admin screens and user flows.
-5. [`state-and-api-integration.md`](state-and-api-integration.md) — API client, data fetching, mutations, polling, and local draft state.
-6. [`mock-test-ui.md`](mock-test-ui.md) — exam simulation UI, section flow, answer rendering, draft safety, and timer integration.
-7. [`writing-speaking-ui.md`](writing-speaking-ui.md) — Writing and Speaking submission, audio, evaluation status, and feedback UI.
-8. [`admin-ui.md`](admin-ui.md) — Strapi authoring panels, admin operations, and review screens.
-9. [`accessibility-responsive.md`](accessibility-responsive.md) — accessibility and responsive behavior requirements.
-10. [`../../testing-plans/frontend-testing-plan.md`](../../testing-plans/frontend-testing-plan.md) — frontend test plan and manual QA scenarios.
+4. [`ui-ux-review.md`](ui-ux-review.md) — implemented learner header/admin shell review and remaining polish notes.
+5. [`screens-and-flows.md`](screens-and-flows.md) — learner/admin screens and user flows.
+6. [`state-and-api-integration.md`](state-and-api-integration.md) — API client, data fetching, mutations, polling, and local draft state.
+7. [`mock-test-ui.md`](mock-test-ui.md) — exam simulation UI, section flow, answer rendering, draft safety, and timer integration.
+8. [`writing-speaking-ui.md`](writing-speaking-ui.md) — Writing and Speaking submission, audio, evaluation status, and feedback UI.
+9. [`admin-ui.md`](admin-ui.md) — Strapi authoring panels, admin operations, and review screens.
+10. [`accessibility-responsive.md`](accessibility-responsive.md) — accessibility and responsive behavior requirements.
+11. [`../../testing-plans/frontend-testing-plan.md`](../../testing-plans/frontend-testing-plan.md) — frontend test plan and manual QA scenarios.
 
 ## Frontend Scope
 

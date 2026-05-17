@@ -70,10 +70,11 @@ Overall usability rating:
 
 1. Clear global navigation
 
-The learner sidebar exposes the main mental model clearly: Dashboard, Resources, Practice, Mock Tests, Referrals, Profile.
+The learner header exposes the main mental model clearly: Dashboard, Resources, Practice, Mock Tests, Referrals, Profile. Active attempt pages suppress global navigation to keep timer/progress/save state central.
 
 Relevant file:
 
+- `src/components/layout/learner-header.tsx`
 - `src/components/layout/dashboard-layout.tsx`
 
 2. Dashboard gives useful next actions
@@ -191,15 +192,17 @@ Recommended fix:
 
 Status: **Implemented.**
 
-The sidebar is hidden on small screens, and the app now provides mobile navigation for learner and admin layouts.
+The learner app now uses a sticky header with desktop links and a mobile menu. Admin uses `AdminLayout` with desktop sidebar and mobile navigation.
 
 Relevant file:
 
+- `src/components/layout/learner-header.tsx`
 - `src/components/layout/dashboard-layout.tsx`
+- `src/components/layout/admin-layout.tsx`
 
 Implemented fix:
 
-- Added shared `MobileNav` with active route state.
+- Added learner header/mobile menu and shared admin `MobileNav` with active route state.
 - Kept learner logout reachable.
 - Kept the admin-to-learner switch reachable.
 
@@ -427,7 +430,7 @@ Implemented fixes:
 
 ### P2: Polish and scale
 
-1. Mobile navigation for learner/admin shells. **Implemented.**
+1. Header/mobile navigation for learner shell and mobile navigation for admin shell. **Implemented.**
 2. True text-range highlighting for Reading/Listening source spans. **Implemented from stored offsets/excerpts.**
 3. Drag-and-drop reordering instead of up/down buttons. **Implemented with button fallback.**
 4. Bulk paste/import from spreadsheet-like rows. **Implemented.**

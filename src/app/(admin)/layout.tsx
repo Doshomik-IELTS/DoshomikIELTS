@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { AdminLayout } from "@/components/layout/admin-layout";
 import { canAccessAdminRoutes } from "@/lib/auth/roles";
 import { getCurrentUser } from "@/lib/auth/session";
 
@@ -13,5 +14,5 @@ export default async function AdminGroupLayout({ children }: { children: React.R
     redirect("/dashboard");
   }
 
-  return <>{children}</>;
+  return <AdminLayout>{children}</AdminLayout>;
 }

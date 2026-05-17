@@ -58,6 +58,7 @@ Use a mix of:
 | Skeleton | `components/ui/skeleton.tsx` | ✅ |
 | State | `components/ui/state.tsx` | ✅ |
 | PublicHeader | `components/layout/public-header.tsx` | ✅ |
+| LearnerHeader | `components/layout/learner-header.tsx` | ✅ |
 | DashboardLayout | `components/layout/dashboard-layout.tsx` | ✅ |
 | AdminLayout | `components/layout/admin-layout.tsx` | ✅ |
 | ScoreBadge | `components/ielts/score-badge.tsx` | ✅ |

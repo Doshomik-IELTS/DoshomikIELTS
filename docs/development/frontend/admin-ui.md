@@ -31,6 +31,12 @@ Include links to:
 - Reviews.
 - Learner dashboard.
 
+Current admin shell:
+
+- `src/app/(admin)/layout.tsx` applies `AdminLayout` once for all admin pages.
+- Desktop admin pages keep a sidebar because admin workflows are operational and repeated.
+- Resource/test nav labels explicitly say Strapi so editors do not confuse these routes with the old in-app CMS.
+
 ## Resource Admin
 
 Routes:

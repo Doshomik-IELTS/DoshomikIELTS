@@ -89,7 +89,7 @@ This document records the usability improvements completed after the content CMS
 
 ## Completed Implementation Order
 
-1. Mobile navigation for learner/admin shells.
+1. Header/mobile navigation for learner shell and mobile navigation for admin shell.
 2. Admin home analytics.
 3. Dedicated question subtype authoring controls.
 4. Submit warnings and learner attempt polish.

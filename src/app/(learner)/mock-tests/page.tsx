@@ -8,6 +8,8 @@ import { PageHeader } from "@/components/ui/page-header";
 import { State } from "@/components/ui/state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useApiQuery } from "@/lib/hooks/api";
+import { moduleLabel } from "@/lib/resources/constants";
+import { testTypeLabel } from "@/lib/tests/constants";
 
 interface MockTest {
   id: string;
@@ -74,8 +76,9 @@ export default function MockTestsPage() {
             <CardContent className="p-5">
               <p className="text-lg font-semibold text-slate-900">{test.title}</p>
               <div className="mt-2 flex flex-wrap gap-2">
+                <Badge variant="info">{testTypeLabel(test.type)}</Badge>
                 {test.modules.map((m) => (
-                  <Badge key={m} variant="neutral" className="capitalize">{m}</Badge>
+                  <Badge key={m} variant="neutral">{moduleLabel(m)}</Badge>
                 ))}
               </div>
               <p className="mt-2 text-sm text-slate-500">{test.sections} sections</p>

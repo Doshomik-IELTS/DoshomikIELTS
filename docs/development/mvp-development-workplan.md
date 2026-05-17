@@ -75,6 +75,7 @@ Use Tailwind CSS plus the repo's in-house UI primitives for:
 Shared components:
 
 - `PublicHeader`
+- `LearnerHeader`
 - `DashboardLayout`
 - `AdminLayout`
 - `SidebarNav`
@@ -163,7 +164,7 @@ Reference docs: [`backend/setup-and-env.md`](backend/setup-and-env.md), [`fronte
 - Developer can run Prisma migration.
 - Developer can start worker process.
 - `/api/health` returns success.
-- Public, learner, and admin shells render.
+- Public, learner header, and admin shells render.
 
 ---
 

@@ -35,6 +35,17 @@ export function difficultyLabel(value: string) {
   return DIFFICULTY_OPTIONS.find((option) => option.value === value)?.label ?? value;
 }
 
+export function moduleLabel(value: string) {
+  const labels: Record<string, string> = {
+    listening: "Listening",
+    reading: "Reading",
+    writing: "Writing",
+    speaking: "Speaking",
+    general: "General",
+  };
+  return labels[value] ?? value;
+}
+
 export function resourceStatusLabel(value: string) {
   return RESOURCE_STATUS_OPTIONS.find((option) => option.value === value)?.label ?? value;
 }

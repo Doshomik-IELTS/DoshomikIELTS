@@ -106,6 +106,7 @@ export function DashboardSummary() {
   }
 
   const { profile, stats, scores, recentAttempts, streak, longestStreak } = data;
+  const inProgressAttempt = recentAttempts.find((attempt) => attempt.status === "in_progress");
 
   const examDateDisplay = profile.examDate
     ? new Intl.DateTimeFormat("en", { dateStyle: "medium" }).format(new Date(profile.examDate))
@@ -127,6 +128,24 @@ export function DashboardSummary() {
           </Link>
         }
       />
+
+      <ContentPanel className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="text-sm font-semibold text-slate-900">Next best action</p>
+          <p className="mt-1 text-sm text-slate-600">
+            {inProgressAttempt
+              ? `Continue ${inProgressAttempt.testTitle}.`
+              : stats.completedAttempts > 0
+                ? "Start another mock test to keep your score trend current."
+                : "Start with resources, then take a short mock when you are ready."}
+          </p>
+        </div>
+        <Link href={inProgressAttempt ? `/attempts/${inProgressAttempt.id}` : stats.completedAttempts > 0 ? "/mock-tests" : "/resources"}>
+          <Button variant={inProgressAttempt ? "default" : "outline"}>
+            {inProgressAttempt ? "Continue attempt" : stats.completedAttempts > 0 ? "Start mock" : "Study resources"}
+          </Button>
+        </Link>
+      </ContentPanel>
 
       <div className="grid gap-4 md:grid-cols-4">
         {scores.map((s) => (

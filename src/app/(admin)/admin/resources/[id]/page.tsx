@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 import { canAccessAdminRoutes } from "@/lib/auth/roles";
 import { getCurrentUser } from "@/lib/auth/session";
-import { AdminLayout } from "@/components/layout/admin-layout";
 import { StrapiAuthoringPanel } from "@/components/admin/strapi-authoring-panel";
 
 export default async function AdminEditResourcePage({ params }: { params: Promise<{ id: string }> }) {
@@ -12,14 +11,10 @@ export default async function AdminEditResourcePage({ params }: { params: Promis
   }
 
   return (
-    <AdminLayout>
-      <div className="container">
-        <StrapiAuthoringPanel
-          collection="resources"
-          title="Edit resources in Strapi"
-          description="Resource authoring now happens in Strapi. Open the Strapi Resource collection to edit, publish, or unpublish this content."
-        />
-      </div>
-    </AdminLayout>
+    <StrapiAuthoringPanel
+      collection="resources"
+      title="Edit resources in Strapi"
+      description="Open the Strapi Resource collection to edit, publish, or unpublish this content."
+    />
   );
 }

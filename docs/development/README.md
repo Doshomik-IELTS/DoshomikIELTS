@@ -53,7 +53,7 @@ The IELTS++ platform has completed its core MVP feature set. Learner-facing feat
 - Source-span highlighting for Reading/Listening
 - Strict Listening one-play simulation UI
 - Bulk question paste for admin authoring
-- Mobile navigation for learner and admin shells
+- Sticky learner header and mobile navigation for learner/admin shells
 
 ## Current Focus: Production Hardening
 

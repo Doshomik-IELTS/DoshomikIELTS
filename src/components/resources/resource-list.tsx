@@ -8,6 +8,7 @@ import { State } from "@/components/ui/state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { apiFetch } from "@/lib/api/client";
 import { ResourceSaveButton } from "@/components/resources/resource-save-button";
+import { difficultyLabel, resourceCategoryLabel } from "@/lib/resources/constants";
 
 interface Resource {
   id: string;
@@ -82,8 +83,8 @@ export function ResourceList() {
               </div>
             </div>
             <div className="mt-2 flex gap-2 flex-wrap">
-              <Badge variant="neutral">{resource.category}</Badge>
-              <Badge variant="neutral">{resource.difficulty}</Badge>
+              <Badge variant="neutral">{resourceCategoryLabel(resource.category)}</Badge>
+              <Badge variant="neutral">{difficultyLabel(resource.difficulty)}</Badge>
             </div>
           </CardContent>
         </Card>
