@@ -119,11 +119,18 @@ Used for lessons, vocabulary, grammar, spelling, strategies, and IELTS preparati
 | category | enumeration | Yes | Mirrors `ResourceCategory` |
 | difficulty | enumeration | Yes | basic/intermediate/advanced |
 | body | rich text / markdown | Yes | Main lesson content |
+| summary | text | No | Short card/listing summary |
+| module | enumeration | No | general/listening/reading/writing/speaking |
+| accessTier | enumeration | Yes | free/paid/internal |
+| estimatedStudyMinutes | integer | No | Learner planning metadata |
 | examples | component repeatable | No | Structured label/text examples |
-| tags | component or JSON | No | Topic and discovery tags |
+| tags / tagItems | JSON or repeatable Tag component | No | Topic and discovery tags; `tagItems` is easier for editors |
 | orderIndex | integer | No | Progression ordering |
 | prerequisites | relation to Resource | No | Unlock rules |
 | media | media relation | No | Images/audio/PDFs |
+| sourceAttribution | text | No | Original/licensed/public-domain source notes |
+| editorNotes | text | No | Internal notes for reviewers |
+| reviewChecklist | JSON | No | Optional originality/license/answer-check metadata |
 
 Publication state is handled by Strapi draft/publish. The app must only expose published resources to learners.
 
@@ -141,6 +148,10 @@ Top-level IELTS test definition.
 | sections | relation/component repeatable | Yes | Ordered test sections |
 | versionLabel | string | No | Human-friendly version |
 | accessTier | enumeration | Yes | free/paid/internal |
+| tags | repeatable Tag component | No | Topic/module discovery |
+| sourceAttribution | text | No | Original/licensed/public-domain source notes |
+| editorNotes | text | No | Internal notes for reviewers |
+| reviewChecklist | JSON | No | Optional originality/license/answer-check metadata |
 
 Published mock tests are consumed by the app for listing and starting attempts.
 
@@ -156,7 +167,12 @@ Published mock tests are consumed by the app for listing and starting attempts.
 | durationMinutes | integer | No | Section timer |
 | orderIndex | integer | Yes | Display/order control |
 | content | component/JSON | No | Passage, transcript, cue card, visual prompt |
+| passageText | rich text | No | Editor-friendly Reading material field |
+| transcript | rich text | No | Editor-friendly Listening transcript field |
+| writingPrompt | rich text | No | Editor-friendly Writing prompt field |
+| speakingPrompt | rich text | No | Editor-friendly Speaking prompt/cue-card field |
 | media | media relation | No | Listening audio or prompt image |
+| sourceAttribution | text | No | Source/license note for section material |
 | questionGroups | relation/component repeatable | No | Ordered groups |
 | questions | relation/component repeatable | Yes | Ordered questions |
 
@@ -170,6 +186,7 @@ Published mock tests are consumed by the app for listing and starting attempts.
 | questionType | enumeration/string | Yes | Shared type for grouped questions |
 | orderIndex | integer | Yes | Group ordering |
 | displayConfig | JSON | No | Tables, matching layouts, shared options |
+| sharedOptions | repeatable Option component | No | Editor-friendly matching/choice option list |
 
 ### 2A.5 Question
 
@@ -185,8 +202,20 @@ Published mock tests are consumed by the app for listing and starting attempts.
 | answerKey | component/JSON | Yes | Correct answer data |
 | explanation | rich text | No | Learner explanation |
 | sourceSpan | JSON | No | Passage offsets or attribution |
+| sourceAttribution | text | No | Human-readable source/support note |
+| media | media relation | No | Question-level image/audio/file |
 
-Answer keys live in Strapi for authoring, but the app must snapshot them when starting/scoring attempts.
+Answer keys live in Strapi for authoring, but the app must snapshot them when starting/scoring attempts. Editors can use either structured JSON for complex cases or the easy fields inside the Answer Key component:
+
+| Answer Key Field | Purpose |
+|------------------|---------|
+| canonicalAnswer | Main correct answer |
+| acceptedAnswersText | One accepted answer per line; easier than JSON for editors |
+| acceptedAnswers | Optional advanced JSON accepted-answer structure |
+| scoringRuleType | exact/case_insensitive/contains/regex/manual_rubric |
+| points | Objective question points |
+| scoringRule | Optional advanced JSON scoring rule |
+| explanation | Internal/learner-facing answer explanation |
 
 ### 2A.6 IELTS Information Page and FAQ
 
@@ -196,6 +225,28 @@ Answer keys live in Strapi for authoring, but the app must snapshot them when st
 | FAQ Item | Question/answer content with category, order, and publish status |
 
 These are read directly by public/learner pages and do not need Prisma persistence unless caching is required.
+
+### 2A.7 Editor-Friendly Strapi Coverage
+
+The current Strapi setup is intended to let non-technical editors manage the content types IELTS++ needs without touching the legacy app builder:
+
+| Need | Strapi Type / Fields |
+|------|----------------------|
+| Basic English, vocabulary, synonyms, grammar, spelling | Resource |
+| Reading/listening/writing/speaking strategy articles | Resource |
+| Common topics and common-topic Q&A | Resource |
+| IELTS fees, centers, preparation, requirements, referral terms | IELTS Info Page |
+| FAQs | FAQ Item |
+| Free/paid/internal mock tests | Mock Test |
+| Listening, Reading, Writing, Speaking sections | Mock Test Section |
+| Reading passages, Listening transcripts, Writing prompts, Speaking cue cards | Mock Test Section editor-friendly text fields |
+| MCQ, fill blank, matching, T/F/NG, short answer, writing task, speaking prompt | Question |
+| Grouped IELTS question sets | Question Group |
+| Answer keys, accepted alternatives, scoring rule, explanations | Answer Key component |
+| Images/audio/PDFs/visual prompts | Strapi media fields |
+| Tags, access tier, source/license notes, review notes | Resource/Mock Test metadata |
+
+Strapi should remain the authoring surface for these items. Prisma should remain responsible for learner-specific progress, saved resources, attempts, answers, scoring, reports, referrals, credits, audit logs, and operational state.
 
 ---
 

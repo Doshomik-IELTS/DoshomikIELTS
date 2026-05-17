@@ -27,10 +27,18 @@
         "words",
         "synonyms",
         "grammar",
+        "spelling",
+        "common_topics",
+        "common_topics_qa",
         "reading_strategy",
         "listening_strategy",
         "writing_strategy",
-        "speaking_strategy"
+        "speaking_strategy",
+        "question_ideas",
+        "sample_questions",
+        "scenarios",
+        "academic_ielts",
+        "video_course"
       ],
       "required": true
     },
@@ -48,6 +56,33 @@
       "type": "richtext",
       "required": true
     },
+    "summary": {
+      "type": "text"
+    },
+    "module": {
+      "type": "enumeration",
+      "enum": [
+        "general",
+        "listening",
+        "reading",
+        "writing",
+        "speaking"
+      ],
+      "default": "general"
+    },
+    "accessTier": {
+      "type": "enumeration",
+      "enum": [
+        "free",
+        "paid",
+        "internal"
+      ],
+      "default": "free",
+      "required": true
+    },
+    "estimatedStudyMinutes": {
+      "type": "integer"
+    },
     "examples": {
       "type": "component",
       "repeatable": true,
@@ -55,6 +90,11 @@
     },
     "tags": {
       "type": "json"
+    },
+    "tagItems": {
+      "type": "component",
+      "repeatable": true,
+      "component": "content.tag"
     },
     "orderIndex": {
       "type": "integer",
@@ -74,6 +114,15 @@
         "audios",
         "videos"
       ]
+    },
+    "sourceAttribution": {
+      "type": "text"
+    },
+    "editorNotes": {
+      "type": "text"
+    },
+    "reviewChecklist": {
+      "type": "json"
     }
   }
 }

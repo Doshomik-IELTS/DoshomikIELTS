@@ -49,6 +49,20 @@
       "default": "free",
       "required": true
     },
+    "tags": {
+      "type": "component",
+      "repeatable": true,
+      "component": "content.tag"
+    },
+    "sourceAttribution": {
+      "type": "text"
+    },
+    "editorNotes": {
+      "type": "text"
+    },
+    "reviewChecklist": {
+      "type": "json"
+    },
     "sections": {
       "type": "relation",
       "relation": "oneToMany",

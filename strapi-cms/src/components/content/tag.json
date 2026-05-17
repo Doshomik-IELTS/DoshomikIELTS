@@ -1,0 +1,13 @@
+{
+  "collectionName": "components_content_tags",
+  "info": {
+    "displayName": "Tag",
+    "description": "Simple searchable content tag."
+  },
+  "attributes": {
+    "label": {
+      "type": "string",
+      "required": true
+    }
+  }
+}

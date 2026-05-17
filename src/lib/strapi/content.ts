@@ -153,9 +153,40 @@ function jsonValue(value: unknown): Prisma.InputJsonValue | undefined {
   return value as Prisma.InputJsonValue;
 }
 
-function tagsValue(value: unknown) {
-  if (!Array.isArray(value)) return [];
-  return value.filter((tag): tag is string => typeof tag === "string");
+function tagsValue(value: unknown, tagItems?: unknown) {
+  const tags = Array.isArray(value)
+    ? value.filter((tag): tag is string => typeof tag === "string")
+    : [];
+  const componentTags = componentCollection(tagItems)
+    .map((tag) => stringValue(entry(tag).label))
+    .filter(Boolean);
+  return Array.from(new Set([...tags, ...componentTags]));
+}
+
+function linesValue(value: unknown) {
+  return stringValue(value)
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+}
+
+function sectionContentValue(section: StrapiEntry): Prisma.InputJsonValue | undefined {
+  const base =
+    section.content && typeof section.content === "object" && !Array.isArray(section.content)
+      ? { ...(section.content as Record<string, unknown>) }
+      : {};
+
+  const passageText = stringValue(section.passageText);
+  const transcript = stringValue(section.transcript);
+  const writingPrompt = stringValue(section.writingPrompt);
+  const speakingPrompt = stringValue(section.speakingPrompt);
+
+  if (passageText && !base.passageText) base.passageText = passageText;
+  if (transcript && !base.transcript) base.transcript = transcript;
+  if (writingPrompt && !base.writingPrompt) base.writingPrompt = writingPrompt;
+  if (speakingPrompt && !base.speakingPrompt) base.speakingPrompt = speakingPrompt;
+
+  return Object.keys(base).length > 0 ? (base as Prisma.InputJsonValue) : undefined;
 }
 
 async function strapiFetch<T>(path: string): Promise<T | null> {
@@ -194,7 +225,7 @@ function resourceFromEntry(raw: unknown): StrapiResourceDetail | null {
     difficulty: stringValue(r.difficulty, "basic"),
     body: stringValue(r.body),
     examplesJson: componentCollection(r.examples),
-    tags: tagsValue(r.tags),
+    tags: tagsValue(r.tags, r.tagItems),
     createdAt: stringValue(r.createdAt, null as never),
     publishedAt: stringValue(r.publishedAt, null as never),
   };
@@ -250,7 +281,12 @@ function normalizeGroup(raw: unknown): NormalizedGroup | null {
     instructions: stringValue(g.instructions),
     questionType: stringValue(g.questionType, "short_answer"),
     orderIndex: numberValue(g.orderIndex) ?? 0,
-    displayJson: jsonValue(g.displayConfig),
+    displayJson: jsonValue({
+      ...(g.displayConfig && typeof g.displayConfig === "object" && !Array.isArray(g.displayConfig)
+        ? (g.displayConfig as Record<string, unknown>)
+        : {}),
+      sharedOptions: componentCollection(g.sharedOptions),
+    }),
   };
 }
 
@@ -265,6 +301,13 @@ function normalizeQuestion(raw: unknown, groups: NormalizedGroup[]): NormalizedQ
   const knownGroupId = groupId && groups.some((g) => g.id === groupId) ? groupId : null;
   const answerKey = entry(q.answerKey);
   const canonicalAnswer = stringValue(answerKey.canonicalAnswer);
+  const acceptedAnswers = jsonValue(answerKey.acceptedAnswers) ?? jsonValue(linesValue(answerKey.acceptedAnswersText));
+  const scoringRule =
+    jsonValue(answerKey.scoringRule) ??
+    jsonValue({
+      type: stringValue(answerKey.scoringRuleType, "case_insensitive"),
+      points: numberValue(answerKey.points) ?? 1,
+    });
 
   return {
     id: appId(`question_${documentId}`),
@@ -277,10 +320,10 @@ function normalizeQuestion(raw: unknown, groups: NormalizedGroup[]): NormalizedQ
     explanation: stringValue(q.explanation, null as never),
     sourceSpanJson: jsonValue(q.sourceSpan),
     answerKey: canonicalAnswer
-      ? {
+        ? {
           canonicalAnswer,
-          acceptedAnswersJson: jsonValue(answerKey.acceptedAnswers),
-          scoringRuleJson: jsonValue(answerKey.scoringRule),
+          acceptedAnswersJson: acceptedAnswers,
+          scoringRuleJson: scoringRule,
           explanation: stringValue(answerKey.explanation, null as never),
         }
       : null,
@@ -310,7 +353,7 @@ function normalizeSection(raw: unknown): NormalizedSection | null {
     instructions: stringValue(s.instructions, null as never),
     durationMinutes: numberValue(s.durationMinutes),
     orderIndex: numberValue(s.orderIndex) ?? 0,
-    contentJson: jsonValue(s.content),
+    contentJson: sectionContentValue(s),
     groups,
     questions,
   };

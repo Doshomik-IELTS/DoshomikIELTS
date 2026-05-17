@@ -27,6 +27,8 @@
         "centers",
         "preparation",
         "referral",
+        "test_dates",
+        "requirements",
         "other"
       ],
       "required": true
@@ -38,6 +40,9 @@
     "orderIndex": {
       "type": "integer",
       "default": 0
+    },
+    "structuredData": {
+      "type": "json"
     },
     "media": {
       "type": "media",

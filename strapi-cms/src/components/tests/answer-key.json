@@ -12,6 +12,24 @@
     "acceptedAnswers": {
       "type": "json"
     },
+    "acceptedAnswersText": {
+      "type": "text"
+    },
+    "scoringRuleType": {
+      "type": "enumeration",
+      "enum": [
+        "exact",
+        "case_insensitive",
+        "contains",
+        "regex",
+        "manual_rubric"
+      ],
+      "default": "case_insensitive"
+    },
+    "points": {
+      "type": "integer",
+      "default": 1
+    },
     "scoringRule": {
       "type": "json"
     },

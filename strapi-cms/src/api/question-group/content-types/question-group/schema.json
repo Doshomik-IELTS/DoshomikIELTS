@@ -35,6 +35,11 @@
     "displayConfig": {
       "type": "json"
     },
+    "sharedOptions": {
+      "type": "component",
+      "repeatable": true,
+      "component": "content.option"
+    },
     "questions": {
       "type": "relation",
       "relation": "oneToMany",
