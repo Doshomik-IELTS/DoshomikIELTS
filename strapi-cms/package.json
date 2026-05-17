@@ -1,0 +1,36 @@
+{
+  "name": "ielts-plus-plus-strapi-cms",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Strapi CMS for IELTS++ resources and mock-test authoring.",
+  "scripts": {
+    "develop": "node scripts/with-xdg-config.mjs strapi develop",
+    "start": "node scripts/with-xdg-config.mjs strapi start",
+    "build": "node scripts/with-xdg-config.mjs strapi build",
+    "strapi": "node scripts/with-xdg-config.mjs strapi"
+  },
+  "dependencies": {
+    "@strapi/plugin-cloud": "5.46.0",
+    "@strapi/plugin-users-permissions": "5.46.0",
+    "@strapi/strapi": "5.46.0",
+    "better-sqlite3": "12.4.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.30.2",
+    "styled-components": "^6.1.19"
+  },
+  "devDependencies": {
+    "@strapi/typescript-utils": "5.46.0",
+    "@types/node": "^20",
+    "@types/react": "^18.3.27",
+    "@types/react-dom": "^18.3.7",
+    "typescript": "^5"
+  },
+  "engines": {
+    "node": ">=20 <=24.x.x",
+    "npm": ">=6.0.0"
+  },
+  "strapi": {
+    "uuid": "ielts-plus-plus-strapi-cms"
+  }
+}

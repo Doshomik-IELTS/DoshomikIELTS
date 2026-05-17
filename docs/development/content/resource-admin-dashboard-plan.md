@@ -1,10 +1,12 @@
 # Plan: Add Resources From The Admin Dashboard (All Categories)
 
-Last updated: 2026-05-16
+Last updated: 2026-05-17
 
-## Status: ✅ All Phases Implemented
+## Status: Retired
 
-All phases (A through F) of this plan have been completed. Resource admin CRUD, list with filters, category-aware form, dashboard analytics, versioning/audit logging, and test Listening section media attachment are all implemented.
+This plan described the old custom Next.js resource CMS. Resource authoring has moved to Strapi Free. `/admin/resources`, `/admin/resources/new`, and `/admin/resources/[id]` now show Strapi entry panels, and editors should create/publish resources in the Strapi Resource collection.
+
+Keep this document only as historical context for the original custom-admin implementation. The active content architecture is [`../../features_x/content_management.md`](../../features_x/content_management.md).
 
 **Purpose:** Define how staff (`admin` / `reviewer` / `evaluator` roles) create and manage **every** learner-facing resource type from the **admin dashboard**, aligned with the Prisma `Resource` model, [`frontend/admin-ui.md`](../frontend/admin-ui.md), and [`content-strategy.md`](content-strategy.md).
 
@@ -14,7 +16,7 @@ All phases (A through F) of this plan have been completed. Resource admin CRUD, 
 
 ## 1. Resource types in the product (categories)
 
-The database enum `ResourceCategory` is the source of truth. Every value must be **selectable** in the admin resource form and **filterable** in the admin resource list.
+Historical note: this plan treated the database enum `ResourceCategory` as the authoring source of truth. New authoring uses the matching Strapi Resource `category` enum; Prisma remains fallback/runtime data.
 
 | Enum value | Suggested UI label | Notes |
 |------------|-------------------|--------|
@@ -83,7 +85,7 @@ Today, learner routes expose only **published** resources. Admin CRUD must be **
 | Method | Path | Purpose |
 |--------|------|---------|
 | `GET` | `/api/admin/resources` | List with filters (`status`, `category`, `difficulty`, `search`, pagination). |
-| `POST` | `/api/admin/resources` | Create draft (return `id`, `slug`). |
+| `POST` | `/api/admin/resources` | Historical fallback/local create draft (return `id`, `slug`). New content is created in Strapi. |
 | `GET` | `/api/admin/resources/:id` | Full resource for edit (any status). |
 | `PATCH` | `/api/admin/resources/:id` | Update fields + status transitions. |
 | `POST` | `/api/admin/resources/:id/publish` | Optional explicit publish with extra validation. |

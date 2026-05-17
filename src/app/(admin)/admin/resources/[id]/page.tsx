@@ -1,12 +1,11 @@
 import { redirect } from "next/navigation";
-import { ResourceEditor } from "@/components/admin/resource-editor";
-import { canArchiveResource, canPublishResource } from "@/lib/auth/admin-api";
 import { canAccessAdminRoutes } from "@/lib/auth/roles";
 import { getCurrentUser } from "@/lib/auth/session";
 import { AdminLayout } from "@/components/layout/admin-layout";
+import { StrapiAuthoringPanel } from "@/components/admin/strapi-authoring-panel";
 
 export default async function AdminEditResourcePage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
+  await params;
   const user = await getCurrentUser();
   if (!user || !canAccessAdminRoutes(user.profile.roles)) {
     redirect("/dashboard");
@@ -15,11 +14,10 @@ export default async function AdminEditResourcePage({ params }: { params: Promis
   return (
     <AdminLayout>
       <div className="container">
-        <ResourceEditor
-          mode="edit"
-          resourceId={id}
-          canPublish={canPublishResource(user.profile.roles)}
-          canArchive={canArchiveResource(user.profile.roles)}
+        <StrapiAuthoringPanel
+          collection="resources"
+          title="Edit resources in Strapi"
+          description="Resource authoring now happens in Strapi. Open the Strapi Resource collection to edit, publish, or unpublish this content."
         />
       </div>
     </AdminLayout>

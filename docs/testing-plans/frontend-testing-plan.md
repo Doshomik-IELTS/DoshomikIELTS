@@ -36,12 +36,12 @@ Use a mix of:
 | `/attempts/[id]/score` | Attempt Score | ✅ |
 | `/evaluations/[id]` | Evaluation Detail | ✅ |
 | `/admin` | Admin Dashboard | ✅ |
-| `/admin/resources` | Admin Resources | ✅ |
-| `/admin/resources/[id]` | Admin Resource Edit | ✅ |
-| `/admin/resources/new` | Admin Resource Create | ✅ |
-| `/admin/tests` | Admin Tests | ✅ |
-| `/admin/tests/[id]` | Admin Test Edit | ✅ |
-| `/admin/tests/new` | Admin Test Create | ✅ |
+| `/admin/resources` | Strapi Resource authoring panel | ✅ |
+| `/admin/resources/[id]` | Strapi Resource authoring panel | ✅ |
+| `/admin/resources/new` | Strapi Resource authoring panel | ✅ |
+| `/admin/tests` | Strapi Mock Test authoring panel | ✅ |
+| `/admin/tests/[id]` | Strapi Mock Test authoring panel | ✅ |
+| `/admin/tests/new` | Strapi Mock Test authoring panel | ✅ |
 | `/admin/reviews` | Admin Reviews | ✅ |
 | `/admin/reviews/[id]` | Admin Review Detail | ✅ |
 
@@ -149,8 +149,8 @@ Before browser-level tests, keep `pnpm typecheck` green. ✅ All passing.
 7. Submit Speaking text → wait for feedback.
 8. Submit Speaking audio/upload if supported.
 9. View final predicted score after all modules complete.
-10. Admin creates/reviews/publishes a resource.
-11. Learner confirms published resource appears.
+10. Admin opens Strapi resource/mock-test authoring from IELTS++ admin.
+11. Learner confirms published Strapi resource/test appears when Strapi API token is configured.
 
 ## Accessibility Manual Checks
 

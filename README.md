@@ -8,8 +8,8 @@ IELTS++ is an IELTS preparation platform with owned resources, original practice
 - Practice: focused exercises for listening, reading, writing, and speaking.
 - Mock tests: full IELTS-style test flow with generated/original content.
 - Evaluation: automated scoring support for reading/listening, rubric-based writing and speaking assessment, and score prediction after full-test completion.
-- Account: login, logout, profile, attempt history, band trend, and saved resources.
-- Infrastructure: owned domain, hosted application, database, media storage, backups, and admin content workflow.
+- Account: login, logout, profile, attempt history, band trend, saved resources, and learner analytics.
+- Infrastructure: owned domain, hosted application, Strapi CMS, database, media storage, backups, analytics, and admin content workflow.
 
 ## Content Policy
 
@@ -30,7 +30,7 @@ Do not host, reproduce, scan, or adapt Cambridge IELTS books or other copyrighte
 5. Speaking test flow with text or audio response upload.
 6. Full mock test mode.
 7. Score prediction after all four modules are completed.
-8. Admin workflow for creating and reviewing resources/tests.
+8. Strapi authoring workflow for resources/tests plus app admin review/operations.
 
 ## Documentation
 
@@ -48,10 +48,10 @@ Core planning docs:
 - [Frontend MVP plan](docs/development/frontend/README.md)
 - [Backend documentation](docs/development/backend/README.md)
 - [Technical complexity report](docs/development/technical-complexity-report.md)
-- [Content strategy](docs/content-strategy.md)
+- [Content strategy](docs/development/content/content-strategy.md)
 - [Evaluation methods](docs/development/evaluation-methods.md)
 - [Market research analysis](docs/market-research-analysis.md)
-- [Prospective features](docs/prospective-features.md)
+- [Prospective features](docs/development/content/prospective-features.md)
 
 
 ## Development Scaffold
@@ -81,10 +81,24 @@ Worker scaffold:
 pnpm worker:dev
 ```
 
+Strapi CMS:
+
+```bash
+pnpm strapi:dev
+```
+
+Open `http://localhost:1337/admin`, create the first Strapi administrator, then create an API token with read access to published content. Add that token to the Next.js environment as `STRAPI_API_TOKEN`. The app uses Strapi for resources and mock-test authoring when `STRAPI_BASE_URL` and `STRAPI_API_TOKEN` are configured, and falls back to Prisma content otherwise.
+
+PostHog analytics:
+
+Set `NEXT_PUBLIC_POSTHOG_KEY` and optionally `NEXT_PUBLIC_POSTHOG_HOST` / `NEXT_PUBLIC_POSTHOG_UI_HOST` to enable learner analytics. Analytics is disabled when the key is not configured.
+
 Core scaffolded areas:
 
 - `src/app` — App Router pages and API routes.
 - `src/components` — shared UI, layout, and IELTS-specific components.
 - `src/lib` — API helpers, Supabase clients, Prisma client, auth/session helpers, queue helpers, validators.
+- `src/lib/analytics` — PostHog browser analytics helpers for learner events.
 - `src/workers` — BullMQ worker scaffold.
 - `prisma` — Prisma schema and seed file.
+- `strapi-cms` — Strapi CMS for resources, IELTS info pages, FAQs, and mock-test content authoring.

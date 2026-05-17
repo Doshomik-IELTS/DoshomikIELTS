@@ -2,6 +2,8 @@
 
 _Date: 2026-05-10_
 
+> Historical note, updated 2026-05-17: resource and mock-test authoring has moved to Strapi. Any recommendations below about `/admin/resources` or `/admin/tests` now apply only to the lightweight Strapi entry panels, legacy fallback screens, review workflows, or shared layout polish.
+
 ## Goal
 
 Make the authenticated learner and admin pages feel as polished as the landing page: minimal, calm, readable, and consistent, without adding visual noise or over-gamification. The target aesthetic is an educational SaaS interface with restrained color, generous spacing, clear hierarchy, and strong content readability.

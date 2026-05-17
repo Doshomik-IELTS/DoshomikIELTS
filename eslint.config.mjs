@@ -12,6 +12,7 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    "strapi-cms/**",
   ]),
   // Allow common React patterns - disable strict rules that flag safe patterns
   {

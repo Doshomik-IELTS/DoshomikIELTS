@@ -1,10 +1,10 @@
 # Completed UX Implementation Checklist
 
-Last updated: 2026-05-16
+Last updated: 2026-05-17
 
 ## Status: ✅ All Planned UX Items Implemented
 
-All P0, P1, and P2 UX items from this plan have been shipped. Remaining work is production hardening: server-side attempt events for strict audio, production LLM/TTS workers, richer analytics, and optional dedicated full-screen question editors.
+All P0, P1, and P2 UX items from the old custom CMS plan have been shipped or superseded. Resource and mock-test authoring is now handled in Strapi, so remaining UX work is production hardening around the learner/runtime experience: server-side attempt events for strict audio, production LLM/TTS workers, PostHog-backed analytics/weakness detection, and Strapi authoring guidance.
 
 ## Purpose
 
@@ -12,8 +12,8 @@ This document records the usability improvements completed after the content CMS
 
 ## Current Completed Baseline
 
-- Admin test creation wizard.
-- Resource CMS actions and status workflow.
+- Strapi entry panels for resource and mock-test authoring.
+- Legacy admin test creation wizard and resource CMS actions retained only for fallback/local Prisma content.
 - Reading quick authoring without JSON.
 - Listening quick authoring without JSON.
 - Question groups and answer keys.

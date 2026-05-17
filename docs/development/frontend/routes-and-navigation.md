@@ -57,14 +57,14 @@ Purpose:
 | Route | Purpose |
 |---|---|
 | `/admin` | Admin dashboard with stats. |
-| `/admin/resources` | Resource list and status filters. |
-| `/admin/resources/new` | Create resource. |
-| `/admin/resources/[id]` | Edit resource. |
-| `/admin/tests` | Test list. |
-| `/admin/tests/new` | Create test metadata. |
-| `/admin/tests/[id]` | Edit test metadata and sections. |
-| `/admin/tests/[id]/builder` | Visual test builder with section editors, question groups, media picker. |
-| `/admin/tests/[id]/preview` | Preview test as learner would see it. |
+| `/admin/resources` | Strapi Resource collection entry panel. |
+| `/admin/resources/new` | Strapi Resource collection entry panel. |
+| `/admin/resources/[id]` | Strapi Resource collection entry panel. |
+| `/admin/tests` | Strapi Mock Test collection entry panel. |
+| `/admin/tests/new` | Strapi Mock Test collection entry panel. |
+| `/admin/tests/[id]` | Strapi Mock Test collection entry panel. |
+| `/admin/tests/[id]/builder` | Legacy custom builder for Prisma/fallback tests. |
+| `/admin/tests/[id]/preview` | Legacy preview for Prisma/fallback tests. |
 | `/admin/flashcards` | Flashcard deck list with create/delete. |
 | `/admin/flashcards/[id]` | Deck editor with inline card CRUD. |
 | `/admin/reviews` | Review queue (content, writing, speaking). |

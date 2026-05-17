@@ -2,7 +2,7 @@
 
 This folder contains product, strategy, market, content, and development documentation for IELTS++.
 
-**Last updated:** 2026-05-16 — All major features implemented. Focus shifted to production hardening.
+**Last updated:** 2026-05-17 — Strapi authoring and PostHog learner analytics are integrated. Focus remains production hardening.
 
 ## Start Here
 
@@ -21,9 +21,9 @@ This folder contains product, strategy, market, content, and development documen
 | Document | Purpose |
 |---|---|
 | [`product-requirements.md`](product-requirements.md) | Product goal, users, resources, practice, mock tests, account/profile, score prediction, and MVP non-goals. |
-| [`content-strategy.md`](content-strategy.md) | Original content strategy, copyright policy, LLM-generated content rules, listening content rules, and quality control. |
+| [`development/content/content-strategy.md`](development/content/content-strategy.md) | Original content strategy, copyright policy, LLM-generated content rules, listening content rules, and Strapi quality control. |
 | [`market-research-analysis.md`](market-research-analysis.md) | Competitor research and market feature patterns. |
-| [`prospective-features.md`](prospective-features.md) | MVP, differentiator, post-MVP, and premium feature ideas. |
+| [`development/content/prospective-features.md`](development/content/prospective-features.md) | MVP, differentiator, post-MVP, and premium feature ideas. |
 
 ---
 
@@ -38,8 +38,8 @@ All development-focused files now live in [`development/`](development/).
 | [`development/development-plan.md`](development/development-plan.md) | Current baseline, phased roadmap, and MVP checklist vs implementation. |
 | [`development/development-starting-phase.md`](development/development-starting-phase.md) | Starting-phase setup and first implementation checklist. |
 | [`development/mvp-development-workplan.md`](development/mvp-development-workplan.md) | Week-wise full-stack MVP plan. |
-| [`development/mock-test-implementation-plan.md`](development/mock-test-implementation-plan.md) | Research-backed full mock test implementation, scoring, LLM generation/evaluation, and practice module plan. |
-| [`development/resource-admin-dashboard-plan.md`](development/resource-admin-dashboard-plan.md) | Plan: create/manage all resource categories from the admin dashboard (APIs, UX, phases). |
+| [`development/content/mock-test-implementation-plan.md`](development/content/mock-test-implementation-plan.md) | Research-backed full mock test implementation, scoring, LLM generation/evaluation, and practice module plan. |
+| [`development/content/resource-admin-dashboard-plan.md`](development/content/resource-admin-dashboard-plan.md) | Historical plan for the old custom resource admin dashboard; Strapi is now the authoring path. |
 | [`development/frontend/README.md`](development/frontend/README.md) | Frontend route map, UI foundation, learner/admin screens, and frontend tests. |
 | [`development/technical-architecture.md`](development/technical-architecture.md) | Architecture, stack, hosting, storage, modules, data model sketch, and security. |
 | [`development/technical-complexity-report.md`](development/technical-complexity-report.md) | Complexity ratings, risk register, priorities, and mitigation guidance. |
@@ -86,7 +86,7 @@ All backend-specific implementation docs live in [`development/backend/`](develo
 |---|---|
 | [`development/backend/README.md`](development/backend/README.md) | Backend overview, stack, build order, complexity priorities, and risk mitigation. |
 | [`development/backend/setup-and-env.md`](development/backend/setup-and-env.md) | Services, environment variables, local setup, migrations, buckets, and deployment notes. |
-| [`development/backend/data-model.md`](development/backend/data-model.md) | Prisma-oriented data model for identity, resources, tests, attempts, evaluations, media, and jobs. |
+| [`development/backend/data-model.md`](development/backend/data-model.md) | Runtime data model for identity, attempts, evaluations, media, jobs, and Strapi-backed content snapshots/fallback rows. |
 | [`development/backend/database-management-and-data-model.md`](development/backend/database-management-and-data-model.md) | Database environments, migrations, Prisma workflow, access rules, and MVP data model. |
 | [`development/backend/api-spec.md`](development/backend/api-spec.md) | API conventions, auth, resources, practice, mock tests, evaluations, score, and media endpoints. |
 | [`development/backend/evaluation-and-scoring.md`](development/backend/evaluation-and-scoring.md) | Reading/listening scoring, Writing/Speaking evaluation, and score prediction rules. |
@@ -114,9 +114,9 @@ All backend-specific implementation docs live in [`development/backend/`](develo
 ### Product / Content Planning
 
 1. `product-requirements.md`
-2. `content-strategy.md`
+2. `development/content/content-strategy.md`
 3. `market-research-analysis.md`
-4. `prospective-features.md`
+4. `development/content/prospective-features.md`
 
 ---
 

@@ -2,7 +2,7 @@
 
 ## Overview
 
-The IELTS++ frontend is a responsive Next.js App Router application for learners and basic admins. It supports public marketing/auth pages, learner dashboard with streak tracking and achievements, resources with bookmarks, spaced-repetition flashcards, practice, full mock tests with per-section timers, writing tasks with word count and auto-save, speaking with audio recording, evaluation feedback, score prediction, referral program, and admin content workflows.
+The IELTS++ frontend is a responsive Next.js App Router application for learners and basic admins. It supports public marketing/auth pages, learner dashboard with streak tracking and achievements, Strapi-backed resources with bookmarks, spaced-repetition flashcards, practice, full mock tests with per-section timers, writing tasks with word count and auto-save, speaking with audio recording, evaluation feedback, score prediction, referral program, PostHog learner analytics, and admin operational workflows.
 
 Recommended stack:
 
@@ -14,10 +14,11 @@ Recommended stack:
 - TanStack Query for client-side API caching/mutations/polling
 - React Hook Form + Zod for forms
 - Sonner for toast feedback (`src/app/providers.tsx`)
+- PostHog for optional learner/product analytics (`instrumentation-client.ts`, `src/lib/analytics/posthog.ts`)
 
 ## Implementation status (repository)
 
-> **Last updated:** 2026-05-16
+> **Last updated:** 2026-05-17
 
 | Area | Status |
 |------|--------|
@@ -27,10 +28,10 @@ Recommended stack:
 | **Login/Register/Reset** | ✅ Complete - Dev auth endpoints with forms (`src/app/(auth)/login`, `src/app/(auth)/register`, `src/app/(auth)/reset-password`). |
 | **Welcome** | ✅ Complete - Onboarding/welcome page (`src/app/(learner)/welcome/page.tsx`). |
 | **Dashboard** | ✅ Complete - Includes streak, longest streak, progress bar, module score cards, recent attempts, achievements panel (`src/components/dashboard/dashboard-summary.tsx`, `streak-badge.tsx`, `achievements-panel.tsx`). |
-| **Resources** | ✅ Complete — list/detail/save with icon bookmark button (`src/components/resources/resource-list.tsx`, `resource-detail.tsx`, `resource-save-button.tsx`). |
+| **Resources** | ✅ Complete — list/detail/save with icon bookmark button; reads Strapi when configured, Prisma fallback. |
 | **Flashcards** | ✅ Complete — deck grid, deck detail, SM-2 study session with flip cards and quality rating (`src/app/(learner)/flashcards/`). |
 | **Practice** | ✅ Complete - List/attempt/result pages exist with proper loading/error states. |
-| **Mock Tests** | ✅ Complete - List/detail/start/attempt pages with score display (`/attempts/[id]/score`). Includes test timer with auto-submit. |
+| **Mock Tests** | ✅ Complete - List/detail/start/attempt pages; reads Strapi tests when configured and materializes them into Prisma on attempt start. |
 | **Test Timer** | ✅ Complete - Per-section countdown timer with auto-submit on expiry (`src/components/ielts/test-timer.tsx`, integrated into attempt page). |
 | **Writing Editor** | ✅ Complete - Live word count, progress bar, auto-save to localStorage, task-type-aware limits (`src/components/ielts/writing-editor.tsx`). |
 | **Attempt Report** | ✅ Complete - `/attempts/[id]/report` shows detailed results. |
@@ -43,8 +44,9 @@ Recommended stack:
 | **Referrals** | ✅ Complete - Referral page with code generation and credits display. |
 | **Beta Feedback** | ✅ Complete - Feedback submission component (`src/components/feedback/beta-feedback.tsx`). |
 | **Changelog** | ✅ Complete - Changelog page (`/changelog`). |
-| **Admin Resources** | ✅ Complete - CRUD with editor (`src/components/admin/resource-editor.tsx`). |
-| **Admin Tests** | ✅ Complete - CRUD with form, sections, questions, question groups, visual test builder (`/admin/tests/[id]/builder`), test preview (`/admin/tests/[id]/preview`), section editors (reading, listening, writing, speaking), media asset picker, test generation panel, test import panel, advanced tools. |
+| **Learner Analytics** | ✅ Complete - PostHog initialization, authenticated learner identity bridge, and key learner events behind env vars. |
+| **Admin Resources** | ✅ Complete - Strapi authoring panel; legacy custom editor remains for fallback code paths. |
+| **Admin Tests** | ✅ Complete - Strapi authoring panel; legacy custom builder/import/preview remains for fallback Prisma tests. |
 | **Admin Flashcards** | ✅ Complete - Deck list with create/delete, deck editor with inline card CRUD (`src/app/(admin)/admin/flashcards/`, `/admin/flashcards/[id]`). |
 | **Admin Reviews** | ✅ Complete - List/detail/action UI passes typecheck. |
 | **Resource Save Button** | ✅ Complete - Icon and button variants with POST/DELETE toggle (`src/components/resources/resource-save-button.tsx`). |
@@ -62,7 +64,7 @@ Recommended stack:
 5. [`state-and-api-integration.md`](state-and-api-integration.md) — API client, data fetching, mutations, polling, and local draft state.
 6. [`mock-test-ui.md`](mock-test-ui.md) — exam simulation UI, section flow, answer rendering, draft safety, and timer integration.
 7. [`writing-speaking-ui.md`](writing-speaking-ui.md) — Writing and Speaking submission, audio, evaluation status, and feedback UI.
-8. [`admin-ui.md`](admin-ui.md) — basic admin resource/test/review screens.
+8. [`admin-ui.md`](admin-ui.md) — Strapi authoring panels, admin operations, and review screens.
 9. [`accessibility-responsive.md`](accessibility-responsive.md) — accessibility and responsive behavior requirements.
 10. [`../../testing-plans/frontend-testing-plan.md`](../../testing-plans/frontend-testing-plan.md) — frontend test plan and manual QA scenarios.
 
@@ -85,8 +87,9 @@ V1 includes:
 - Evaluation status and feedback pages (`/evaluations/[id]`).
 - Referral code generation and credits (`/referrals`).
 - Beta feedback submission.
-- Admin resource/test/review/flashcard screens (`/admin`).
-- Admin test builder with section editors, question group management, media picker, test generation/import panels (`/admin/tests/[id]/builder`, `/admin/tests/[id]/preview`).
+- Admin operations/review/flashcard screens (`/admin`).
+- Strapi entry panels for resource and mock-test authoring.
+- Legacy admin test builder/import/preview routes for Prisma fallback tests.
 
 V1 does not include:
 
@@ -95,7 +98,7 @@ V1 does not include:
 - Live human examiner booking.
 - Community/leaderboard.
 - Advanced AI tutor/chat.
-- Full production-grade visual test builder.
+- Separate production-grade in-app visual test builder; Strapi is now the production authoring UI, and any in-app builder work is legacy/fallback only.
 
 ## Key Frontend Rules
 

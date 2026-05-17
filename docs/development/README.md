@@ -2,11 +2,11 @@
 
 This folder contains implementation-focused documentation for building the IELTS++ MVP.
 
-## Current Implementation Status (2026-05-16)
+## Current Implementation Status (2026-05-17)
 
 ### ✅ All Major Features Implemented
 
-The IELTS++ platform has completed its core MVP feature set. All learner-facing features, admin workflows, and content management systems are implemented. Current focus is on production hardening.
+The IELTS++ platform has completed its core MVP feature set. Learner-facing features, app admin workflows, Strapi content authoring, and baseline PostHog learner analytics are implemented. Current focus is on production hardening.
 
 ### ✅ Completed APIs (100+ endpoints)
 - **Auth**: `/api/me`, `/api/profile`, dev-auth endpoints
@@ -20,7 +20,7 @@ The IELTS++ platform has completed its core MVP feature set. All learner-facing 
 - **Evaluations**: `/api/evaluations/writing`, `/api/evaluations/speaking`, `/api/evaluations/[id]`
 - **Referrals & Credits**: `/api/referrals/me`, `/api/referrals/apply`, `/api/referrals/generate`, `/api/referrals/me/redemptions`, `/api/referrals/me/credits`, `/api/credits`, `/api/credits/ledger`
 - **Media**: `/api/media/upload-url`, `/api/media/[assetId]/download-url`
-- **Admin**: Full CRUD for resources, tests, flashcards, reviews, referrals, media, question groups, generation jobs
+- **Admin**: Strapi entry panels for resources/tests; app CRUD/workflows for flashcards, reviews, referrals, media, question groups, and legacy/fallback content tooling
 - **Feedback**: `/api/feedback` (submit + admin list)
 
 ### ✅ Completed Data Models
@@ -38,7 +38,7 @@ The IELTS++ platform has completed its core MVP feature set. All learner-facing 
 - Schema validation for LLM outputs using Zod
 - P0 integration tests (38/38 passing)
 - Speaking audio upload API with signed URLs + UI components
-- Admin test management UI with full CMS (wizard, builder, preview, validation, publish)
+- Strapi CMS for resource and mock-test authoring, with app admin panels linking to Strapi
 - Flashcard system with SM-2 spaced repetition
 - Referral and credits system
 - Progress tracking with streaks and achievements
@@ -47,6 +47,7 @@ The IELTS++ platform has completed its core MVP feature set. All learner-facing 
 - Rate limiting on all sensitive endpoints
 - Audit logging for all admin write operations
 - Sentry error tracking configured
+- PostHog learner analytics configured behind env vars
 - BullMQ worker with 6 queue processors
 - Drag-and-drop reordering for sections, groups, and questions
 - Source-span highlighting for Reading/Listening
@@ -60,7 +61,7 @@ The IELTS++ platform has completed its core MVP feature set. All learner-facing 
 2. **Server-side strict audio events** — Add `AttemptEvent` tracking for anti-cheat enforcement on Listening one-play.
 3. **Staging verification** — Verify all P0 fixes against real Supabase/Redis/LLM services.
 4. **E2E coverage** — Expand Playwright tests beyond scaffold level.
-5. **Weakness detection & analytics** — Deferred to Phase 4 polish.
+5. **Weakness detection** — Deferred to Phase 4 polish; PostHog now captures baseline learner/product analytics.
 
 ---
 
@@ -72,7 +73,7 @@ The IELTS++ platform has completed its core MVP feature set. All learner-facing 
 4. [`mvp-development-workplan.md`](mvp-development-workplan.md) — 8-week full-stack workplan.
 5. [`technical-complexity-report.md`](technical-complexity-report.md) — complexity, risk, and priority guidance.
 6. [`technical-architecture.md`](technical-architecture.md) — overall stack, hosting, storage, modules, and architecture.
-7. [`mock-test-implementation-plan.md`](mock-test-implementation-plan.md) — research-backed plan for full IELTS mock tests, scoring, practice modules, and LLM generation/evaluation.
+7. [`content/mock-test-implementation-plan.md`](content/mock-test-implementation-plan.md) — research-backed plan for full IELTS mock tests, scoring, practice modules, and LLM generation/evaluation.
 8. [`frontend/README.md`](frontend/README.md) — frontend route map, UI plan, and frontend tasks.
 9. [`backend/README.md`](backend/README.md) — backend implementation overview.
 10. [`../testing-plans/README.md`](../testing-plans/README.md) — index of all testing and QA plans (frontend, backend, and future E2E/performance/security).
@@ -88,7 +89,7 @@ The IELTS++ platform has completed its core MVP feature set. All learner-facing 
 | [`frontend/state-and-api-integration.md`](frontend/state-and-api-integration.md) | API client, state management, polling, and sensitive data rules. |
 | [`frontend/mock-test-ui.md`](frontend/mock-test-ui.md) | Mock test interface, question rendering, draft safety, and score gating. |
 | [`frontend/writing-speaking-ui.md`](frontend/writing-speaking-ui.md) | Writing/Speaking response, audio, evaluation, and feedback UI. |
-| [`frontend/admin-ui.md`](frontend/admin-ui.md) | Basic admin resource/test/review screens. |
+| [`frontend/admin-ui.md`](frontend/admin-ui.md) | Strapi content authoring panels and admin review screens. |
 | [`frontend/accessibility-responsive.md`](frontend/accessibility-responsive.md) | Accessibility and responsive requirements. |
 | [`../testing-plans/frontend-testing-plan.md`](../testing-plans/frontend-testing-plan.md) | Frontend test and QA plan. |
 
@@ -111,8 +112,8 @@ The IELTS++ platform has completed its core MVP feature set. All learner-facing 
 
 - [`launch-readiness-plan.md`](launch-readiness-plan.md) — current launch blockers and public-release gates.
 - [`mvp-development-workplan.md`](mvp-development-workplan.md)
-- [`mock-test-implementation-plan.md`](mock-test-implementation-plan.md)
-- [`resource-admin-dashboard-plan.md`](resource-admin-dashboard-plan.md) — adding all resource categories from the admin dashboard (API + UI phases).
+- [`content/mock-test-implementation-plan.md`](content/mock-test-implementation-plan.md)
+- [`content/resource-admin-dashboard-plan.md`](content/resource-admin-dashboard-plan.md) — historical custom resource admin plan; Strapi is now the authoring path.
 - [`technical-complexity-report.md`](technical-complexity-report.md)
 - [`technical-architecture.md`](technical-architecture.md)
 - [`evaluation-methods.md`](evaluation-methods.md)

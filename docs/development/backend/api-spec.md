@@ -42,13 +42,19 @@ Common HTTP statuses:
 
 ## Implementation Status
 
-> **Last updated:** 2026-05-15
+> **Last updated:** 2026-05-17
 > **Code Quality**: TypeScript ✅ passes, Lint ✅ 0 errors (warnings - pre-existing unused imports)
-> **Next.js**: 16.2.6 | **Prisma**: 6.19.3 | **Zod**: 4.4.3
+> **Next.js**: 16.2.6 | **Prisma**: 6.19.3 | **Zod**: 4.4.3 | **CMS**: Strapi 5
 
 ✅ = Implemented | ⚠️ = Partial | ❌ = Not implemented
 
 ---
+
+## Content Source Of Truth
+
+Resources, IELTS information pages, FAQs, and mock-test definitions are authored in Strapi. The Next.js app remains responsible for learner runtime state: auth, saved resources, progress, attempts, timers, answers, scoring, evaluations, credits, and reports.
+
+Learner content APIs are Strapi-first when `STRAPI_BASE_URL` and `STRAPI_API_TOKEN` are configured. If Strapi is not configured or unavailable, the app falls back to the existing Prisma content tables for local/dev continuity.
 
 ## Auth And Profile
 
@@ -74,7 +80,7 @@ Request fields:
 
 ## Resources
 
-Learner APIs must only return resources with status `published`.
+Learner APIs must only return published Strapi resources, or published Prisma fallback resources when Strapi is not configured.
 
 ### `GET /api/resources` ✅
 
@@ -89,7 +95,7 @@ Each resource includes a `saved` boolean field indicating whether the current us
 
 ### `GET /api/resources/:id` ✅
 
-Returns one published resource with examples and practice metadata.
+Returns one published Strapi resource with examples and practice metadata, or a published Prisma fallback resource.
 
 ### `POST /api/resources/:id/save` ✅
 
@@ -191,15 +197,15 @@ Returns learner practice history with pagination.
 
 ### `GET /api/mock-tests` ✅
 
-Returns published mock tests and metadata.
+Returns published Strapi mock tests and metadata when Strapi is configured. Falls back to published Prisma tests otherwise.
 
 ### `GET /api/mock-tests/:id` ✅
 
-Returns test structure, sections, timing, and learner-visible questions. Answer keys are NOT included.
+Returns test structure, sections, timing, and learner-visible questions. Answer keys are NOT included. Strapi-authored tests use stable app IDs prefixed with `strapi_`.
 
 ### `POST /api/mock-tests/:id/start` ✅
 
-Creates a `MockTestAttempt` for the learner. Returns existing in-progress attempt if one exists.
+Creates a `MockTestAttempt` for the learner. For Strapi-authored tests, the app first materializes the published Strapi test into Prisma `Test`, `TestSection`, `QuestionGroup`, `Question`, and `AnswerKey` rows so the existing attempt engine has stable runtime records. Returns existing in-progress attempt if one exists.
 
 ### `POST /api/attempts/:attemptId/answers` ✅
 
@@ -349,28 +355,16 @@ Creates a short-lived signed download URL after owner/admin/reviewer/evaluator a
 
 ### Resources
 
-- `GET /api/admin/resources` ✅ — List with filters
-- `POST /api/admin/resources` ✅ — Create
-- `GET /api/admin/resources/[id]` ✅ — Get single
-- `PATCH /api/admin/resources/[id]` ✅ — Update
-- `POST /api/admin/resources/[id]/publish` ✅ — Publish with role check, audit log, and `ResourceVersion` snapshot
-- `DELETE /api/admin/resources/[id]` ✅ — Delete
+- Strapi Admin is the authoring UI for resources.
+- `/admin/resources`, `/admin/resources/new`, and `/admin/resources/[id]` now render Strapi entry panels instead of the custom resource editor.
+- Legacy `/api/admin/resources*` routes still exist for fallback/local data and older tooling, but they are no longer the primary authoring contract.
 - `GET /api/admin/stats` ✅ — Dashboard counts
 
 ### Tests
 
-- `GET /api/admin/tests` ✅ — List
-- `POST /api/admin/tests` ✅ — Create test metadata
-- `GET /api/admin/tests/[id]` ✅ — Get test with sections/questions
-- `PATCH /api/admin/tests/[id]` ✅ — Update test and nested sections/questions
-- `DELETE /api/admin/tests/[id]` ✅ — Delete
-- `POST /api/admin/tests/[id]/validate` ✅ — Validate CMS readiness before publish
-- `POST /api/admin/tests/[id]/publish` ✅ — Validate and publish atomically
-- `POST /api/admin/tests/[id]/duplicate` ✅ — Duplicate test as editable draft
-- `POST /api/admin/tests/[id]/sections` ✅ — Create test section
-- `GET /api/admin/tests/[id]/sections` ✅ — List test sections
-- `POST /api/admin/tests/[id]/sections/reorder` ✅ — Reorder sections
-- `POST /api/admin/tests/import` ✅ — Import test from external source
+- Strapi Admin is the authoring UI for mock-test definitions, sections, question groups, questions, answer keys, explanations, and media.
+- `/admin/tests`, `/admin/tests/new`, and `/admin/tests/[id]` now render Strapi entry panels instead of the custom test editor.
+- Legacy `/api/admin/tests*`, question, and question-group routes still exist for fallback/local data, generation/import tooling, and operational compatibility, but they are no longer the primary authoring contract.
 
 ### Questions
 

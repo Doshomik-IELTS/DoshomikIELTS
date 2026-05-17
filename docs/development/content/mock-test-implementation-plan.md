@@ -1,10 +1,10 @@
 # Mock Test Implementation Plan
 
-Last updated: 2026-05-16
+Last updated: 2026-05-17
 
 ## Status: ✅ Core Mock Test Systems Implemented — Production Hardening In Progress
 
-All major mock test features are implemented: three test modes, full mock structure for all four IELTS modules, LLM generation pipeline scaffolding, evaluation pipeline with worker support, data model with scoring mappings, UX requirements for all module types, and release phases 1-3 largely complete. Phase 4 (full mock polish) is partially implemented with remaining work on weakness detection, timed/untimed toggle, reading notes, calibration dashboard, and production LLM/TTS workers.
+All major mock test runtime features are implemented: three test modes, full mock structure for all four IELTS modules, LLM generation pipeline scaffolding, evaluation pipeline with worker support, data model with scoring mappings, UX requirements for all module types, and release phases 1-3 largely complete. Mock-test authoring has moved to Strapi Free. Phase 4 (full mock polish) remains focused on learner/runtime behavior: weakness detection, timed/untimed toggle, reading notes, calibration dashboard, and production LLM/TTS workers.
 
 ## Research Baseline
 
@@ -42,7 +42,7 @@ IELTS++ should not claim official scoring. Every predicted score must be labeled
 
 The product should simulate IELTS structure, timing, scoring logic, and feedback style while using original or licensed content only. LLM-created tests are allowed only after validation and review.
 
-For the admin CMS implementation details, including the current `/admin/tests/new` gaps, module-specific editor contracts, validation gates, and publish workflow, see [`content-management-system-implementation-plan.md`](content-management-system-implementation-plan.md).
+For current content authoring details, see [`../../features_x/content_management.md`](../../features_x/content_management.md). The old in-app CMS implementation plan is retained as historical context only.
 
 ## Test Modes
 
@@ -269,7 +269,7 @@ Confidence rules:
 
 ## Data Model Status
 
-The schema now includes the core mock-test CMS and scoring primitives. Remaining model work is mostly hardening and analytics.
+The schema now includes mock-test runtime, fallback content, generation, and scoring primitives. Strapi owns new mock-test authoring. Remaining model work is mostly hardening and analytics.
 
 Implemented:
 
@@ -308,7 +308,7 @@ Future optional additions:
 - `AttemptEvent` model (optional for MVP):
   - attemptId, eventType (autosave/section_opened/audio_started/etc)
   - metadataJson
-  - Needed for server-side strict Listening playback enforcement and richer analytics.
+  - Needed for server-side strict Listening playback enforcement and PostHog-backed analytics.
 
 ## UX Requirements
 

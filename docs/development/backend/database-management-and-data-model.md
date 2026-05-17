@@ -100,6 +100,14 @@ SUPABASE_SERVICE_ROLE_KEY=
 SUPABASE_JWT_SECRET=
 ```
 
+Recommended Strapi variables for content reads:
+
+```bash
+STRAPI_BASE_URL=
+STRAPI_ADMIN_URL=
+STRAPI_API_TOKEN=
+```
+
 Rules:
 
 - `DATABASE_URL` is used by Prisma Client.
@@ -270,11 +278,13 @@ Rules:
 
 ## Resource And Content Model
 
+Strapi is the authoring source of truth for resources and mock-test definitions. Prisma keeps runtime/fallback/cache records so learner progress, saved resources, attempts, scoring, and reports remain app-owned.
+
 ### `Resource`
 
 Purpose:
 
-- Stores text-based learning resources.
+- Stores text-based learning resources when using local fallback data, or cached/snapshotted published Strapi resources.
 
 Categories:
 
@@ -303,8 +313,8 @@ Key fields:
 
 Rules:
 
-- Learner APIs return only `published` resources.
-- Draft/review/archived resources are admin-only.
+- Learner APIs return only published Strapi resources, or published Prisma fallback resources when Strapi is not configured.
+- Draft/review/archived authoring state belongs in Strapi for new content.
 - Resource content must be original or properly licensed.
 
 ### `ResourceVersion`
@@ -322,6 +332,8 @@ Use in MVP:
 
 ## Tests, Sections, Questions, And Answer Keys
 
+Strapi owns new mock-test authoring. Prisma test tables remain the runtime representation used by the attempt engine. Starting a Strapi-authored test materializes its published content into Prisma using stable `strapi_` IDs.
+
 ### `Test`
 
 Purpose:
@@ -336,7 +348,7 @@ Types:
 
 Rules:
 
-- Learner APIs return only `published` tests.
+- Learner APIs return published Strapi tests when Strapi is configured, with Prisma published tests as fallback.
 - Full score prediction should require complete four-module attempt.
 
 ### `TestSection`

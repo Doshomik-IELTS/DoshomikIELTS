@@ -7,7 +7,7 @@ Build an owned IELTS resource and mock-test platform where learners can study ba
 ## Users
 
 - Learner: studies resources, practices modules, takes mock tests, views score history.
-- Admin/content reviewer: creates, reviews, publishes, and retires resources and test material.
+- Admin/content reviewer: creates, reviews, publishes, and retires resources and test material in Strapi; manages app operations and reviews in the IELTS++ admin area.
 - Evaluator: reviews flagged writing/speaking responses when human review is needed.
 
 ## Resource Library
@@ -32,6 +32,11 @@ Resource format:
 - Explanation
 - Tags
 - Status: draft, review, published, archived
+
+Authoring source:
+
+- Resources, IELTS info pages, FAQs, and mock-test definitions are authored in Strapi Free.
+- The app owns learner progress, saved resources, attempts, timers, scoring, and reports.
 
 ## Practice
 
@@ -107,4 +112,3 @@ IELTS overall band is normally rounded to the nearest half band. The application
 - Guaranteeing official IELTS scores.
 - Live human examiner marketplace.
 - Payment/subscription system unless business launch requires it.
-

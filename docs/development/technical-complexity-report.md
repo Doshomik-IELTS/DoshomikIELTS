@@ -1,6 +1,6 @@
 # IELTS++ Technical Complexity Report
 
-## Current Implementation Status (2026-05-16)
+## Current Implementation Status (2026-05-17)
 
 All P0 items have been completed. The platform is feature-complete for MVP scope:
 
@@ -8,7 +8,7 @@ All P0 items have been completed. The platform is feature-complete for MVP scope
 - ✅ P0 integration tests passing (38/38 tests)
 - ✅ Speaking audio upload API with signed URLs + UI components
 - ✅ Full attempt report endpoint and UI
-- ✅ Admin test management with full CMS (wizard, builder, preview, validation, publish)
+- ✅ Strapi CMS for resource and mock-test authoring
 - ✅ Answer key protection enforced in all learner APIs
 - ✅ Score prediction blocked until all modules complete
 - ✅ Writing/speaking evaluation workers persist outputs
@@ -19,6 +19,7 @@ All P0 items have been completed. The platform is feature-complete for MVP scope
 - ✅ Rate limiting on all sensitive endpoints
 - ✅ Audit logging for all admin write operations
 - ✅ Sentry error tracking configured
+- ✅ PostHog learner analytics configured
 - ✅ BullMQ worker with 6 queue processors
 - ✅ Drag-and-drop reordering for sections, groups, and questions
 - ✅ Source-span highlighting for Reading/Listening
@@ -41,7 +42,7 @@ The highest complexity areas are:
 1. Full mock test state management across four IELTS modules.
 2. Async Writing/Speaking evaluation using LLM and transcription jobs.
 3. Speaking audio recording, upload, storage, transcription, and feedback.
-4. Score prediction and progress analytics that depend on complete and reliable module results.
+4. Score prediction, product analytics, and progress analytics that depend on complete and reliable module results.
 5. Copyright-safe content generation, review, and publishing workflow.
 6. Basic admin tools for resources/tests/reviews.
 
@@ -294,13 +295,13 @@ Recommended mitigation:
 - Basic audio upload.
 - Score prediction after full completion.
 - Basic dashboard.
-- Basic admin resource/review screens.
+- Basic admin review/operations screens and Strapi authoring entry panels.
 
 ### Risky Within 8 Weeks
 
 - Robust browser recording across all devices.
 - High-quality pronunciation analysis.
-- Full admin test builder.
+- Full in-app admin test builder. Strapi is now the production authoring UI.
 - Large content library.
 - Advanced weak-area recommendations.
 - Personalized study plan.
@@ -315,7 +316,7 @@ For the first launch:
 - Build **one short mock test** and optionally one full mock if time allows.
 - Support **Speaking text response + audio upload**, but keep pronunciation optional.
 - Keep admin screens basic.
-- Use seeded content for complex test/question setup if admin test builder is delayed.
+- Use Strapi-authored or seeded content for complex test/question setup.
 - Keep score prediction formula simple and transparent.
 - Prefer reliability over large test volume.
 
@@ -330,8 +331,8 @@ For the first launch:
 | LLM jobs fail or timeout | High | Async queue, retries, failed status, polling UI. |
 | Answer keys leak to frontend | High | Separate learner payloads from admin payloads; test this explicitly. |
 | Mock test state bugs | High | Clear status model and idempotent submissions. |
-| Copyrighted content is uploaded | High | Admin warnings, metadata, review workflow, no auto-publish. |
-| Admin test builder takes too long | Medium-High | Seed tests manually for MVP; build minimal admin first. |
+| Copyrighted content is uploaded | High | Strapi editorial guidance, metadata, review workflow, no auto-publish. |
+| Strapi content modeling is incomplete | Medium-High | Keep content schemas versioned, validate before learner exposure, and use Prisma fallback data during migration. |
 | 8-week solo timeline slips | Medium-High | Cut advanced features; prioritize learner journey. |
 | Mobile full-test UX is poor | Medium | Desktop/tablet optimized mock tests; mobile for resources/practice. |
 | Cost from AI evaluations grows | Medium | Rate limits, quotas, async jobs, logs, provider abstraction. |
@@ -353,7 +354,7 @@ For the first launch:
 ### P1 — Important But Can Be Simplified
 
 - Speaking audio recording/upload.
-- Basic admin resource/review screens.
+- Strapi authoring panels and basic admin review screens.
 - Listening audio metadata.
 - Dashboard score history.
 - Evaluation polling UI.
@@ -361,7 +362,7 @@ For the first launch:
 
 ### P2 — Defer If Timeline Is Tight
 
-- Full admin test builder.
+- Full in-app admin test builder. Strapi is the primary authoring UI.
 - Pronunciation scoring.
 - Personalized study plan.
 - AI tutor/chat.

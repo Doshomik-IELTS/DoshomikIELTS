@@ -13,11 +13,11 @@ Core stack:
 - Storage: Supabase Storage.
 - Async jobs: Redis + BullMQ.
 - AI: configurable LLM/transcription service layer.
-- Content: original, licensed, public-domain-valid, or internally generated only.
+- Content: Strapi-authored original, licensed, public-domain-valid, or internally generated only.
 
 MVP outcome: learners can register/login, browse resources, practice IELTS modules, take a mock test, receive reading/listening scores, submit writing/speaking responses, receive LLM feedback, and get an unofficial overall score prediction after completing all four modules.
 
-Frontend scope includes learner flows plus basic admin screens for resources, tests, and review queue.
+Frontend scope includes learner flows plus app admin screens for reviews/operations and Strapi entry panels for resource/test authoring.
 
 ---
 
@@ -60,7 +60,7 @@ Core route groups:
 
 - Public/auth: `/`, `/login`, `/register`, `/reset-password`.
 - Learner: `/dashboard`, `/profile`, `/resources`, `/practice`, `/mock-tests`, `/attempts/[id]`, `/evaluations/[id]`.
-- Admin: `/admin`, `/admin/resources`, `/admin/tests`, `/admin/reviews`.
+- Admin: `/admin`, `/admin/resources` and `/admin/tests` Strapi entry panels, `/admin/reviews`.
 
 Use protected layouts for learner/admin sections. Learner screens must never expose answer keys.
 
@@ -259,10 +259,10 @@ Reference docs: [`backend/data-model.md`](backend/data-model.md), [`backend/api-
   - `GET /api/resources`
   - `GET /api/resources/:id`
   - `POST /api/resources/:id/save`
-- Implement basic admin resource APIs if included in current backend scope:
-  - list by status
-  - create/edit resource
-  - publish/archive resource
+- Configure Strapi resource authoring:
+  - Resource content type
+  - publish/unpublish workflow
+  - app read token
 
 ### Frontend Tasks
 
@@ -278,12 +278,10 @@ Reference docs: [`backend/data-model.md`](backend/data-model.md), [`backend/api-
   - Tags
   - Save/unsave action
   - Related practice CTA
-- Build basic admin resource screens:
-  - Resource list by status
-  - Create/edit form
-  - Category, difficulty, tags, body, examples, status
-  - Publish/archive controls
-- Add copyright/content safety warning in admin resource form.
+- Build app admin resource entry panel:
+  - Open Strapi Resource collection
+  - Explain Strapi is the authoring source
+  - Keep copyright/content safety guidance visible in Strapi/editor process docs
 
 ### Content Tasks
 
@@ -566,11 +564,11 @@ Reference docs: [`backend/background-jobs.md`](backend/background-jobs.md), [`ba
 
 ---
 
-## Week 7 — Score Prediction, Progress, Admin Test/Review Screens, and Polish
+## Week 7 — Score Prediction, Progress, Strapi Test Authoring, Review Screens, and Polish
 
 ### Goals
 
-Complete full score prediction, learner progress, basic admin test/review screens, and compliance safeguards.
+Complete full score prediction, learner progress, Strapi test authoring entry points, basic review screens, and compliance safeguards.
 
 Reference docs: [`backend/evaluation-and-scoring.md`](backend/evaluation-and-scoring.md), [`backend/security-and-compliance.md`](backend/security-and-compliance.md), [`frontend/admin-ui.md`](frontend/admin-ui.md), [`frontend/mock-test-ui.md`](frontend/mock-test-ui.md).
 
@@ -612,12 +610,11 @@ Reference docs: [`backend/evaluation-and-scoring.md`](backend/evaluation-and-sco
   - Attempt history
   - Saved resources
   - Continue practice/start mock CTA
-- Build basic admin test screens:
-  - Test list
-  - Test metadata form
-  - Section editor
-  - Question/prompt entry
-  - Draft/review/published status controls
+- Configure Strapi mock-test authoring:
+  - Mock Test, Section, Question Group, and Question content types
+  - answer keys and explanations
+  - media attachment
+  - publish/unpublish workflow
 - Build basic review queue:
   - Items in review
   - Detail view
@@ -641,7 +638,7 @@ Add MVP content volume:
 
 - Full mock test generates score prediction after all modules complete.
 - Dashboard shows meaningful learner progress.
-- Basic admin test/review screens exist.
+- Strapi test authoring and app review screens exist.
 - Copyright/compliance rules are visible in admin and enforced in backend where possible.
 
 ### Acceptance Criteria
@@ -736,7 +733,7 @@ Reference docs: [`../testing-plans/backend-testing-plan.md`](../testing-plans/ba
 ### Acceptance Criteria
 
 - New learner can complete the full MVP journey.
-- Admin can create/review/publish basic resource/test content.
+- Admin can create/review/publish basic resource/test content in Strapi and access it from the learner app.
 - No answer keys leak to frontend.
 - Private media is not publicly accessible.
 - Async evaluation works end-to-end.
@@ -852,8 +849,8 @@ Use detailed QA checklists in [`../testing-plans/backend-testing-plan.md`](../te
 - Submit writing → wait for feedback.
 - Submit speaking text/audio → wait for feedback.
 - View final predicted score.
-- Admin creates/reviews/publishes a resource.
-- Learner confirms published resource appears.
+- Admin creates/reviews/publishes a resource in Strapi.
+- Learner confirms published Strapi resource appears.
 - Failed evaluation job behavior.
 
 ### Accessibility Checks

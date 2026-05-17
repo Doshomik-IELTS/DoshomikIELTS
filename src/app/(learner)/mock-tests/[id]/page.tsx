@@ -10,6 +10,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { State } from "@/components/ui/state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useApiQuery, useApiMutation } from "@/lib/hooks/api";
+import { captureLearnerEvent } from "@/lib/analytics/posthog";
 import { toast } from "sonner";
 
 interface MockTestDetail {
@@ -34,6 +35,10 @@ export default function MockTestDetailPage({ params }: { params: Promise<{ id: s
     mutationKey: ["start-attempt"],
     endpoint: testId ? `/api/mock-tests/${testId}/start` : "",
     onSuccess: (data: { id: string }) => {
+      captureLearnerEvent("ielts_mock_test_started", {
+        test_id: testId,
+        attempt_id: data.id,
+      });
       toast.success("Test started!");
       router.push(`/attempts/${data.id}`);
     },

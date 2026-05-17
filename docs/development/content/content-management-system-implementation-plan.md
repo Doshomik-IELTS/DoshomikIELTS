@@ -1,12 +1,14 @@
 # IELTS++ Content Management System Implementation Plan
 
-Last updated: 2026-05-15
+Last updated: 2026-05-17
 
-## Status: ✅ Core CMS Implemented — Production Hardening In Progress
+## Status: Retired For New Authoring
 
-The original admin test creation flow was a test-shell builder, not a complete content management system. That gap has now been closed. From `/admin/tests/new`, an admin gets a setup/template/source/review wizard, then the builder supports IELTS-style section material, Reading and Listening quick authoring boxes, question groups, answer keys, structured scoring rules, source spans, media attachment, validation, preview, review submission, publish blocking, and draft version duplication.
+This document described the custom Next.js/Prisma test CMS. New resource and mock-test authoring has moved to Strapi Free. `/admin/resources` and `/admin/tests` now show Strapi entry panels; editors create resources, mock tests, sections, question groups, questions, answer keys, explanations, and media in Strapi.
 
-This document records the implemented CMS experience and the remaining hardening work for a flexible IELTS preparation platform.
+The custom Prisma builder/import/preview code may remain for fallback/local tests and historical compatibility, but it is no longer the primary authoring system. The active architecture is [`../../features_x/content_management.md`](../../features_x/content_management.md).
+
+This document is retained as historical implementation context for the previous in-app CMS.
 
 ## Current Codebase Baseline
 
@@ -130,7 +132,7 @@ Remaining product gaps after this implementation:
 - [ ] Split the unified question editor into separate dedicated screens for completion, matching, headings, map/diagram labeling, MCQ, Writing Task 1/2, and Speaking parts only if content operations outgrow the current structured editor.
 - [ ] Add TTS/audio generation integration for Listening media.
 - [ ] Add production LLM worker that fills `TestGenerationJob.outputJson`; local deterministic generation and review/import screens are implemented.
-- [ ] Add server-side `AttemptEvent` tracking for strict Listening playback and richer analytics.
+- [ ] Add server-side `AttemptEvent` tracking for strict Listening playback and PostHog-backed analytics.
 
 ## Target Admin Experience
 

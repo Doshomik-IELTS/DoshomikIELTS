@@ -3,11 +3,11 @@ import { MobileNav } from "@/components/layout/mobile-nav";
 import { SidebarNav } from "@/components/layout/sidebar-nav";
 
 const adminNav: { label: string; href: string }[] = [
-  { label: "Admin home", href: "/admin" },
+  { label: "Overview", href: "/admin" },
   { label: "Resources", href: "/admin/resources" },
   { label: "Tests", href: "/admin/tests" },
+  { label: "Flashcards", href: "/admin/flashcards" },
   { label: "Reviews", href: "/admin/reviews" },
-  { label: "Referrals", href: "/admin/referrals" },
 ];
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {

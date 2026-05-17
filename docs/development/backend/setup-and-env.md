@@ -10,9 +10,11 @@ V1 requires:
 - Supabase Postgres database.
 - Supabase Storage buckets.
 - Redis instance.
+- Strapi CMS service for resources, IELTS info pages, FAQs, and mock-test authoring.
 - LLM provider account/key (OpenAI, Anthropic, or Gemini).
 - Optional transcription provider account/key.
 - Optional Sentry project (error tracking).
+- Optional PostHog project (learner/product analytics).
 
 ## Environment Variables
 
@@ -57,11 +59,21 @@ MAX_SPEAKING_AUDIO_MB=25
 MAX_SPEAKING_AUDIO_SECONDS=300
 SIGNED_URL_TTL_SECONDS=900
 
+# Strapi CMS
+STRAPI_BASE_URL=http://localhost:1337
+STRAPI_ADMIN_URL=http://localhost:1337/admin
+STRAPI_API_TOKEN=
+
 # Sentry (optional - error tracking, not required for beta)
 # NEXT_PUBLIC_SENTRY_DSN=
 # SENTRY_AUTH_TOKEN=
 # SENTRY_ORG=
 # SENTRY_PROJECT=
+
+# PostHog (optional - learner/product analytics)
+NEXT_PUBLIC_POSTHOG_KEY=
+NEXT_PUBLIC_POSTHOG_HOST=https://us.i.posthog.com
+NEXT_PUBLIC_POSTHOG_UI_HOST=https://us.posthog.com
 ```
 
 **Note:** When `LLM_PROVIDER` and `LLM_API_KEY` are set, the system uses the production LLM provider (OpenAI, Anthropic, or Gemini). When not set, it falls back to the deterministic local provider for development/testing.
@@ -73,11 +85,13 @@ SIGNED_URL_TTL_SECONDS=900
 3. Configure `.env.local` with required variables (see `.env.example`).
 4. Generate Prisma client (`pnpm prisma:generate`).
 5. Run Prisma migration (`pnpm db:migrate`).
-6. Seed initial resources/tests (`pnpm db:seed`).
-7. Create Supabase Storage buckets (listening-audio, speaking-recordings, generated-audio, reports).
-8. Start Redis (required for BullMQ queue).
-9. Start Next.js dev server (`pnpm dev`).
-10. Start BullMQ worker process in separate terminal (`pnpm worker:dev`).
+6. Seed app runtime data if needed (`pnpm db:seed`). Content authoring now happens in Strapi.
+7. Start Strapi (`pnpm strapi:dev`), open `http://localhost:1337/admin`, create the first admin, and create a read API token.
+8. Add the Strapi token to `.env.local` as `STRAPI_API_TOKEN`.
+9. Create Supabase Storage buckets (listening-audio, speaking-recordings, generated-audio, reports).
+10. Start Redis (required for BullMQ queue).
+11. Start Next.js dev server (`pnpm dev`).
+12. Start BullMQ worker process in separate terminal (`pnpm worker:dev`).
 
 ## Prisma Workflow
 
@@ -112,6 +126,9 @@ npx prisma migrate deploy
 | `pnpm db:deploy` | Deploy migrations to production |
 | `pnpm db:seed` | Seed database |
 | `pnpm worker:dev` | Start BullMQ worker |
+| `pnpm strapi:dev` | Start Strapi CMS in development mode |
+| `pnpm strapi:build` | Build Strapi CMS admin |
+| `pnpm strapi:start` | Start built Strapi CMS |
 | `pnpm test:p0` | Run P0 integration tests |
 | `pnpm test:e2e` | Run Playwright E2E tests |
 | `pnpm test:e2e:ui` | Run Playwright E2E with UI |
@@ -149,6 +166,7 @@ Minimum production setup:
 - Separate worker process.
 - Environment variable management.
 - Error tracking/logging (Sentry recommended).
+- Learner/product analytics (PostHog recommended).
 - Database backups.
 
 Recommended environments:

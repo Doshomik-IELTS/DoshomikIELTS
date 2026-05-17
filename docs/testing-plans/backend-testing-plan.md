@@ -70,7 +70,10 @@ Test cases:
 
 Test cases:
 
+- Learner resource/test APIs read published Strapi content when `STRAPI_BASE_URL` and `STRAPI_API_TOKEN` are configured.
+- Learner resource/test APIs fall back to published Prisma content when Strapi is not configured.
 - Learner can start published mock test.
+- Starting a Strapi-authored mock test materializes stable Prisma runtime rows before creating the attempt.
 - Answer keys are not returned in learner test payload. ✅ **P0 Verified**
 - Learner can save draft answers. ✅ **P0 Verified**
 - Learner can submit a section.

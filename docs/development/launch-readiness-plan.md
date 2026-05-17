@@ -1,7 +1,7 @@
 # IELTS++ Launch Readiness Plan
 
-**Last updated:** 2026-05-16 (all P0 source fixes verified, P1 hardening complete, E2E scaffold created. Ready for staging smoke test before internal alpha.)
-**Status:** All P0 source fixes verified. P1 hardening items (integration tests, rate limiting, audit logs, Sentry) implemented. E2E scaffold created. Core MVP feature-complete. Ready for staging smoke test before internal alpha.
+**Last updated:** 2026-05-17 (all P0 source fixes verified, P1 hardening complete, Strapi and PostHog integrated, E2E scaffold created. Ready for staging smoke test before internal alpha.)
+**Status:** All P0 source fixes verified. P1 hardening items (integration tests, rate limiting, audit logs, Sentry, PostHog analytics) implemented. E2E scaffold created. Core MVP feature-complete. Ready for staging smoke test before internal alpha.
 
 This document turns the current code/documentation review into an execution checklist. The documentation describes a solid MVP, but the code is the source of truth for launch readiness. Launch is blocked until the core learner, admin, scoring, database, and quality checks work end to end in a production-like environment.
 
@@ -34,6 +34,7 @@ P1 hardening items completed 2026-05-14:
 - **Integration tests** scaffold: `tests/integration/` directory with auth.test.ts.
 - **E2E tests** scaffold: 11 Playwright spec files covering public, auth, dashboard, learner flows, detail pages, attempts, admin pages, welcome, and screenshots.
 - **Sentry** configured: `instrumentation-client.ts`, `instrumentation.ts`, `sentry.server.config.ts`, `sentry.edge.config.ts`, `src/app/global-error.tsx`, `next.config.ts` wrapped with `withSentryConfig`. Env var placeholders in `.env.local`.
+- **PostHog** configured: `posthog-js` initialized in `instrumentation-client.ts`, authenticated learner identity bridge in `src/components/analytics/posthog-identity.tsx`, and key learner workflow events captured behind `NEXT_PUBLIC_POSTHOG_KEY`.
 - **Storage buckets** created on Supabase: speaking-recordings, listening-audio, generated-audio, reports.
 - **BullMQ worker** running on port 3002 with 6 workers.
 
@@ -281,7 +282,7 @@ Add tests for:
 - Speaking upload/submission -> evaluation status page.
 - Complete all modules -> score prediction -> report.
 - Learner blocked from admin.
-- Admin creates/updates/publishes a resource or test.
+- Admin opens the Strapi authoring panel, creates/updates/publishes a resource or test in Strapi, and verifies it appears in the learner app.
 
 ### P1.3 Harden rate limits and abuse controls
 
@@ -324,7 +325,7 @@ Audit events logged:
 - ✅ Seed data verified for content compliance (prisma/seed.ts reviewed).
 - ✅ Listening/speaking buckets private.
 - ✅ No commercial IELTS content in seed.
-- [ ] Review all published resources/tests for originality and answer correctness (manual step).
+- [ ] Review all published Strapi resources/tests for originality and answer correctness (manual step).
 
 ---
 
@@ -338,10 +339,11 @@ Audit events logged:
 - ✅ Redis (Upstash) for BullMQ.
 - ⚠ LLM provider key configured (`gemini` with `gemini-2.0-flash` model). **Note:** Free tier has strict rate limits (15 req/min, 15 req/day on `gemini-2.0-flash`). Enable paid billing on Google Cloud project for production use, or use OpenAI/Anthropic for higher quotas. Deterministic fallback remains active.
 - ✅ Error tracking (Sentry configured, awaiting DSN).
+- ✅ Learner analytics (PostHog configured, awaiting project key if used).
 
 ### Required environment variables
 
-Review `.env.example` and set production values for all documented variables including Sentry (`NEXT_PUBLIC_SENTRY_DSN`, `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, `SENTRY_PROJECT`).
+Review `.env.example` and set production values for all documented variables including Sentry (`NEXT_PUBLIC_SENTRY_DSN`, `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, `SENTRY_PROJECT`) and PostHog (`NEXT_PUBLIC_POSTHOG_KEY`, `NEXT_PUBLIC_POSTHOG_HOST`, `NEXT_PUBLIC_POSTHOG_UI_HOST`) if learner analytics is enabled.
 
 Production secrets must not use `NEXT_PUBLIC_` unless they are intentionally browser-safe.
 
@@ -374,7 +376,7 @@ Public launch requires all items below to be checked.
 - [ ] Writing/speaking evaluations complete or fail gracefully.
 - [ ] Full predicted score appears only after all four modules are complete.
 - [ ] Score UI clearly says "unofficial estimate".
-- [ ] Admin can create, review, publish, and archive content.
+- [ ] Admin can create, review, publish, and archive content in Strapi; app admin review workflows still work.
 
 ### Engineering gates
 

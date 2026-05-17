@@ -312,29 +312,26 @@ Show:
 
 Show:
 
-- Draft resources count.
-- Review resources count.
-- Published resources count.
-- Draft tests count.
+- Operational stats.
+- Strapi resource/mock-test entry points.
+- Content sync/fallback health when available.
 - Review queue count.
 
 ### Resource Admin
 
 Actions:
 
-- Create resource.
-- Edit resource.
-- Set status.
-- Publish/archive.
+- Open Strapi Resource collection.
+- Preview/verify learner resource behavior when Strapi is configured.
+- Use legacy Prisma resource tools only for fallback/local content.
 
 ### Test Admin
 
 Actions:
 
-- Create test metadata.
-- Create sections.
-- Add prompts/questions.
-- Manage status.
+- Open Strapi Mock Test collection.
+- Author sections, question groups, questions, answer keys, explanations, and media in Strapi.
+- Use legacy Prisma test tools only for fallback/local tests.
 
 ### Review Queue
 

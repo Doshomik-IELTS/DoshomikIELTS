@@ -1,0 +1,59 @@
+{
+  "kind": "collectionType",
+  "collectionName": "mock_tests",
+  "info": {
+    "singularName": "mock-test",
+    "pluralName": "mock-tests",
+    "displayName": "Mock Test",
+    "description": "IELTS++ practice, short mock, and full mock test definitions."
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "title",
+      "required": true
+    },
+    "description": {
+      "type": "richtext"
+    },
+    "type": {
+      "type": "enumeration",
+      "enum": [
+        "practice",
+        "short_mock",
+        "full_mock"
+      ],
+      "default": "short_mock",
+      "required": true
+    },
+    "estimatedDurationMinutes": {
+      "type": "integer"
+    },
+    "versionLabel": {
+      "type": "string"
+    },
+    "accessTier": {
+      "type": "enumeration",
+      "enum": [
+        "free",
+        "paid",
+        "internal"
+      ],
+      "default": "free",
+      "required": true
+    },
+    "sections": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::mock-test-section.mock-test-section",
+      "mappedBy": "test"
+    }
+  }
+}

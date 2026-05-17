@@ -1,29 +1,18 @@
-"use client";
-
-import { Suspense } from "react";
-import Link from "next/link";
-import { buttonVariants } from "@/components/ui/button";
-import { AdminTestList } from "@/components/admin/admin-test-list";
-import { AdminTestAdvancedTools } from "@/components/admin/admin-test-advanced-tools";
 import { PageHeader } from "@/components/ui/page-header";
-import { State } from "@/components/ui/state";
-
-function LoadingSkeleton() {
-  return <State title="Loading tests..." variant="loading" />;
-}
+import { StrapiAuthoringPanel } from "@/components/admin/strapi-authoring-panel";
 
 export default function AdminTestsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
         title="Tests"
-        description="Manage mock tests and sections."
-        actions={<Link href="/admin/tests/new" className={buttonVariants()}>New test</Link>}
+        description="Author mock tests in Strapi."
       />
-      <AdminTestAdvancedTools />
-      <Suspense fallback={<LoadingSkeleton />}>
-        <AdminTestList />
-      </Suspense>
+      <StrapiAuthoringPanel
+        collection="mock-tests"
+        title="Mock-test authoring moved to Strapi"
+        description="Create test definitions, sections, question groups, questions, answer keys, explanations, and media in Strapi. The learner app can list Strapi-published tests and materializes them into Prisma when a learner starts an attempt."
+      />
     </div>
   );
 }

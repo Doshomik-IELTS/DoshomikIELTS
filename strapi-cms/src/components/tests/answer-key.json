@@ -1,0 +1,22 @@
+{
+  "collectionName": "components_tests_answer_keys",
+  "info": {
+    "displayName": "Answer Key",
+    "description": "Correct answer and scoring metadata."
+  },
+  "attributes": {
+    "canonicalAnswer": {
+      "type": "string",
+      "required": true
+    },
+    "acceptedAnswers": {
+      "type": "json"
+    },
+    "scoringRule": {
+      "type": "json"
+    },
+    "explanation": {
+      "type": "richtext"
+    }
+  }
+}

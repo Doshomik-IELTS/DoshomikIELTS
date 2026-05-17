@@ -11,6 +11,8 @@ IELTS++ is an owned IELTS resource and mock-test platform. The platform should p
 - LLM-assisted evaluation for writing and speaking.
 - Score prediction after a learner completes a full mock test.
 - Login, logout, learner profile, attempt history, and progress tracking.
+- Strapi-authored resources and mock-test definitions.
+- PostHog learner/product analytics when configured.
 
 ## Content And Copyright Position
 
@@ -39,6 +41,8 @@ Conservative MVP stack:
 - Object storage: S3-compatible storage for listening audio, speaking recordings, generated audio, and exported reports.
 - Cache/queue: Redis for background evaluation jobs.
 - LLM provider: configurable service layer so prompts and models can change without rewriting product code.
+- CMS: Strapi Free for resource, IELTS info page, FAQ, and mock-test authoring.
+- Analytics: PostHog for learner workflow and product analytics.
 
 Recommended MVP choice if starting quickly:
 
@@ -48,6 +52,8 @@ Recommended MVP choice if starting quickly:
 - Auth: Auth.js, Clerk, Supabase Auth, or custom email/password.
 - Storage: Cloudflare R2, AWS S3, DigitalOcean Spaces, or Supabase Storage.
 - Queue: BullMQ, Celery, or managed background jobs depending on backend stack.
+- CMS: Strapi Free.
+- Analytics: PostHog.
 
 ## Domains
 
@@ -176,6 +182,8 @@ Resource format:
 - Explanation.
 - Tags.
 - Status: draft, review, published, archived.
+
+Authoring note: new resources are authored in Strapi. App `Resource` rows are runtime/fallback/cache records for learner progress and local development continuity.
 
 ### 4. Practice Module
 
@@ -405,7 +413,8 @@ Suggested API groups:
 - `/evaluations/*` for writing/speaking evaluation status and results.
 - `/scores/*` for module scores and full-test prediction.
 - `/media/*` for signed upload/download URLs.
-- `/admin/*` for content management and review.
+- `/admin/*` for app operations, Strapi entry panels, and review workflows.
+- Strapi Content API for published resources, IELTS pages, FAQs, and mock-test definitions.
 
 ## Security
 

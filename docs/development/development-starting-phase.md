@@ -76,7 +76,7 @@ Do not include these in the starting phase:
 - Global leaderboard/community.
 - Advanced AI tutor.
 - Personalized study plan engine.
-- Full production-grade visual test builder.
+- Separate production-grade in-app visual test builder; Strapi is the content authoring path.
 
 ---
 
@@ -345,7 +345,7 @@ Acceptance criteria:
 
 - Learners cannot access admin pages.
 - Admin/reviewer roles can access admin shell.
-- Copyright warning is visible in admin resource/review screens.
+- Copyright/source guidance is visible in Strapi content-entry instructions and admin review screens.
 
 ---
 

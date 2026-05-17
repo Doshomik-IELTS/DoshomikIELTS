@@ -75,9 +75,9 @@ Required learner integrations:
 - `GET /api/practice` - List practice items
 - `POST /api/practice/:id/attempt` - Submit practice attempt
 - `GET /api/practice/attempts` - Practice history
-- `GET /api/mock-tests` - List published tests
-- `GET /api/mock-tests/:id` - Test detail (no answer keys)
-- `POST /api/mock-tests/:id/start` - Start new attempt
+- `GET /api/mock-tests` - List published tests from Strapi, with Prisma fallback
+- `GET /api/mock-tests/:id` - Test detail from Strapi or Prisma fallback (no answer keys)
+- `POST /api/mock-tests/:id/start` - Start new attempt; Strapi-authored tests are materialized into Prisma runtime rows on first start
 - `GET /api/attempts/:attemptId` - Attempt status and progress (includes `durationMinutes` per section)
 - `POST /api/attempts/:attemptId/answers` - Save draft answers
 - `POST /api/attempts/:attemptId/submit-section` - Submit section for scoring
@@ -100,28 +100,35 @@ Required learner integrations:
 - `GET /api/feedback` - List beta feedback (admin/reviewer only)
 - `GET /api/health` - Health check
 
-Admin integrations:
+Admin/content integrations:
+
+Resource and mock-test authoring is handled in Strapi Admin. The app admin resource/test routes are Strapi entry panels. The following legacy app APIs remain for local Prisma fallback data, operational compatibility, and older tooling; new resource/mock-test content should be authored in Strapi.
 
 **Resources:**
-- `GET /api/admin/resources` - List resources with filters
-- `POST /api/admin/resources` - Create resource
-- `GET /api/admin/resources/[id]` - Get resource
-- `PATCH /api/admin/resources/[id]` - Update resource
-- `DELETE /api/admin/resources/[id]` - Delete resource
+- `GET /api/resources` - Reads published Strapi resources when configured; Prisma fallback
+- `GET /api/resources/[id]` - Reads a published Strapi resource when configured; Prisma fallback
+- `GET /api/admin/resources` - Legacy/fallback list resources with filters
+- `POST /api/admin/resources` - Legacy/fallback create resource
+- `GET /api/admin/resources/[id]` - Legacy/fallback get resource
+- `PATCH /api/admin/resources/[id]` - Legacy/fallback update resource
+- `DELETE /api/admin/resources/[id]` - Legacy/fallback delete resource
 
 **Tests:**
-- `GET /api/admin/tests` - List tests
-- `POST /api/admin/tests` - Create test
-- `GET /api/admin/tests/[id]` - Get test with sections/questions
-- `PATCH /api/admin/tests/[id]` - Update test
-- `DELETE /api/admin/tests/[id]` - Delete test
-- `POST /api/admin/tests/[id]/validate` - Validate CMS readiness
-- `POST /api/admin/tests/[id]/publish` - Validate and publish atomically
-- `POST /api/admin/tests/[id]/duplicate` - Duplicate test as editable draft
-- `POST /api/admin/tests/[id]/sections` - Create section
-- `GET /api/admin/tests/[id]/sections` - List test sections
-- `POST /api/admin/tests/[id]/sections/reorder` - Reorder sections
-- `POST /api/admin/tests/import` - Import test from external source
+- `GET /api/mock-tests` - Reads published Strapi tests when configured; Prisma fallback
+- `GET /api/mock-tests/[id]` - Reads published Strapi test detail when configured; Prisma fallback
+- `POST /api/mock-tests/[id]/start` - Materializes Strapi test into Prisma runtime rows, then starts attempt
+- `GET /api/admin/tests` - Legacy/fallback list tests
+- `POST /api/admin/tests` - Legacy/fallback create test
+- `GET /api/admin/tests/[id]` - Legacy/fallback get test with sections/questions
+- `PATCH /api/admin/tests/[id]` - Legacy/fallback update test
+- `DELETE /api/admin/tests/[id]` - Legacy/fallback delete test
+- `POST /api/admin/tests/[id]/validate` - Legacy/fallback validation
+- `POST /api/admin/tests/[id]/publish` - Legacy/fallback publish
+- `POST /api/admin/tests/[id]/duplicate` - Legacy/fallback duplicate
+- `POST /api/admin/tests/[id]/sections` - Legacy/fallback create section
+- `GET /api/admin/tests/[id]/sections` - Legacy/fallback list test sections
+- `POST /api/admin/tests/[id]/sections/reorder` - Legacy/fallback reorder sections
+- `POST /api/admin/tests/import` - Legacy/fallback import test from external source
 
 **Questions:**
 - `POST /api/admin/questions` - Create question with answer key

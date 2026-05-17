@@ -1,0 +1,16 @@
+{
+  "collectionName": "components_content_examples",
+  "info": {
+    "displayName": "Example",
+    "description": "Labelled learner-facing example."
+  },
+  "attributes": {
+    "label": {
+      "type": "string"
+    },
+    "text": {
+      "type": "text",
+      "required": true
+    }
+  }
+}

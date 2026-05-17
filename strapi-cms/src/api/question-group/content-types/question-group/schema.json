@@ -1,0 +1,45 @@
+{
+  "kind": "collectionType",
+  "collectionName": "question_groups",
+  "info": {
+    "singularName": "question-group",
+    "pluralName": "question-groups",
+    "displayName": "Question Group",
+    "description": "Grouped IELTS questions with shared instructions or display config."
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "section": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::mock-test-section.mock-test-section",
+      "inversedBy": "questionGroups"
+    },
+    "title": {
+      "type": "string"
+    },
+    "instructions": {
+      "type": "richtext"
+    },
+    "questionType": {
+      "type": "string",
+      "required": true
+    },
+    "orderIndex": {
+      "type": "integer",
+      "required": true,
+      "default": 0
+    },
+    "displayConfig": {
+      "type": "json"
+    },
+    "questions": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::question.question",
+      "mappedBy": "group"
+    }
+  }
+}

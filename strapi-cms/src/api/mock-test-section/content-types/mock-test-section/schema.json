@@ -1,0 +1,74 @@
+{
+  "kind": "collectionType",
+  "collectionName": "mock_test_sections",
+  "info": {
+    "singularName": "mock-test-section",
+    "pluralName": "mock-test-sections",
+    "displayName": "Mock Test Section",
+    "description": "Ordered IELTS module section inside a mock test."
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "test": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::mock-test.mock-test",
+      "inversedBy": "sections"
+    },
+    "module": {
+      "type": "enumeration",
+      "enum": [
+        "listening",
+        "reading",
+        "writing",
+        "speaking"
+      ],
+      "required": true
+    },
+    "partNumber": {
+      "type": "integer"
+    },
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "instructions": {
+      "type": "richtext"
+    },
+    "durationMinutes": {
+      "type": "integer"
+    },
+    "orderIndex": {
+      "type": "integer",
+      "required": true,
+      "default": 0
+    },
+    "content": {
+      "type": "json"
+    },
+    "media": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": [
+        "images",
+        "files",
+        "audios",
+        "videos"
+      ]
+    },
+    "questionGroups": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::question-group.question-group",
+      "mappedBy": "section"
+    },
+    "questions": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::question.question",
+      "mappedBy": "section"
+    }
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "collectionName": "components_content_options",
+  "info": {
+    "displayName": "Option",
+    "description": "Question or matching option."
+  },
+  "attributes": {
+    "label": {
+      "type": "string"
+    },
+    "value": {
+      "type": "string"
+    },
+    "text": {
+      "type": "text",
+      "required": true
+    }
+  }
+}

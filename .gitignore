@@ -20,6 +20,13 @@
 # production
 /build
 
+# strapi
+/strapi-cms/.cache/
+/strapi-cms/.strapi/
+/strapi-cms/.tmp/
+/strapi-cms/build/
+/strapi-cms/dist/
+
 # misc
 .DS_Store
 *.pem

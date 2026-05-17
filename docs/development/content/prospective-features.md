@@ -2,7 +2,7 @@
 
 Research date: May 2026
 
-Last updated: 2026-05-16
+Last updated: 2026-05-17
 
 ## Implementation Status Summary
 
@@ -32,9 +32,9 @@ These features are necessary for IELTS++ to be competitive in the current IELTS 
 
 Implementation status summary:
 
-- Account/profile, resource library, admin resources, basic practice, mock-test start/attempt flow, learner-safe attempt APIs, Reading/Listening renderers, objective scoring, writing/speaking evaluation scaffolding, score prediction, and admin review workflow are implemented at MVP level.
-- The content CMS now supports test creation wizard, Reading/Listening quick authoring without JSON, question groups, structured scoring rules, source support, source highlighting, media attachment, validation blockers, preview, review, publish, version snapshots, duplicate-as-draft, mobile navigation, and bulk question paste.
-- Remaining major prospective work: production LLM/TTS generation workers, server-side strict audio events, weakness recommendations, richer analytics, full study plans, and premium/community features.
+- Account/profile, Strapi-backed resource library, basic practice, mock-test start/attempt flow, learner-safe attempt APIs, Reading/Listening renderers, objective scoring, writing/speaking evaluation scaffolding, score prediction, and admin review workflow are implemented at MVP level.
+- Content authoring for resources and mock tests now uses Strapi Free. The older in-app CMS/builder remains legacy/fallback tooling for Prisma-local content.
+- Remaining major prospective work: production LLM/TTS generation workers, server-side strict audio events, PostHog-backed weakness recommendations, full study plans, and premium/community features.
 
 ### 1. Account And Profile
 

@@ -1,0 +1,77 @@
+{
+  "kind": "collectionType",
+  "collectionName": "questions",
+  "info": {
+    "singularName": "question",
+    "pluralName": "questions",
+    "displayName": "Question",
+    "description": "IELTS question with options, answer key, explanation, and attribution."
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "section": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::mock-test-section.mock-test-section",
+      "inversedBy": "questions"
+    },
+    "group": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::question-group.question-group",
+      "inversedBy": "questions"
+    },
+    "questionType": {
+      "type": "enumeration",
+      "enum": [
+        "multiple_choice_single",
+        "multiple_choice_multiple",
+        "fill_blank",
+        "matching",
+        "true_false_not_given",
+        "yes_no_not_given",
+        "short_answer",
+        "writing_task",
+        "speaking_prompt"
+      ],
+      "required": true
+    },
+    "prompt": {
+      "type": "richtext",
+      "required": true
+    },
+    "options": {
+      "type": "component",
+      "repeatable": true,
+      "component": "content.option"
+    },
+    "orderIndex": {
+      "type": "integer",
+      "required": true,
+      "default": 0
+    },
+    "difficulty": {
+      "type": "enumeration",
+      "enum": [
+        "basic",
+        "intermediate",
+        "advanced"
+      ],
+      "default": "basic",
+      "required": true
+    },
+    "answerKey": {
+      "type": "component",
+      "repeatable": false,
+      "component": "tests.answer-key"
+    },
+    "explanation": {
+      "type": "richtext"
+    },
+    "sourceSpan": {
+      "type": "json"
+    }
+  }
+}

@@ -1,7 +1,7 @@
 # Backend Data Model
 
-> **Status:** All models implemented in Prisma schema as of 2026-05-15
-> **Latest additions:** QuestionGroup, TestVersion, ResourcePrerequisite, ReferralConfig, BetaFeedback models. New fields on Resource, MockTestAttempt, MediaAsset, FlashCard, FlashCardDeck, ResourceProgress. New enums: TaskType, SpeakingPart, ProgressStatus, ReferralStatus, RedemptionStatus, CreditTxType, RewardTrigger. (2026-05-15)
+> **Status:** Prisma runtime models implemented as of 2026-05-15. Strapi CMS authoring added 2026-05-17.
+> **Latest content architecture:** Strapi is the authoring source of truth for resources, IELTS info pages, FAQs, and mock-test definitions. Prisma remains the runtime database for users, attempts, answers, timers, scoring, progress, credits, reports, and local/cache/snapshot content rows.
 
 ## General Rules
 
@@ -11,6 +11,7 @@
 - Keep learner-visible content separate from answer keys.
 - Store LLM responses as structured JSON for later analysis.
 - Never store copied Cambridge/commercial IELTS content.
+- Do not treat Prisma `Resource`/`Test` rows as the primary authoring UI source when Strapi is configured. They are fallback, cache, or materialized runtime records.
 
 ## Enums
 
@@ -158,6 +159,8 @@ Fields:
 Indexes on `status` and `createdAt`.
 
 ## Resource Library
+
+Strapi owns resource authoring. Prisma `Resource` rows are retained for fallback/local content, learner progress relations, and possible published-content cache/snapshots.
 
 ### `Resource`
 
@@ -324,6 +327,8 @@ Fields:
 - `reviewedAt`
 
 ## Tests And Questions
+
+Strapi owns mock-test authoring. Prisma `Test`, `TestSection`, `QuestionGroup`, `Question`, and `AnswerKey` rows are retained as runtime records for the attempt engine. When a learner starts a Strapi-authored mock test, the app materializes the published Strapi content into these Prisma tables using stable IDs prefixed with `strapi_`.
 
 ### `Test`
 

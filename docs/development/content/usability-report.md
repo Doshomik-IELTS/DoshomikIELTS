@@ -1,10 +1,12 @@
 # IELTS++ Usability Report
 
-Last updated: 2026-05-16
+Last updated: 2026-05-17
+
+> Historical note, updated 2026-05-17: this report describes the custom in-app content management UI that existed before Strapi adoption. Resource and mock-test authoring now happens in Strapi; the old admin builder references remain useful only as legacy/fallback context, learner preview context, or review-workflow context.
 
 ## Status: ✅ Core Usability Recommendations Implemented — Production Hardening In Progress
 
-All P0, P1, and P2 learner/admin usability recommendations from this report have been implemented. Remaining work focuses on production hardening: server-side attempt events for strict audio enforcement, production LLM/TTS generation workers, richer analytics/weakness detection, and optional dedicated full-screen question editors.
+All P0, P1, and P2 learner/admin usability recommendations from this report have been implemented or superseded by Strapi. Remaining work focuses on production hardening: server-side attempt events for strict audio enforcement, production LLM/TTS generation workers, PostHog-driven weakness analysis, and optional dedicated full-screen question editors for legacy/fallback tooling.
 
 ## Implementation Update
 
@@ -13,20 +15,20 @@ The main P0 learner recommendations in this report have now been implemented:
 - Attempt API returns learner-safe `contentJson`, `mediaAssetId`, question groups, question type, options, and group IDs.
 - Active attempts render Reading passages, Listening audio, question groups, options, and typed objective controls through shared IELTS renderers.
 - Admin preview now uses the same section/question renderer as the learner attempt flow.
-- Admin Tests page now keeps import/generation inside a collapsible Advanced tools panel.
-- Builder section overview now shows completion chips for Material, Questions, Answers, and Sources.
-- Listening now has a no-JSON quick authoring panel similar to Reading.
+- Legacy Admin Tests page keeps import/generation inside a collapsible Advanced tools panel.
+- Legacy builder section overview shows completion chips for Material, Questions, Answers, and Sources.
+- Legacy Listening fallback tooling has a no-JSON quick authoring panel similar to Reading.
 
 The earlier P1/P2 recommendations are also now mostly implemented: mobile navigation, structured scoring controls, bulk paste question entry, source-span highlighting, drag-and-drop reorder, admin validation-blocker metrics, unanswered submit review, stricter Listening playback simulation, and map/diagram visual rendering.
 
-Remaining work is mostly production hardening: server-side attempt events for strict audio, production LLM/TTS workers, richer analytics, and optional dedicated full-screen question editors if the unified structured editor becomes too dense.
+Remaining work is mostly production hardening: server-side attempt events for strict audio, production LLM/TTS workers, PostHog-backed analytics/weakness detection, and optional dedicated full-screen question editors only if legacy/fallback tooling remains useful.
 
 ## Scope
 
 This report reviews the current codebase from two perspectives:
 
 - Learners using the dashboard, resources, practice, mock tests, and active attempt screens.
-- Admins creating and managing resources, mock tests, IELTS sections, questions, media, generation jobs, previews, validation, and review workflow.
+- Admins opening Strapi for resource/mock-test authoring, plus app review workflows and legacy/fallback Prisma tooling.
 
 The review is based on the current route/component implementation, especially:
 
@@ -50,7 +52,7 @@ The review is based on the current route/component implementation, especially:
 
 ## Executive Summary
 
-The platform now has a usable admin foundation for content operations, especially compared with the original generic test shell. Admins can create tests through a wizard, author Reading passages without JSON, attach Listening media, validate, preview, duplicate, submit for review, and publish. This is a strong base.
+The platform now uses Strapi as the primary content authoring surface. The older app admin builder remains useful as legacy/fallback context for local Prisma tests, previews, validation behavior, and review workflows.
 
 The original main usability weakness was the learner mock-test experience: active attempts treated most objective IELTS questions as generic textareas. This has now been addressed with shared IELTS renderers for Reading/Listening material, grouped instructions, options, and typed answer controls.
 
@@ -58,8 +60,8 @@ Overall usability rating:
 
 - Learner dashboard/resources/practice listing: **Good MVP**
 - Learner mock-test taking: **Good MVP; core IELTS structure is usable**
-- Admin resource CMS: **Good**
-- Admin test CMS: **Good MVP for Reading/Listening; Writing/Speaking can be deepened**
+- Strapi resource authoring entry flow: **Good MVP**
+- Strapi mock-test authoring entry flow: **Good MVP; content modeling can deepen over time**
 - Admin review/publishing workflow: **Good MVP**
 
 ## Learner Usability
@@ -448,6 +450,6 @@ Implemented fixes:
 
 ## Overall Verdict
 
-The admin CMS is now usable enough for internal content creation, especially for Reading and Listening. It still may benefit from dedicated per-question-type screens later, but the core authoring, validation, preview, review, scoring-rule, source-support, and reorder actions are present.
+Strapi is now the usable internal content creation surface for resources and mock tests. The legacy app builder may still benefit from cleanup if it remains as fallback tooling, but it is no longer the production authoring path.
 
-The learner experience now has the core pieces needed to experience authored Reading and Listening content as IELTS-like tests. The next usability improvements should focus on hardening: server-side attempt events for strict audio, richer post-attempt analytics, stronger map/diagram interaction beyond static visuals, and production content generation workers.
+The learner experience now has the core pieces needed to experience authored Reading and Listening content as IELTS-like tests. The next usability improvements should focus on hardening: server-side attempt events for strict audio, PostHog-backed post-attempt analytics, stronger map/diagram interaction beyond static visuals, and production content generation workers.

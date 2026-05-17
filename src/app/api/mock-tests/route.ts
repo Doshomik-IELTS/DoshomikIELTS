@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { requireCurrentUser } from "@/lib/auth/session";
 import { ok, fail } from "@/lib/api/response";
+import { fetchStrapiMockTests } from "@/lib/strapi/content";
 
 export async function GET(request: Request) {
   try {
@@ -13,6 +14,21 @@ export async function GET(request: Request) {
   const type = searchParams.get("type");
   const page = parseInt(searchParams.get("page") || "1");
   const limit = parseInt(searchParams.get("limit") || "20");
+
+  const strapiTests = await fetchStrapiMockTests(type ?? undefined);
+  if (strapiTests) {
+    const start = (page - 1) * limit;
+    const items = strapiTests.slice(start, start + limit);
+    return ok({
+      items,
+      pagination: {
+        page,
+        limit,
+        total: strapiTests.length,
+        totalPages: Math.ceil(strapiTests.length / limit),
+      },
+    });
+  }
 
   const where: Record<string, unknown> = {
     status: "published",

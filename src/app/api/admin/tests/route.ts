@@ -72,6 +72,7 @@ export async function GET(request: Request) {
     estimatedDurationMinutes: test.estimatedDurationMinutes,
     publishedAt: test.publishedAt,
     createdAt: test.createdAt,
+    updatedAt: test.updatedAt,
     sectionCount: test._count.sections,
     attemptCount: test._count.attempts,
   }));

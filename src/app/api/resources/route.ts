@@ -1,6 +1,7 @@
 import { ok } from "@/lib/api/response";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth/session";
+import { fetchStrapiResources } from "@/lib/strapi/content";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -9,6 +10,13 @@ export async function GET(request: Request) {
   const search = searchParams.get("search") ?? undefined;
 
   const current = await getCurrentUser();
+
+  const strapiResources = await fetchStrapiResources({ category, difficulty, search });
+  if (strapiResources) {
+    return ok({
+      resources: strapiResources.map((r) => ({ ...r, saved: false })),
+    });
+  }
 
   const resources = await prisma.resource.findMany({
     where: {

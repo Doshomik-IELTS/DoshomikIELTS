@@ -2,7 +2,52 @@
 
 ## Overview
 
-This document defines the complete content management architecture for the IELTS++ platform. It covers content types, database models, admin dashboard workflows, and implementation patterns aligned with LMS best practices.
+This document defines the complete content management architecture for the IELTS++ platform. IELTS++ uses Strapi Free (self-hosted, open-source) as the authoring CMS for resources, mock tests, IELTS information pages, FAQs, and related learning content. The Next.js application remains responsible for learner runtime behavior: authentication, access control, attempts, timers, scoring, progress tracking, saved resources, and reports.
+
+The goal is to avoid maintaining a fragile custom admin CMS for content authoring while keeping exam delivery and learner state inside the application database.
+
+---
+
+## 0. CMS Architecture Decision
+
+### 0.1 Source of Truth
+
+| Domain | Source of Truth | Notes |
+|--------|-----------------|-------|
+| Resources/articles | Strapi | Lessons, strategies, vocabulary, grammar, IELTS info pages |
+| Mock test definitions | Strapi | Tests, sections, passages, questions, answer keys, explanations |
+| Media used by content | Strapi media library or configured object storage | Audio, images, PDFs, visual prompts |
+| Users and roles | Next.js app database | Supabase/auth profile and app roles |
+| Attempts and answers | Next.js app database | Learner submissions must remain app-owned |
+| Timers and navigation state | Next.js app database | Runtime test behavior, not CMS content |
+| Scoring/evaluation reports | Next.js app database | AI evaluation, reviewer decisions, generated reports |
+| Progress and saved items | Next.js app database | Per-learner state |
+
+### 0.2 Integration Pattern
+
+Strapi is used for **content authoring**, not for learner runtime state.
+
+Recommended flow:
+
+1. Admin creates or edits content in Strapi.
+2. Strapi manages draft/review/publish state for content.
+3. The Next.js app reads only published content through Strapi APIs.
+4. When a learner starts a mock test, the app stores an immutable snapshot of the published test content with the attempt or test version reference.
+5. Attempts, answers, timer state, score prediction, review, progress, and reports are stored in Prisma/Postgres.
+
+This prevents content edits in Strapi from changing an already-started or already-submitted learner attempt.
+
+### 0.3 What Custom Admin Screens Should Remain
+
+The custom `/admin/resources` and `/admin/tests` authoring screens have been reduced to Strapi entry panels. Admin users author resources and mock tests in Strapi. Legacy custom routes and APIs may remain only for fallback/local Prisma content, operational previews, and older tooling.
+
+App admin screens should remain for:
+
+- Review queues for submitted writing/speaking evaluations
+- Attempt/report inspection
+- Referral/credit management
+- User support and operational dashboards
+- Content sync health and import status, if a sync layer is used
 
 ---
 
@@ -55,11 +100,110 @@ Each module (Listening, Reading, Writing, Speaking) contains:
 
 ## 2. Database Models
 
-The CMS uses Prisma as the ORM with the following core models.
+Prisma models are still required, but their responsibility changes. Strapi owns editable content. Prisma owns learner-facing runtime records, content snapshots/version references, progress, attempts, scoring, and audit data.
+
+If the app reads directly from Strapi for public resources, some content tables may become cache/snapshot tables rather than the authoring source of truth.
+
+---
+
+## 2A. Strapi Content Types
+
+### 2A.1 Resource
+
+Used for lessons, vocabulary, grammar, spelling, strategies, and IELTS preparation content.
+
+| Field | Type | Required | Notes |
+|-------|------|----------|-------|
+| title | string | Yes | Display title |
+| slug | UID | Yes | Public route identifier |
+| category | enumeration | Yes | Mirrors `ResourceCategory` |
+| difficulty | enumeration | Yes | basic/intermediate/advanced |
+| body | rich text / markdown | Yes | Main lesson content |
+| examples | component repeatable | No | Structured label/text examples |
+| tags | component or JSON | No | Topic and discovery tags |
+| orderIndex | integer | No | Progression ordering |
+| prerequisites | relation to Resource | No | Unlock rules |
+| media | media relation | No | Images/audio/PDFs |
+
+Publication state is handled by Strapi draft/publish. The app must only expose published resources to learners.
+
+### 2A.2 Mock Test
+
+Top-level IELTS test definition.
+
+| Field | Type | Required | Notes |
+|-------|------|----------|-------|
+| title | string | Yes | Test name |
+| slug | UID | Yes | Stable identifier |
+| description | text/rich text | No | Learner-facing summary |
+| type | enumeration | Yes | practice/short_mock/full_mock |
+| estimatedDurationMinutes | integer | No | Total test timer |
+| sections | relation/component repeatable | Yes | Ordered test sections |
+| versionLabel | string | No | Human-friendly version |
+| accessTier | enumeration | Yes | free/paid/internal |
+
+Published mock tests are consumed by the app for listing and starting attempts.
+
+### 2A.3 Mock Test Section
+
+| Field | Type | Required | Notes |
+|-------|------|----------|-------|
+| test | relation | Yes | Parent mock test |
+| module | enumeration | Yes | listening/reading/writing/speaking |
+| partNumber | integer | No | IELTS part number |
+| title | string | Yes | Section title |
+| instructions | rich text | No | Learner instructions |
+| durationMinutes | integer | No | Section timer |
+| orderIndex | integer | Yes | Display/order control |
+| content | component/JSON | No | Passage, transcript, cue card, visual prompt |
+| media | media relation | No | Listening audio or prompt image |
+| questionGroups | relation/component repeatable | No | Ordered groups |
+| questions | relation/component repeatable | Yes | Ordered questions |
+
+### 2A.4 Question Group
+
+| Field | Type | Required | Notes |
+|-------|------|----------|-------|
+| section | relation | Yes | Parent section |
+| title | string | No | Group label |
+| instructions | rich text | No | Group-specific instructions |
+| questionType | enumeration/string | Yes | Shared type for grouped questions |
+| orderIndex | integer | Yes | Group ordering |
+| displayConfig | JSON | No | Tables, matching layouts, shared options |
+
+### 2A.5 Question
+
+| Field | Type | Required | Notes |
+|-------|------|----------|-------|
+| section | relation | Yes | Parent section |
+| group | relation | No | Optional question group |
+| questionType | enumeration/string | Yes | MCQ, fill blank, matching, T/F/NG, short answer |
+| prompt | rich text/text | Yes | Question prompt |
+| options | component repeatable / JSON | No | Multiple choice/matching options |
+| orderIndex | integer | Yes | Question ordering |
+| difficulty | enumeration | Yes | basic/intermediate/advanced |
+| answerKey | component/JSON | Yes | Correct answer data |
+| explanation | rich text | No | Learner explanation |
+| sourceSpan | JSON | No | Passage offsets or attribution |
+
+Answer keys live in Strapi for authoring, but the app must snapshot them when starting/scoring attempts.
+
+### 2A.6 IELTS Information Page and FAQ
+
+| Content Type | Purpose |
+|--------------|---------|
+| IELTS Info Page | Fees, centers, preparation guides, referral terms, general IELTS pages |
+| FAQ Item | Question/answer content with category, order, and publish status |
+
+These are read directly by public/learner pages and do not need Prisma persistence unless caching is required.
+
+---
+
+## 2B. Prisma Runtime Models
 
 ### 2.1 Resource Model (Static Content)
 
-The `Resource` model handles study materials, vocabulary, grammar, and strategy content.
+The `Resource` model can be retained as a cache/snapshot table for published Strapi resources, or removed from the authoring path after Strapi integration. If retained, add an external reference field such as `strapiDocumentId` or `strapiId`.
 
 ```prisma
 model Resource {
@@ -230,20 +374,29 @@ model MediaAsset {
 
 ## 4. Admin Dashboard Specification
 
+Authoring for resources and mock tests happens in Strapi Admin. The Next.js admin dashboard should not duplicate Strapi's content editor. It should provide operational views and links into Strapi where needed.
+
 ### 4.1 Dashboard Home (`/admin`)
 
 **Components:**
-- Status summary cards (drafts, in review, published, archived)
-- Quick actions: "New Resource", "New Test", "View Reviews"
-- Recent activity feed
+- Operational status cards: attempts, evaluations, pending reviews, sync failures
+- Quick actions: "Open Strapi Resources", "Open Strapi Mock Tests", "View Reviews"
+- Recent app activity feed
 
 ### 4.2 Resource Management (`/admin/resources`)
 
-**Features:**
+This screen should be replaced with either:
+
+1. A redirect/link to the Strapi Resource collection, or
+2. A read-only app view showing published/synced resources and their learner usage metrics.
+
+Editing, draft workflow, publishing, media attachment, and bulk content changes should happen in Strapi.
+
+**Optional read-only features:**
 - Search by title/slug
-- Filter by: category, difficulty, status, date range
-- Bulk actions: archive, change status
-- Inline quick edit
+- Filter by category, difficulty, publish status, date range
+- View learner engagement/progress metrics
+- Show Strapi sync status
 
 **Table Columns:**
 | Column | Sortable | Description |
@@ -251,43 +404,29 @@ model MediaAsset {
 | Title | Yes | Resource name |
 | Category | Yes | Content type |
 | Difficulty | Yes | Level |
-| Status | Yes | Workflow state |
-| Author | No | Creator |
-| Updated | Yes | Last modification |
-| Actions | - | Edit/Delete/Preview |
+| Status | Yes | Strapi publish/sync state |
+| Updated | Yes | Last synced or published time |
+| Usage | Yes | Saves/completions, if available |
+| Actions | - | View in app / Open in Strapi |
 
 ### 4.3 Resource Editor (`/admin/resources/[id]`)
 
-**Form Sections:**
-
-1. **Basic Info**
-   - Title (required)
-   - Slug (auto-generated, editable)
-   - Category (dropdown)
-   - Difficulty (dropdown)
-   - Tags (multi-select)
-
-2. **Content**
-   - Body (rich text/markdown)
-   - Examples editor (structured JSON)
-   - Media attachments
-
-3. **Metadata**
-   - Status (workflow state)
-   - Publish date (scheduled)
-   - Author notes
+Resource editing is handled by Strapi. This route should redirect to Strapi or show a read-only preview with learner analytics.
 
 ### 4.4 Test Management (`/admin/tests`)
 
-**Test List:**
-- Test title, type, sections count, status, actions
+Mock test authoring is handled by Strapi. The app admin test screens should be reduced to:
 
-**Test Editor:**
-- Basic info (title, type, duration)
-- Section builder (add/reorder/delete)
-- Question builder per section
+- Published/synced test list
+- Attempt counts and learner usage
+- Start/preview as learner
+- Sync validation result
+- Open in Strapi action
+- Operational controls that are not content authoring
 
 ### 4.5 Question Editor
+
+Question authoring is handled by Strapi through `Question`, `Question Group`, and `Mock Test Section` content types.
 
 **Supported Types:**
 - Multiple choice (single answer)
@@ -310,33 +449,39 @@ model MediaAsset {
 
 ## 5. API Endpoints
 
+The app does not use full custom authoring APIs as the primary contract for resources and mock tests after the Strapi migration. Strapi provides the authoring API and admin UI. Next.js APIs expose learner-safe published content, runtime operations, and legacy/fallback compatibility where needed.
+
 ### 5.1 Admin APIs
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/api/admin/resources` | List resources with filters |
-| POST | `/api/admin/resources` | Create new resource |
-| GET | `/api/admin/resources/:id` | Get single resource |
-| PATCH | `/api/admin/resources/:id` | Update resource |
-| DELETE | `/api/admin/resources/:id` | Delete resource |
-| POST | `/api/admin/resources/:id/publish` | Publish resource |
-| GET | `/api/admin/tests` | List tests |
-| POST | `/api/admin/tests` | Create test |
-| GET | `/api/admin/tests/:id` | Get test with sections |
-| PATCH | `/api/admin/tests/:id` | Update test |
-| POST | `/api/admin/tests/:id/sections` | Add section |
-| POST | `/api/admin/questions` | Create question |
+| GET | `/api/admin/resources` | Optional read-only list of synced/published Strapi resources |
+| GET | `/api/admin/resources/:id` | Optional read-only resource preview/usage metrics |
+| POST | `/api/admin/content-sync/resources` | Optional manual sync from Strapi |
+| GET | `/api/admin/tests` | Optional read-only list of synced/published Strapi tests |
+| GET | `/api/admin/tests/:id` | Optional read-only test preview/validation result |
+| POST | `/api/admin/content-sync/tests` | Optional manual sync from Strapi |
+| GET | `/api/admin/content-sync/status` | Sync health and recent failures |
 
 ### 5.2 Learner APIs
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/api/resources` | List published resources |
-| GET | `/api/resources/:id` | Get resource detail |
+| GET | `/api/resources` | List published Strapi resources, directly or from cache |
+| GET | `/api/resources/:id` | Get published Strapi resource detail, directly or from cache |
 | POST | `/api/resources/:id/save` | Save to favorites |
-| GET | `/api/mock-tests` | List available tests |
-| GET | `/api/mock-tests/:id` | Get test details |
-| POST | `/api/mock-tests/:id/start` | Start test attempt |
+| GET | `/api/mock-tests` | List published Strapi mock tests, directly or from cache |
+| GET | `/api/mock-tests/:id` | Get published mock test details for preview |
+| POST | `/api/mock-tests/:id/start` | Snapshot published content and start app-owned attempt |
+
+### 5.3 Strapi Integration APIs
+
+| Integration | Purpose |
+|-------------|---------|
+| Strapi REST or GraphQL API | Fetch published resources, mock tests, sections, questions, and media metadata |
+| Strapi webhooks | Trigger app cache invalidation or content sync on publish/unpublish |
+| App-side sync job | Optional: copy published Strapi content into Prisma cache/snapshot tables |
+| App-side validation | Ensure published mock tests have valid sections, questions, answer keys, timers, and supported question types |
 
 ---
 
@@ -564,43 +709,47 @@ Admin can configure:
 
 ## 9. Implementation Phases
 
-### Phase 1: Foundation (MVP)
+### Phase 1: Strapi Foundation
 
 **Goals:**
-- Resource CRUD with all categories
-- Basic test builder
-- Status workflow
+- Stand up Strapi Free as the authoring CMS
+- Define content types for resources, mock tests, sections, groups, questions, FAQs, and info pages
+- Configure editor/admin roles in Strapi
+- Configure media storage and publish workflow
 
 **Deliverables:**
-- Admin resource list and editor
-- Admin test list and editor
-- Learner resource consumption
-- Basic media upload
+- Strapi project/service
+- Resource and mock-test content schemas
+- Draft/publish workflow in Strapi
+- Media library setup
+- Seed/import scripts for existing Prisma content, if needed
 
-### Phase 2: Enhanced Content
+### Phase 2: App Integration
 
 **Goals:**
-- Advanced question types
-- Media-rich content (audio)
-- Content versioning
-- Audit logging
+- Read published Strapi content in the Next.js app
+- Keep custom authoring screens reduced to Strapi links, entry panels, or read-only operational views
+- Validate mock-test content before learners can start attempts
+- Snapshot test content when attempts start
 
 **Deliverables:**
-- Complete question type support
-- Audio upload for listening
-- Version history
-- Activity logs
+- Strapi API client
+- Published resource list/detail integration
+- Published mock-test list/detail integration
+- Attempt-start snapshot logic
+- Webhook or manual sync endpoint
+- Admin sync/validation status view
 
-### Phase 3: Premium Features
+### Phase 3: Runtime and Premium Features
 
 **Goals:**
 - Flash card system
 - Spaced repetition
 - Video content
-- Advanced analytics
+- PostHog-backed learner/product analytics and advanced app analytics
 
 **Deliverables:**
-- Flash card builder
+- Flash card content authored in Strapi or synced from Strapi
 - Video hosting integration
 - Progress tracking
 - Content performance metrics
@@ -683,15 +832,16 @@ Admin can configure:
 
 | Feature | Criteria |
 |---------|----------|
-| Resource CRUD | Create, read, update, delete all resource types |
-| Test Builder | Create tests with multiple sections and questions |
-| Status Workflow | Content flows: draft → review → published → archived |
-| Admin Dashboard | Complete management interface |
-| Learner Access | Published content visible to learners |
-| Media Support | Upload and display audio/images |
-| Test Timer | Countdown timer with auto-submit |
-| Navigation Checks | Validation before section transitions |
-| Progress Tracking | Resource completion and prerequisites |
+| Strapi Resource Authoring | Editors can create, edit, publish, and unpublish all resource types in Strapi |
+| Strapi Mock Test Authoring | Editors can create mock tests with ordered sections, groups, questions, answer keys, explanations, timers, and media in Strapi |
+| Status Workflow | Content uses Strapi draft/publish and app-side validation before learner exposure |
+| App Admin Dashboard | App admin focuses on operations, previews, sync status, attempts, reviews, and analytics instead of duplicating Strapi editing |
+| Learner Access | Only published and valid Strapi content is visible to learners |
+| Media Support | Strapi media assets render correctly in resource pages and mock tests |
+| Attempt Snapshot | Starting a mock test stores a stable content snapshot or version reference for that attempt |
+| Test Timer | Countdown timer with auto-submit remains app-owned |
+| Navigation Checks | Validation before section transitions remains app-owned |
+| Progress Tracking | Resource completion and prerequisites remain app-owned while referencing Strapi content IDs |
 
 ---
 

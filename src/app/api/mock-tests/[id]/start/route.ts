@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { requireCurrentUser } from "@/lib/auth/session";
 import { ok, fail } from "@/lib/api/response";
 import { redeemCreditForTest, getCreditBalance, processOngoingPurchase } from "@/lib/referral/service";
+import { ensureLocalTestFromStrapi, isStrapiId } from "@/lib/strapi/content";
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   let actor;
@@ -12,6 +13,13 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   }
 
   const { id: testId } = await params;
+
+  if (isStrapiId(testId)) {
+    const synced = await ensureLocalTestFromStrapi(testId);
+    if (!synced) {
+      return fail({ code: "NOT_FOUND", message: "Mock test not found" }, 404);
+    }
+  }
 
   const test = await prisma.test.findUnique({
     where: { id: testId, status: "published" },

@@ -1,6 +1,6 @@
 # IELTS++ MVP Remaining Tasks
 
-**Last updated:** 2026-05-16
+**Last updated:** 2026-05-17
 
 ## Status: ✅ Core MVP Complete — Production Hardening Phase
 
@@ -28,9 +28,10 @@ All P0 and P1 items from the original MVP plan have been implemented. The platfo
 | P1.3 | Rate limiting | ✅ Done | 6 limiters applied to all sensitive endpoints |
 | P1.4 | Audit logs | ✅ Done | All admin write operations logged |
 | P1.5 | Sentry error tracking | ✅ Done | Client + server instrumentation configured |
-| P1.6 | Storage buckets | ✅ Done | speaking-recordings, listening-audio, generated-audio, reports |
-| P1.7 | BullMQ worker | ✅ Done | 6 workers running on port 3002 |
-| P1.8 | Content/media compliance review | ✅ Done | Seed data reviewed; private buckets configured |
+| P1.6 | PostHog learner analytics | ✅ Done | Browser SDK, learner identity bridge, and core workflow events configured behind env vars |
+| P1.7 | Storage buckets | ✅ Done | speaking-recordings, listening-audio, generated-audio, reports |
+| P1.8 | BullMQ worker | ✅ Done | 6 workers running on port 3002 |
+| P1.9 | Content/media compliance review | ✅ Done | Seed data reviewed; private buckets configured |
 
 ### P2 — Polish / Deferred
 
@@ -40,7 +41,7 @@ All P0 and P1 items from the original MVP plan have been implemented. The platfo
 | P2.2 | Timed/untimed toggle | 📅 Deferred | Phase 4 — mock test mode selection |
 | P2.3 | Reading notes | 📅 Deferred | Phase 4 — passage annotation |
 | P2.4 | Calibration dashboard | 📅 Deferred | Phase 4 — AI vs reviewer score comparison |
-| P2.5 | Score trajectory analytics | 📅 Deferred | Phase 4 — trend charts |
+| P2.5 | Advanced score trajectory analytics | 📅 Deferred | Phase 4 — trend charts on top of baseline PostHog learner events |
 | P2.6 | Transcription provider | 📅 Deferred | Optional — for speaking pronunciation analysis |
 | P2.7 | Server-side strict audio events | 📅 Deferred | Anti-cheat enforcement for Listening one-play |
 | P2.8 | Production TTS generation | 📅 Deferred | For listening audio generation |

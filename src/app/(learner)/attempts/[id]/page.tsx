@@ -8,6 +8,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { ContentPanel } from "@/components/ui/content-panel";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useApiQuery, useApiMutation } from "@/lib/hooks/api";
+import { captureLearnerEvent } from "@/lib/analytics/posthog";
 import { toast } from "sonner";
 import { SpeakingSubmission } from "@/components/ielts/speaking-submission";
 import { TestTimer } from "@/components/ielts/test-timer";
@@ -53,6 +54,10 @@ export default function AttemptPage({ params }: { params: Promise<{ id: string }
     endpoint: `/api/attempts/${attemptId}/predict-score`,
     onSuccess: (data) => {
       const prediction = data as { overallBand?: number };
+      captureLearnerEvent("ielts_score_prediction_created", {
+        attempt_id: attemptId,
+        overall_band: prediction.overallBand,
+      });
       toast.success(`Score: ${prediction.overallBand ?? "ready"}`);
       refetch();
     },
@@ -150,6 +155,11 @@ function ActiveAttempt({ attempt, onRefresh }: { attempt: AttemptDetail; onRefre
     mutationKey: ["submit-section"],
     endpoint: `/api/attempts/${attempt.id}/submit-section`,
     onSuccess: () => {
+      captureLearnerEvent("ielts_attempt_section_submitted", {
+        attempt_id: attempt.id,
+        section_id: section?.id,
+        module: section?.module,
+      });
       toast.success("Submitted!");
       setLastSavedSnapshot(JSON.stringify(answers));
       window.localStorage.removeItem(draftStorageKey);
@@ -189,6 +199,11 @@ function ActiveAttempt({ attempt, onRefresh }: { attempt: AttemptDetail; onRefre
   async function saveDraft() {
     if (!section) return;
     await saveMutation.mutateAsync({ sectionId: section.id, answers: sectionAnswers, isDraft: true });
+    captureLearnerEvent("ielts_attempt_draft_saved", {
+      attempt_id: attempt.id,
+      section_id: section.id,
+      module: section.module,
+    });
   }
 
   async function submitSection() {

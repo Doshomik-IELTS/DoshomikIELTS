@@ -216,7 +216,7 @@ function AdminResourceListInner({
                             href={`/admin/resources/${r.id}`}
                             className="font-medium text-blue-700 hover:underline"
                           >
-                            Edit
+                            Open editor
                           </Link>
                         </td>
                       </tr>

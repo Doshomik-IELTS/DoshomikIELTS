@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { requireCurrentUser } from "@/lib/auth/session";
 import { ok, fail } from "@/lib/api/response";
+import { fetchStrapiMockTest, isStrapiId } from "@/lib/strapi/content";
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -10,6 +11,40 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   }
 
   const { id } = await params;
+
+  if (isStrapiId(id)) {
+    const test = await fetchStrapiMockTest(id);
+    if (!test) {
+      return fail({ code: "NOT_FOUND", message: "Mock test not found" }, 404);
+    }
+
+    return ok({
+      id: test.id,
+      title: test.title,
+      type: test.type,
+      estimatedDurationMinutes: test.estimatedDurationMinutes,
+      sections: test.sections.map((section) => ({
+        id: section.id,
+        module: section.module,
+        partNumber: section.partNumber,
+        title: section.title,
+        instructions: section.instructions,
+        durationMinutes: section.durationMinutes,
+        orderIndex: section.orderIndex,
+        groups: section.groups,
+        questionCount: section.questions.length,
+        questions: section.questions.map((q) => ({
+          id: q.id,
+          questionType: q.questionType,
+          prompt: q.prompt,
+          options: q.optionsJson,
+          groupId: q.groupId,
+          orderIndex: q.orderIndex,
+          difficulty: q.difficulty,
+        })),
+      })),
+    });
+  }
 
   const test = await prisma.test.findUnique({
     where: { id, status: "published" },

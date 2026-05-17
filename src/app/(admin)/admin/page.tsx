@@ -1,4 +1,15 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
+import {
+  BookOpen,
+  ClipboardCheck,
+  FileText,
+  Layers3,
+  MessageSquare,
+  Plus,
+  ShieldAlert,
+  Wrench,
+} from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
@@ -70,130 +81,109 @@ export default async function AdminPage() {
   const testsWithBlockers = editableTests
     .map((test) => ({ id: test.id, title: test.title, issues: validateTestForPublish(test).issues.length }))
     .filter((test) => test.issues > 0);
+  const draftTests = testCount("draft");
+  const testsInReview = testCount("review");
+  const publishedTests = testCount("published");
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <PageHeader
-        title="Admin"
-        description="Content and review management."
+        title="Admin overview"
+        description="Create content, finish test drafts, and review items before publishing."
         actions={
           <div className="flex flex-wrap gap-2">
             <Link href="/admin/resources/new" className={buttonVariants()}>
+              <Plus className="h-4 w-4" />
               New resource
             </Link>
             <Link href="/admin/tests/new" className={buttonVariants({ variant: "outline" })}>
+              <Plus className="h-4 w-4" />
               New test
-            </Link>
-            <Link href="/admin/resources" className={buttonVariants({ variant: "outline" })}>
-              All resources
             </Link>
           </div>
         }
       />
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Link href="/admin/resources?status=draft">
-          <Card className="h-full transition-colors hover:border-slate-300">
-            <CardHeader>
-              <CardTitle className="text-base">Draft resources</CardTitle>
-            </CardHeader>
-            <CardContent className="text-3xl font-bold">{draft}</CardContent>
-          </Card>
-        </Link>
-        <Link href="/admin/resources?status=review">
-          <Card className="h-full transition-colors hover:border-slate-300">
-            <CardHeader>
-              <CardTitle className="text-base">In review</CardTitle>
-            </CardHeader>
-            <CardContent className="text-3xl font-bold">{review}</CardContent>
-          </Card>
-        </Link>
-        <Link href="/admin/resources?status=published">
-          <Card className="h-full transition-colors hover:border-slate-300">
-            <CardHeader>
-              <CardTitle className="text-base">Published</CardTitle>
-            </CardHeader>
-            <CardContent className="text-3xl font-bold">{published}</CardContent>
-          </Card>
-        </Link>
-        <Link href="/admin/resources?status=archived">
-          <Card className="h-full transition-colors hover:border-slate-300">
-            <CardHeader>
-              <CardTitle className="text-base">Archived</CardTitle>
-            </CardHeader>
-            <CardContent className="text-3xl font-bold">{archived}</CardContent>
-          </Card>
-        </Link>
+      <div className="grid gap-4 lg:grid-cols-4">
+        <WorkflowCard
+          href="/admin/tests?status=draft"
+          icon={<Wrench className="h-5 w-5" />}
+          title="Continue test drafts"
+          value={draftTests}
+          description="Open drafts in the builder and complete publish requirements."
+        />
+        <WorkflowCard
+          href="/admin/tests"
+          icon={<ShieldAlert className="h-5 w-5" />}
+          title="Fix validation blockers"
+          value={testsWithBlockers.length}
+          description="Resolve missing material, answers, timing, or source checks."
+          tone={testsWithBlockers.length > 0 ? "warning" : "default"}
+        />
+        <WorkflowCard
+          href="/admin/reviews"
+          icon={<MessageSquare className="h-5 w-5" />}
+          title="Review queue"
+          value={reviewQueueCount}
+          description="Approve, reject, or adjust submitted content and evaluations."
+        />
+        <WorkflowCard
+          href="/admin/resources"
+          icon={<BookOpen className="h-5 w-5" />}
+          title="Manage resources"
+          value={draft + review + published}
+          description="Create, update, publish, or archive learner resources."
+        />
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Link href="/admin/tests?status=draft">
-          <Card className="h-full transition-colors hover:border-slate-300">
-            <CardHeader>
-              <CardTitle className="text-base">Draft tests</CardTitle>
-            </CardHeader>
-            <CardContent className="text-3xl font-bold">{testCount("draft")}</CardContent>
-          </Card>
-        </Link>
-        <Link href="/admin/tests?status=review">
-          <Card className="h-full transition-colors hover:border-slate-300">
-            <CardHeader>
-              <CardTitle className="text-base">Tests in review</CardTitle>
-            </CardHeader>
-            <CardContent className="text-3xl font-bold">{testCount("review")}</CardContent>
-          </Card>
-        </Link>
-        <Link href="/admin/tests?status=published">
-          <Card className="h-full transition-colors hover:border-slate-300">
-            <CardHeader>
-              <CardTitle className="text-base">Published tests</CardTitle>
-            </CardHeader>
-            <CardContent className="text-3xl font-bold">{testCount("published")}</CardContent>
-          </Card>
-        </Link>
-        <Link href="/admin/reviews">
-          <Card className="h-full transition-colors hover:border-slate-300">
-            <CardHeader>
-              <CardTitle className="text-base">Review queue</CardTitle>
-            </CardHeader>
-            <CardContent className="text-3xl font-bold">{reviewQueueCount}</CardContent>
-          </Card>
-        </Link>
-        <Link href="/admin/tests">
-          <Card className="h-full border-amber-200 bg-amber-50 transition-colors hover:border-amber-300">
-            <CardHeader>
-              <CardTitle className="text-base">Validation blockers</CardTitle>
-            </CardHeader>
-            <CardContent className="text-3xl font-bold text-amber-800">{testsWithBlockers.length}</CardContent>
-          </Card>
-        </Link>
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <StatLink href="/admin/resources?status=draft" label="Draft resources" value={draft} />
+        <StatLink href="/admin/resources?status=review" label="Resources in review" value={review} />
+        <StatLink href="/admin/resources?status=published" label="Published resources" value={published} />
+        <StatLink href="/admin/resources?status=archived" label="Archived resources" value={archived} />
+        <StatLink href="/admin/tests?status=review" label="Tests in review" value={testsInReview} />
+        <StatLink href="/admin/tests?status=published" label="Published tests" value={publishedTests} />
+        <StatLink href="/admin/flashcards" label="Flashcard decks" value="Open" />
+        <StatLink href="/admin/tests/new" label="Create test" value="New" />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Recent tests</CardTitle>
+            <div className="flex items-center justify-between gap-3">
+              <CardTitle className="text-base">Recent tests</CardTitle>
+              <Link href="/admin/tests" className="text-sm font-medium text-blue-700 hover:underline">
+                View all
+              </Link>
+            </div>
           </CardHeader>
           <CardContent className="divide-y divide-slate-100">
             {recentTests.map((test) => (
               <Link key={test.id} href={`/admin/tests/${test.id}/builder`} className="block py-3 first:pt-0 last:pb-0">
                 <p className="font-medium text-slate-900">{test.title}</p>
-                <p className="mt-0.5 text-sm text-slate-500">{test.status} · {new Intl.DateTimeFormat("en", { dateStyle: "medium" }).format(test.updatedAt)}</p>
+                <p className="mt-0.5 text-sm text-slate-500">{test.status} - {new Intl.DateTimeFormat("en", { dateStyle: "medium" }).format(test.updatedAt)}</p>
               </Link>
             ))}
+            {recentTests.length === 0 && <p className="py-3 text-sm text-slate-500">No tests yet.</p>}
           </CardContent>
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Recent resources</CardTitle>
+            <div className="flex items-center justify-between gap-3">
+              <CardTitle className="text-base">Recent resources</CardTitle>
+              <Link href="/admin/resources" className="text-sm font-medium text-blue-700 hover:underline">
+                View all
+              </Link>
+            </div>
           </CardHeader>
           <CardContent className="divide-y divide-slate-100">
             {recentResources.map((resource) => (
               <Link key={resource.id} href={`/admin/resources/${resource.id}`} className="block py-3 first:pt-0 last:pb-0">
                 <p className="font-medium text-slate-900">{resource.title}</p>
-                <p className="mt-0.5 text-sm text-slate-500">{resource.status} · {new Intl.DateTimeFormat("en", { dateStyle: "medium" }).format(resource.updatedAt)}</p>
+                <p className="mt-0.5 text-sm text-slate-500">{resource.status} - {new Intl.DateTimeFormat("en", { dateStyle: "medium" }).format(resource.updatedAt)}</p>
               </Link>
             ))}
+            {recentResources.length === 0 && <p className="py-3 text-sm text-slate-500">No resources yet.</p>}
           </CardContent>
         </Card>
       </div>
@@ -214,16 +204,11 @@ export default async function AdminPage() {
         </Card>
       )}
 
-      <div className="flex flex-wrap gap-3 text-sm">
-        <Link href="/admin/tests" className="font-medium text-blue-700 hover:underline">
-          Tests
-        </Link>
-        <Link href="/admin/reviews" className="font-medium text-blue-700 hover:underline">
-          Review queue
-        </Link>
-        <Link href="/dashboard" className="font-medium text-slate-600 hover:underline">
-          Learner dashboard
-        </Link>
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <QuickLink href="/admin/tests" icon={<ClipboardCheck className="h-4 w-4" />} label="Test library" />
+        <QuickLink href="/admin/resources" icon={<FileText className="h-4 w-4" />} label="Resource library" />
+        <QuickLink href="/admin/flashcards" icon={<Layers3 className="h-4 w-4" />} label="Flashcards" />
+        <QuickLink href="/dashboard" icon={<BookOpen className="h-4 w-4" />} label="Learner dashboard" />
       </div>
 
       <Card className="border-amber-200 bg-amber-50">
@@ -233,5 +218,74 @@ export default async function AdminPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+function WorkflowCard({
+  href,
+  icon,
+  title,
+  value,
+  description,
+  tone = "default",
+}: {
+  href: string;
+  icon: ReactNode;
+  title: string;
+  value: number;
+  description: string;
+  tone?: "default" | "warning";
+}) {
+  return (
+    <Link href={href} className="block h-full">
+      <Card
+        className={
+          tone === "warning"
+            ? "h-full border-amber-200 bg-amber-50 transition-colors hover:border-amber-300"
+            : "h-full transition-colors hover:border-blue-300"
+        }
+      >
+        <CardContent className="p-5">
+          <div className="flex items-start justify-between gap-3">
+            <div
+              className={
+                tone === "warning"
+                  ? "rounded-md bg-amber-100 p-2 text-amber-800"
+                  : "rounded-md bg-blue-50 p-2 text-blue-700"
+              }
+            >
+              {icon}
+            </div>
+            <span className="text-3xl font-bold text-slate-900">{value}</span>
+          </div>
+          <h2 className="mt-4 text-base font-semibold text-slate-900">{title}</h2>
+          <p className="mt-1 text-sm leading-6 text-slate-600">{description}</p>
+        </CardContent>
+      </Card>
+    </Link>
+  );
+}
+
+function StatLink({ href, label, value }: { href: string; label: string; value: number | string }) {
+  return (
+    <Link
+      href={href}
+      className="flex items-center justify-between rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm shadow-sm transition-colors hover:border-blue-300"
+    >
+      <span className="font-medium text-slate-700">{label}</span>
+      <span className="font-semibold text-slate-950">{value}</span>
+    </Link>
+  );
+}
+
+function QuickLink({ href, icon, label }: { href: string; icon: ReactNode; label: string }) {
+  return (
+    <Link
+      href={href}
+      className="inline-flex items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-800 transition-colors hover:bg-slate-50"
+    >
+      {icon}
+      {label}
+    </Link>
   );
 }

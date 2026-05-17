@@ -1,10 +1,10 @@
 # Content Strategy
 
-Last updated: 2026-05-16
+Last updated: 2026-05-17
 
-## Status: ✅ All Core Content Systems Implemented — Production Hardening In Progress
+## Status: ✅ Strapi Authoring Integrated — Production Hardening In Progress
 
-The content CMS, resource admin dashboard, and all major learner-facing content systems are implemented. Production LLM/TTS generation workers and server-side strict audio event enforcement remain the primary hardening tasks.
+Strapi is now the authoring system for resources, IELTS information pages, FAQs, and mock-test definitions. The app keeps learner runtime state, attempts, scoring, saved resources, reports, and review/operations workflows. Production LLM/TTS generation workers, Strapi editorial validation guidance, and server-side strict audio event enforcement remain the primary hardening tasks.
 
 ## Copyright Position
 
@@ -58,9 +58,10 @@ Prompt requirements:
 
 Current implementation status:
 
-- The CMS supports generation jobs, reviewed output storage, local deterministic draft generation for workflow testing, and import-as-draft.
+- Strapi is the authoring target for new generated or manually created content.
+- Legacy app generation/import tooling may still support local deterministic draft generation for workflow testing and Prisma fallback content.
 - Production LLM worker execution is still pending.
-- Generated/imported tests still pass through the normal validation, preview, review, and publish workflow.
+- Generated/imported tests should pass through Strapi draft/publish plus app-side review and validation before learner exposure.
 
 ## Listening Content
 
@@ -101,11 +102,12 @@ Before publishing any test:
 - Confirm every objective answer has a structured scoring rule or default scoring behavior.
 - Confirm source support stores a human reference and, where available, offsets for learner highlighting.
 
-Current CMS enforcement:
+Current authoring/review enforcement:
 
-- Publish is blocked by server-side validation for missing material, answers, source support, timing, and source-policy checks.
-- Admin dashboard surfaces tests with validation blockers.
-- Review queue entries are created when tests are submitted for review.
-- Version snapshots are written on publish.
+- Strapi draft/publish is the editorial gate for new resources and mock tests.
+- App learner APIs expose only published Strapi content, or published Prisma fallback content when Strapi is not configured.
+- Starting a Strapi-authored mock test materializes a stable Prisma runtime snapshot before learner attempts/scoring.
+- App review screens and manual QA should catch missing material, answers, source support, timing, and source-policy issues before publication.
+- Legacy Prisma builder validation remains fallback/local context, not the primary authoring path.
 
-Implementation note: the admin CMS must enforce these checks before publishing. The detailed builder, data contract, and validation plan is defined in [`content-management-system-implementation-plan.md`](content-management-system-implementation-plan.md).
+Implementation note: Strapi is the active authoring path. The old custom builder plan is retained only as historical/fallback context in [`content-management-system-implementation-plan.md`](content-management-system-implementation-plan.md). The current architecture is defined in [`../../features_x/content_management.md`](../../features_x/content_management.md).

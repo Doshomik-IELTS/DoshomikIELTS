@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
+import { captureLearnerEvent } from "@/lib/analytics/posthog";
 import { useApiMutation } from "@/lib/hooks/api";
 
 type ResourceSaveButtonProps = {
@@ -24,6 +25,7 @@ export function ResourceSaveButton({
     endpoint: `/api/resources/${resourceId}/save`,
     onSuccess: () => {
       setSaved(true);
+      captureLearnerEvent("ielts_resource_saved", { resource_id: resourceId });
       qc.invalidateQueries({ queryKey: ["resources"] });
     },
   });
@@ -34,6 +36,7 @@ export function ResourceSaveButton({
     method: "DELETE",
     onSuccess: () => {
       setSaved(false);
+      captureLearnerEvent("ielts_resource_unsaved", { resource_id: resourceId });
       qc.invalidateQueries({ queryKey: ["resources"] });
     },
   });

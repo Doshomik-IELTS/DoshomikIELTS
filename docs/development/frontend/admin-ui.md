@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The MVP includes basic admin screens to manage original content and reduce copyright/compliance risk. Admin should be useful but intentionally minimal.
+The MVP includes basic admin screens for operations, reviews, and links into Strapi. Resource and mock-test authoring now happens in Strapi Admin, not in the custom Next.js admin editor.
 
 ## Admin Route Protection
 
@@ -19,16 +19,15 @@ Route: `/admin`
 
 Show summary cards:
 
-- Draft resources.
-- Review resources.
-- Published resources.
-- Draft tests.
+- Operational stats.
+- Pending review/evaluation counts.
+- Content sync/fallback health where available.
 - Review queue.
 
 Include links to:
 
-- Resources.
-- Tests.
+- Strapi Resources.
+- Strapi Mock Tests.
 - Reviews.
 - Learner dashboard.
 
@@ -40,38 +39,12 @@ Routes:
 - `/admin/resources/new`
 - `/admin/resources/[id]`
 
-List features:
+Current behavior:
 
-- Filter by status.
-- Search by title.
-- Show category/difficulty.
-- Show status badge.
-
-Form fields:
-
-- Title.
-- Slug if supported.
-- Category.
-- Difficulty.
-- Body.
-- Examples.
-- Tags.
-- Status.
-
-Actions:
-
-- Save draft.
-- Send to review.
-- Publish.
-- Archive.
-
-Validation:
-
-- Title required.
-- Category required.
-- Difficulty required.
-- Body required.
-- Published resources must have usable content.
+- These routes render a Strapi authoring panel.
+- Editors create, edit, publish, and unpublish resources in Strapi.
+- The learner app reads published Strapi resources when `STRAPI_BASE_URL` and `STRAPI_API_TOKEN` are configured.
+- Legacy custom resource APIs/components remain for fallback/local compatibility, but are not the primary authoring UI.
 
 ## Test Admin
 
@@ -80,47 +53,16 @@ Routes:
 - `/admin/tests`
 - `/admin/tests/new`
 - `/admin/tests/[id]`
-- `/admin/tests/[id]/builder` - Visual test builder with section editors
-- `/admin/tests/[id]/preview` - Preview test as learner would see it
+- `/admin/tests/[id]/builder` - Legacy custom builder route; not the primary authoring UI
+- `/admin/tests/[id]/preview` - Legacy preview route for Prisma/fallback tests
 
-Features implemented:
+Current behavior:
 
-- List tests with status/type filters and search.
-- Create test with title, type, estimated duration.
-- Edit test metadata (title, type, status, duration).
-- View sections and question counts.
-- Delete test (if no attempts).
-- Status management: draft, review, published, archived.
-- **Section management** - Add sections to tests (`/admin/tests/[id]`).
-- **Question management** - Create questions with answer keys.
-- **Question groups** - Group related questions with shared instructions.
-- **Visual test builder** - Full section-by-section editing at `/admin/tests/[id]/builder`.
-- **Test preview** - Preview test at `/admin/tests/[id]/preview`.
-- **Section editors** - Module-specific editors for reading, listening, writing, speaking.
-- **Media asset picker** - Select listening audio from media library.
-- **Test generation panel** - LLM-powered test generation UI.
-- **Test import panel** - Import test from external source.
-- **Advanced tools** - Duplicate, validate, publish actions.
-
-Admin components:
-
-- `TestEditorForm` - Test metadata create/edit
-- `TestDetailEditor` - Test detail with sections view
-- `TestSectionEditor` - Section management UI
-- `QuestionEditor` - Question create/edit with answer key support
-- `QuestionGroupEditor` - Question group create/edit with shared instructions
-- `QuestionListEditor` - List of questions within a group/section
-- `SectionListEditor` - Ordered list of test sections
-- `ReadingSectionEditor` - Reading-specific section editor with passage
-- `ListeningSectionEditor` - Listening-specific section editor with audio
-- `WritingSectionEditor` - Writing-specific section editor with task config
-- `SpeakingSectionEditor` - Speaking-specific section editor with part config
-- `ReadingQuickAuthoringPanel` - Quick authoring for reading sections
-- `ListeningQuickAuthoringPanel` - Quick authoring for listening sections
-- `TestGenerationPanel` - LLM-powered test generation UI
-- `TestImportPanel` - Import test from external source
-- `TestAdvancedTools` - Advanced test management tools (duplicate, validate, publish)
-- `MediaAssetPicker` - Select media assets for listening audio
+- `/admin/tests`, `/admin/tests/new`, and `/admin/tests/[id]` render a Strapi authoring panel.
+- Editors create mock tests, sections, question groups, questions, answer keys, explanations, and media in Strapi.
+- Learner APIs read published Strapi tests when configured.
+- Starting a Strapi-authored test materializes it into Prisma runtime rows for attempts/scoring.
+- Legacy custom builder/import/preview components may remain for fallback/local Prisma tests, but are not the primary authoring UI.
 
 ## Flashcard Admin
 
@@ -165,26 +107,14 @@ Implemented in `src/components/admin/`:
 
 | Component | Purpose |
 |-----------|--------|
-| `AdminResourceList` | Resource list with status filters |
-| `AdminTestList` | Test list with type/status filters |
-| `ResourceEditor` | Resource create/edit form |
-| `TestEditorForm` | Test metadata create/edit |
-| `TestDetailEditor` | Test detail with sections |
-| `TestSectionEditor` | Section management |
-| `QuestionEditor` | Question with answer key |
-| `QuestionGroupEditor` | Question group with shared instructions |
-| `QuestionListEditor` | Question list within group/section |
-| `SectionListEditor` | Ordered test sections |
-| `ReadingSectionEditor` | Reading section with passage |
-| `ListeningSectionEditor` | Listening section with audio |
-| `WritingSectionEditor` | Writing section with task config |
-| `SpeakingSectionEditor` | Speaking section with part config |
-| `ReadingQuickAuthoringPanel` | Quick reading authoring |
-| `ListeningQuickAuthoringPanel` | Quick listening authoring |
-| `TestGenerationPanel` | LLM test generation |
-| `TestImportPanel` | Test import |
-| `TestAdvancedTools` | Duplicate/validate/publish |
-| `MediaAssetPicker` | Media asset selection |
+| `StrapiAuthoringPanel` | Opens Strapi collections for resource/mock-test authoring |
+| `AdminResourceList` | Legacy/fallback resource list |
+| `AdminTestList` | Legacy/fallback test list |
+| `ResourceEditor` | Legacy/fallback resource editor |
+| `TestEditorForm`, `TestDetailEditor`, `TestSectionEditor` | Legacy/fallback test metadata and section editors |
+| `QuestionEditor`, `QuestionGroupEditor`, `QuestionListEditor` | Legacy/fallback question authoring |
+| `SectionListEditor`, module section editors, quick authoring panels | Legacy/fallback custom test builder |
+| `TestGenerationPanel`, `TestImportPanel`, `TestAdvancedTools`, `MediaAssetPicker` | Legacy/fallback tooling |
 
 ## Copyright Safety Warnings
 
@@ -195,7 +125,8 @@ Display warning in admin create/edit/review screens:
 ## Admin MVP Acceptance Criteria
 
 - Admin routes are role protected.
-- Resource create/edit/list works.
+- Resource and mock-test authoring links open Strapi Admin.
+- App admin routes remain role protected.
 - Review queue can list, view, approve/reject content, flag evaluations, and set reviewed bands.
 - Learner app only shows published resources/tests.
-- Answer keys are managed only in admin/test setup and never displayed in learner screens.
+- Answer keys are managed in Strapi or fallback admin tooling and never displayed in learner screens.

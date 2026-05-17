@@ -2,14 +2,14 @@
 
 ## Overview
 
-The IELTS++ backend powers an owned IELTS resource and mock-test platform. It supports learner accounts, profiles, text resources, practice attempts, full mock tests, spaced-repetition flashcards, referral/credits system, objective scoring, LLM-assisted writing/speaking evaluation, score prediction, media storage, and admin review workflows.
+The IELTS++ backend powers an owned IELTS resource and mock-test platform. It supports learner accounts, profiles, Strapi-authored resources/mock tests, practice attempts, full mock tests, spaced-repetition flashcards, referral/credits system, objective scoring, LLM-assisted writing/speaking evaluation, score prediction, media storage, and admin review workflows.
 
 ## Code Quality Status
 
 - **TypeScript**: ✅ `pnpm typecheck` passes
 - **Lint**: ✅ 0 errors (warnings are pre-existing unused imports - non-blocking)
 - **API Implementation**: 100+ route files with 100+ HTTP endpoints implemented
-- **Next.js**: 16.2.6 | React: 19.2.4 | Prisma: 6.19.3 | Zod: 4.4.3
+- **Next.js**: 16.2.6 | React: 19.2.4 | Prisma: 6.19.3 | Zod: 4.4.3 | Strapi: 5.46.0
 - **Tests**: ✅ `pnpm test:p0` passes (38/38)
 
 ## Implementation status (HTTP APIs)
@@ -21,8 +21,8 @@ The IELTS++ backend powers an owned IELTS resource and mock-test platform. It su
 | `GET` | `/api/health` | ✅ Done | Health check. |
 | `GET` | `/api/me` | ✅ Done | Current profile + roles. |
 | `PATCH` | `/api/profile` | ✅ Done | Validates body with Zod. |
-| `GET` | `/api/resources` | ✅ Done | Published resources with filters + `saved` field. |
-| `GET` | `/api/resources/[id]` | ✅ Done | Single resource. |
+| `GET` | `/api/resources` | ✅ Done | Published Strapi resources with filters; Prisma fallback. |
+| `GET` | `/api/resources/[id]` | ✅ Done | Single published Strapi resource; Prisma fallback. |
 | `POST` | `/api/resources/[id]/save` | ✅ Done | Bookmark resource. |
 | `DELETE` | `/api/resources/[id]/save` | ✅ Done | Remove bookmark. |
 | `GET` | `/api/dashboard` | ✅ Done | Dashboard stats + streak data. |
@@ -33,9 +33,9 @@ The IELTS++ backend powers an owned IELTS resource and mock-test platform. It su
 | `GET` | `/api/practice` | ✅ Done | List practice items. |
 | `POST` | `/api/practice/[id]/attempt` | ✅ Done | Create practice attempt. |
 | `GET` | `/api/practice/attempts` | ✅ Done | Practice history. |
-| `GET` | `/api/mock-tests` | ✅ Done | List published tests. |
+| `GET` | `/api/mock-tests` | ✅ Done | List published Strapi tests; Prisma fallback. |
 | `GET` | `/api/mock-tests/[id]` | ✅ Done | Test structure (no answer keys). |
-| `POST` | `/api/mock-tests/[id]/start` | ✅ Done | Start mock test attempt. |
+| `POST` | `/api/mock-tests/[id]/start` | ✅ Done | Start mock test attempt; materializes Strapi tests into Prisma runtime rows. |
 | `GET` | `/api/attempts/[attemptId]` | ✅ Done | Attempt details + progress + `durationMinutes`. |
 | `POST` | `/api/attempts/[attemptId]/answers` | ✅ Done | Save draft answers. |
 | `POST` | `/api/attempts/[attemptId]/submit-section` | ✅ Done | Submit section (auto-scores). |
@@ -60,23 +60,23 @@ The IELTS++ backend powers an owned IELTS resource and mock-test platform. It su
 | `POST` | `/api/feedback` | ✅ Done | Submit beta feedback (any auth user). |
 | `POST` | `/api/media/upload-url` | ✅ Done | Signed upload URL for speaking audio. |
 | `GET` | `/api/media/[assetId]/download-url` | ✅ Done | Signed download URL. |
-| `GET` | `/api/admin/resources` | ✅ Done | Admin resource list. |
-| `POST` | `/api/admin/resources` | ✅ Done | Create resource. |
-| `GET` | `/api/admin/resources/[id]` | ✅ Done | Get resource. |
-| `PATCH` | `/api/admin/resources/[id]` | ✅ Done | Update resource. |
-| `POST` | `/api/admin/resources/[id]/publish` | ✅ Done | Explicit publish action with role check and version snapshot. |
-| `DELETE` | `/api/admin/resources/[id]` | ✅ Done | Delete resource. |
+| `GET` | `/api/admin/resources` | Legacy | Fallback/local resource list; Strapi Admin is primary authoring UI. |
+| `POST` | `/api/admin/resources` | Legacy | Fallback/local create; use Strapi for new authoring. |
+| `GET` | `/api/admin/resources/[id]` | Legacy | Fallback/local get. |
+| `PATCH` | `/api/admin/resources/[id]` | Legacy | Fallback/local update. |
+| `POST` | `/api/admin/resources/[id]/publish` | Legacy | Fallback/local publish. |
+| `DELETE` | `/api/admin/resources/[id]` | Legacy | Fallback/local delete. |
 | `GET` | `/api/admin/stats` | ✅ Done | Dashboard counts. |
-| `GET` | `/api/admin/tests` | ✅ Done | List tests. |
-| `POST` | `/api/admin/tests` | ✅ Done | Create test. |
-| `GET` | `/api/admin/tests/[id]` | ✅ Done | Get test with questions. |
-| `PATCH` | `/api/admin/tests/[id]` | ✅ Done | Update test. |
-| `DELETE` | `/api/admin/tests/[id]` | ✅ Done | Delete test. |
-| `POST` | `/api/admin/tests/[id]/validate` | ✅ Done | Validate CMS readiness before publish. |
-| `POST` | `/api/admin/tests/[id]/publish` | ✅ Done | Validate and publish atomically. |
-| `POST` | `/api/admin/tests/[id]/duplicate` | ✅ Done | Duplicate test as editable draft. |
-| `POST` | `/api/admin/tests/[id]/sections` | ✅ Done | Create test section. |
-| `GET` | `/api/admin/tests/[id]/sections` | ✅ Done | List test sections. |
+| `GET` | `/api/admin/tests` | Legacy | Fallback/local list; Strapi Admin is primary mock-test authoring UI. |
+| `POST` | `/api/admin/tests` | Legacy | Fallback/local create; use Strapi for new authoring. |
+| `GET` | `/api/admin/tests/[id]` | Legacy | Fallback/local get with questions. |
+| `PATCH` | `/api/admin/tests/[id]` | Legacy | Fallback/local update. |
+| `DELETE` | `/api/admin/tests/[id]` | Legacy | Fallback/local delete. |
+| `POST` | `/api/admin/tests/[id]/validate` | Legacy | Fallback/local validation. |
+| `POST` | `/api/admin/tests/[id]/publish` | Legacy | Fallback/local publish. |
+| `POST` | `/api/admin/tests/[id]/duplicate` | Legacy | Fallback/local duplicate. |
+| `POST` | `/api/admin/tests/[id]/sections` | Legacy | Fallback/local section create. |
+| `GET` | `/api/admin/tests/[id]/sections` | Legacy | Fallback/local section list. |
 | `GET` | `/api/admin/reviews` | ✅ Done | Combined content/writing/speaking review queue. |
 | `GET` | `/api/admin/reviews/[id]` | ✅ Done | Review detail. |
 | `PATCH` | `/api/admin/reviews/[id]` | ✅ Done | Review actions for content and evaluation review. |
@@ -145,6 +145,7 @@ The IELTS++ backend powers an owned IELTS resource and mock-test platform. It su
 - Queue broker: Redis.
 - LLM/transcription: configurable provider service layer (OpenAI/Anthropic/Gemini + deterministic fallback).
 - Error tracking: Sentry (optional).
+- Learner/product analytics: PostHog browser SDK (optional).
 
 ## Main Backend Modules
 
@@ -265,7 +266,7 @@ The backend MVP is **medium-to-high complexity** because it combines authenticat
 
 - Speaking audio upload and transcription.
 - Private media signed URL flow.
-- Basic admin resource/review APIs.
+- Strapi content authoring integration and basic admin review APIs.
 - Dashboard/progress aggregation.
 - Listening audio license metadata validation.
 - Audit logs for content/review actions.
