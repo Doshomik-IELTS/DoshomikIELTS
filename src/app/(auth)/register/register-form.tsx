@@ -1,9 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { Mail, Lock, User, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,6 +17,7 @@ const isDevAuthEnabled = process.env.NODE_ENV !== "production";
 
 export function RegisterForm() {
   const router = useRouter();
+  const [supabaseLoading, setSupabaseLoading] = useState(false);
   const {
     register,
     handleSubmit,
@@ -39,6 +41,7 @@ export function RegisterForm() {
       return;
     }
 
+    setSupabaseLoading(true);
     const supabase = createSupabaseBrowserClient();
     const { data: authData, error } = await supabase.auth.signUp({
       email: data.email,
@@ -49,6 +52,7 @@ export function RegisterForm() {
         },
       },
     });
+    setSupabaseLoading(false);
 
     if (error) {
       toast.error(error.message || "Registration failed");
@@ -65,34 +69,79 @@ export function RegisterForm() {
     router.push("/login");
   };
 
+  const isLoading = registerMutation.isPending || supabaseLoading;
+
   return (
-    <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); handleSubmit(onSubmit)(e); }}>
+    <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
       <div>
-        <Label htmlFor="name">Name</Label>
-        <Input id="name" {...register("name")} />
-        {errors.name && <p className="text-sm text-red-600">{errors.name.message}</p>}
+        <Label htmlFor="name" className="text-slate-300">Name</Label>
+        <div className="relative">
+          <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+          <Input
+            id="name"
+            placeholder="Your name"
+            className="border-slate-700 bg-slate-800/50 pl-10 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-blue-500"
+            {...register("name")}
+          />
+        </div>
+        {errors.name && <p className="text-sm text-red-400">{errors.name.message}</p>}
       </div>
       <div>
-        <Label htmlFor="email">Email</Label>
-        <Input id="email" type="email" {...register("email")} />
-        {errors.email && <p className="text-sm text-red-600">{errors.email.message}</p>}
+        <Label htmlFor="email" className="text-slate-300">Email</Label>
+        <div className="relative">
+          <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+          <Input
+            id="email"
+            type="email"
+            placeholder="you@example.com"
+            className="border-slate-700 bg-slate-800/50 pl-10 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-blue-500"
+            {...register("email")}
+          />
+        </div>
+        {errors.email && <p className="text-sm text-red-400">{errors.email.message}</p>}
       </div>
       <div>
-        <Label htmlFor="password">Password</Label>
-        <Input id="password" type="password" {...register("password")} />
-        {errors.password && <p className="text-sm text-red-600">{errors.password.message}</p>}
+        <Label htmlFor="password" className="text-slate-300">Password</Label>
+        <div className="relative">
+          <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+          <Input
+            id="password"
+            type="password"
+            placeholder="At least 8 characters"
+            className="border-slate-700 bg-slate-800/50 pl-10 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-blue-500"
+            {...register("password")}
+          />
+        </div>
+        {errors.password && <p className="text-sm text-red-400">{errors.password.message}</p>}
       </div>
       <div>
-        <Label htmlFor="confirmPassword">Confirm Password</Label>
-        <Input id="confirmPassword" type="password" {...register("confirmPassword")} />
-        {errors.confirmPassword && <p className="text-sm text-red-600">{errors.confirmPassword.message}</p>}
+        <Label htmlFor="confirmPassword" className="text-slate-300">Confirm Password</Label>
+        <div className="relative">
+          <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+          <Input
+            id="confirmPassword"
+            type="password"
+            placeholder="Repeat your password"
+            className="border-slate-700 bg-slate-800/50 pl-10 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-blue-500"
+            {...register("confirmPassword")}
+          />
+        </div>
+        {errors.confirmPassword && <p className="text-sm text-red-400">{errors.confirmPassword.message}</p>}
       </div>
-      <Button className="w-full" type="submit" disabled={registerMutation.isPending}>
-        {registerMutation.isPending ? "Creating account..." : "Register"}
+      <Button
+        type="submit"
+        className="w-full bg-blue-600 hover:bg-blue-700"
+        disabled={isLoading}
+      >
+        {isLoading ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Creating account...
+          </>
+        ) : (
+          "Create account"
+        )}
       </Button>
-      <p className="text-sm text-slate-600">
-        Already have an account? <Link href="/login">Login</Link>
-      </p>
     </form>
   );
 }

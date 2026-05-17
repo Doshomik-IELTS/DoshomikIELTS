@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,8 +26,6 @@ async function resendEmail(): Promise<{ message: string }> {
 }
 
 export default function VerifyEmailPage() {
-  const queryClient = useQueryClient();
-
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["email-verify-status"],
     queryFn: fetchStatus,

@@ -107,14 +107,7 @@ export function LoginForm({
         {errors.password && <p className="text-sm text-red-400">{errors.password.message}</p>}
       </div>
 
-      <div className="flex items-center justify-between">
-        <label className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            className="h-4 w-4 rounded border-slate-700 bg-slate-800 text-blue-600 focus:ring-blue-500"
-          />
-          <span className="text-sm text-slate-400">Remember me</span>
-        </label>
+      <div className="flex items-center justify-end">
         <Link href="/reset-password" className="text-sm text-blue-400 hover:text-blue-300">
           Forgot password?
         </Link>

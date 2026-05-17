@@ -63,6 +63,7 @@ async function LoginScreen({
               </p>
             </div>
 
+            {process.env.NODE_ENV !== "production" && (
             <div className="mt-6 rounded-lg border border-blue-500/20 bg-blue-500/5 p-3">
               <p className="mb-1 text-xs font-medium text-blue-300">Demo account</p>
               <p className="text-xs text-slate-400">Email: demo@ieltspp.local</p>
@@ -71,6 +72,7 @@ async function LoginScreen({
               <p className="text-xs text-slate-400">Email: admin@ieltspp.local</p>
               <p className="text-xs text-slate-400">Password: Test@1234!</p>
             </div>
+            )}
           </div>
 
           <p className="mt-8 text-center text-xs text-slate-500">
