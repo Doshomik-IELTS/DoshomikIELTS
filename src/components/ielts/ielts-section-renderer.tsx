@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, memo } from "react";
 import type { ReactNode } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -255,7 +255,7 @@ function SectionMaterial({ section, sourceSpans, attemptId }: { section: IeltsSe
   return null;
 }
 
-function QuestionCard({
+const QuestionCard = memo(function QuestionCard({
   question,
   index,
   value,
@@ -276,7 +276,7 @@ function QuestionCard({
       </CardContent>
     </Card>
   );
-}
+});
 
 export function IeltsSectionRenderer({
   section,

@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -43,7 +44,7 @@ function isCompletionType(questionType: string) {
   ].includes(questionType);
 }
 
-export function ObjectiveQuestionRenderer({
+export const ObjectiveQuestionRenderer = memo(function ObjectiveQuestionRenderer({
   question,
   value,
   disabled,
@@ -65,7 +66,7 @@ export function ObjectiveQuestionRenderer({
       {(question.questionType === "map_labeling" || question.questionType === "diagram_label") && visualUrl ? (
         <div className="overflow-hidden rounded border border-slate-200 bg-slate-50">
           {/* eslint-disable-next-line @next/next/no-img-element -- Admin-provided media URLs may not be in Next image remotePatterns. */}
-          <img src={visualUrl} alt={visualAlt} className="max-h-80 w-full object-contain" />
+          <img src={visualUrl} alt={visualAlt} loading="lazy" className="max-h-80 w-full object-contain" />
         </div>
       ) : null}
 
@@ -111,4 +112,4 @@ export function ObjectiveQuestionRenderer({
       )}
     </div>
   );
-}
+});

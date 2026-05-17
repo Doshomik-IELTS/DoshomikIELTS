@@ -37,6 +37,10 @@ export function TestGenerationPanel() {
       });
       setJob(result.job);
     } catch (e) {
+      if (e instanceof SyntaxError) {
+        setError("Invalid JSON in blueprint. Check your syntax.");
+        return;
+      }
       setError(e instanceof Error ? e.message : "Could not create generation job");
     } finally {
       setSaving(false);
@@ -55,6 +59,10 @@ export function TestGenerationPanel() {
       });
       setJob(result.job);
     } catch (e) {
+      if (e instanceof SyntaxError) {
+        setError("Invalid JSON in output. Check your syntax.");
+        return;
+      }
       setError(e instanceof Error ? e.message : "Could not update generation job");
     } finally {
       setSaving(false);

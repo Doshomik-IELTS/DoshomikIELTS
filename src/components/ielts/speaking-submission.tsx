@@ -57,7 +57,7 @@ export function SpeakingSubmission({
       });
 
       if (!res.id) {
-        throw new Error("Submission failed");
+        throw new Error("Submission returned no ID");
       }
 
       onSubmitted?.(res.id);
@@ -70,11 +70,12 @@ export function SpeakingSubmission({
 
   return (
     <div className="space-y-6">
-      <div className="flex gap-2">
+      <div className="flex gap-2" role="group" aria-label="Response input method">
         <Button
           variant={inputMode === "text" ? "default" : "outline"}
           size="sm"
           onClick={() => setInputMode("text")}
+          aria-pressed={inputMode === "text"}
         >
           Type Response
         </Button>
@@ -82,6 +83,7 @@ export function SpeakingSubmission({
           variant={inputMode === "audio" ? "default" : "outline"}
           size="sm"
           onClick={() => setInputMode("audio")}
+          aria-pressed={inputMode === "audio"}
         >
           Record Audio
         </Button>

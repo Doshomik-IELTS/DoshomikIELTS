@@ -38,12 +38,12 @@ export async function createTestVersionSnapshot({
     create: {
       testId,
       versionNumber: test.versionNumber,
-      snapshotJson: JSON.parse(JSON.stringify(test)) as Prisma.InputJsonValue,
+      snapshotJson: structuredClone(test) as Prisma.InputJsonValue,
       changeNote,
       createdById: actorId,
     },
     update: {
-      snapshotJson: JSON.parse(JSON.stringify(test)) as Prisma.InputJsonValue,
+      snapshotJson: structuredClone(test) as Prisma.InputJsonValue,
       changeNote,
       createdById: actorId,
     },

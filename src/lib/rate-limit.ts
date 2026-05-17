@@ -26,6 +26,7 @@ function getRedisClient(): Redis | null {
       lazyConnect: true,
     });
   } catch {
+    // Fail-open: if Redis connection fails, don't block legitimate requests
     return null;
   }
 }
@@ -68,8 +69,9 @@ export function createRateLimiter(options: RateLimitOptions) {
         resetIn,
         retryAfter: allowed ? undefined : resetIn,
       };
-    } catch {
-      return { allowed: true, remaining: options.maxRequests, resetIn: options.windowSeconds };
+  } catch {
+    // Fail-open: Redis failure shouldn't block requests
+    return { allowed: true, remaining: options.maxRequests, resetIn: options.windowSeconds };
     }
   };
 }

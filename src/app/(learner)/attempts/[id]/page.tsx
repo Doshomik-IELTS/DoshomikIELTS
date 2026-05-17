@@ -46,7 +46,10 @@ export default function AttemptPage({ params }: { params: Promise<{ id: string }
     queryKey: ["attempt", attemptId],
     endpoint: `/api/attempts/${attemptId}`,
     enabled: Boolean(attemptId),
-    refetchInterval: 3000,
+    refetchInterval: (query) => {
+      const data = (query as { state: { data: AttemptDetail | undefined } }).state.data;
+      return data?.status === "evaluating" ? 3000 : false;
+    },
   });
 
   const predictMutation = useApiMutation<unknown, Record<string, never>>({

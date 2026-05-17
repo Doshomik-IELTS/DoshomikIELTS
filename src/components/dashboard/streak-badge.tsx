@@ -1,5 +1,4 @@
-"use client";
-
+import { memo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 
 type StreakBadgeProps = {
@@ -7,7 +6,7 @@ type StreakBadgeProps = {
   longestStreak: number;
 };
 
-export function StreakBadge({ streak, longestStreak }: StreakBadgeProps) {
+export const StreakBadge = memo(function StreakBadge({ streak, longestStreak }: StreakBadgeProps) {
   const hasStreak = streak > 0;
 
   return (
@@ -30,4 +29,4 @@ export function StreakBadge({ streak, longestStreak }: StreakBadgeProps) {
       </CardContent>
     </Card>
   );
-}
+});

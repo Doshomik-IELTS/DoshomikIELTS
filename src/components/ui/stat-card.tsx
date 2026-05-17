@@ -9,7 +9,7 @@ interface StatCardProps {
   className?: string;
 }
 
-export function StatCard({ label, value, description, className }: StatCardProps) {
+export const StatCard = React.memo(function StatCard({ label, value, description, className }: StatCardProps) {
   return (
     <div className={cn("rounded-xl border border-slate-200 bg-white p-5 shadow-sm", className)}>
       <p className="text-sm font-medium text-slate-600">{label}</p>
@@ -17,4 +17,4 @@ export function StatCard({ label, value, description, className }: StatCardProps
       {description && <p className="mt-1 text-sm text-slate-500">{description}</p>}
     </div>
   );
-}
+});

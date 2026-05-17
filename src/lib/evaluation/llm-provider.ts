@@ -84,7 +84,12 @@ async function evaluateWithOpenAI(
     throw new Error("Empty response from OpenAI");
   }
 
-  const parsed = JSON.parse(content);
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(content);
+  } catch {
+    throw new Error(`Invalid JSON response from OpenAI: ${content.slice(0, 300)}`);
+  }
   const result = evaluationSchema.parse(parsed);
 
   return {
@@ -150,7 +155,12 @@ async function evaluateWithAnthropic(
     throw new Error("Empty response from Anthropic");
   }
 
-  const parsed = JSON.parse(content);
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(content);
+  } catch {
+    throw new Error(`Invalid JSON response from Anthropic: ${content.slice(0, 300)}`);
+  }
   const result = evaluationSchema.parse(parsed);
 
   return {
@@ -227,7 +237,12 @@ async function evaluateWithGemini(
     throw new Error("Empty response from Gemini");
   }
 
-  const parsed = JSON.parse(content);
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(content);
+  } catch {
+    throw new Error(`Invalid JSON response from Gemini: ${content.slice(0, 300)}`);
+  }
   const result = evaluationSchema.parse(parsed);
 
   return {

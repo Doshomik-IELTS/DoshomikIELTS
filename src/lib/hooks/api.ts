@@ -88,7 +88,7 @@ export function useApiQuery<TData>({
   queryKey: string[];
   endpoint: string;
   enabled?: boolean;
-  refetchInterval?: number | false;
+  refetchInterval?: number | false | ((query: unknown) => number | false);
 }) {
   return useQuery<TData, Error>({
     queryKey,

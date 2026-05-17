@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,17 +13,19 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { apiFetch } from "@/lib/api/client";
 import { SectionListEditor, type SectionData } from "@/components/admin/section-list-editor";
-import { QuestionListEditor, type QuestionData } from "@/components/admin/question-list-editor";
+import type { QuestionData } from "@/components/admin/question-list-editor";
 import { WritingSectionEditor } from "@/components/admin/writing-section-editor";
 import { SpeakingSectionEditor } from "@/components/admin/speaking-section-editor";
 import { ReadingSectionEditor } from "@/components/admin/reading-section-editor";
-import { ReadingQuickAuthoringPanel } from "@/components/admin/reading-quick-authoring-panel";
 import { ListeningSectionEditor } from "@/components/admin/listening-section-editor";
-import { ListeningQuickAuthoringPanel } from "@/components/admin/listening-quick-authoring-panel";
-import { QuestionGroupEditor } from "@/components/admin/question-group-editor";
 import { IELTS_MODULES } from "@/lib/tests/ielts-types";
 import type { IeltsModule } from "@prisma/client";
 import type { TestValidationIssue, TestValidationResult } from "@/lib/tests/validation";
+
+const QuestionListEditor = dynamic(() => import("@/components/admin/question-list-editor").then((m) => ({ default: m.QuestionListEditor })), { ssr: false, loading: () => <Skeleton className="h-64 w-full" /> });
+const ReadingQuickAuthoringPanel = dynamic(() => import("@/components/admin/reading-quick-authoring-panel").then((m) => ({ default: m.ReadingQuickAuthoringPanel })), { ssr: false });
+const ListeningQuickAuthoringPanel = dynamic(() => import("@/components/admin/listening-quick-authoring-panel").then((m) => ({ default: m.ListeningQuickAuthoringPanel })), { ssr: false });
+const QuestionGroupEditor = dynamic(() => import("@/components/admin/question-group-editor").then((m) => ({ default: m.QuestionGroupEditor })), { ssr: false });
 
 type TestDetail = {
   id: string;

@@ -1,5 +1,4 @@
-"use client";
-
+import { memo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export type Achievement = {
@@ -73,7 +72,7 @@ const DEFAULT_BADGES: Achievement[] = [
   },
 ];
 
-export function AchievementsPanel({ badges }: AchievementsPanelProps) {
+export const AchievementsPanel = memo(function AchievementsPanel({ badges }: AchievementsPanelProps) {
   const displayBadges = badges.length > 0 ? badges : DEFAULT_BADGES;
 
   return (
@@ -114,4 +113,4 @@ export function AchievementsPanel({ badges }: AchievementsPanelProps) {
       </CardContent>
     </Card>
   );
-}
+});

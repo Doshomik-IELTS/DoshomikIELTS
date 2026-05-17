@@ -161,7 +161,7 @@ export function DashboardSummary() {
           <Card key={s.module}>
             <CardContent className="p-5">
               <p className="text-sm font-medium text-slate-600 capitalize">{s.module}</p>
-              <p className="mt-1 text-3xl font-bold text-slate-900">
+              <p className="mt-1 text-3xl font-bold text-slate-900" aria-label={`${s.module} band score: ${s.band != null ? s.band.toFixed(1) : "not available"}`}>
                 {s.band == null ? "—" : s.band.toFixed(1)}
               </p>
               {s.band == null && (
@@ -308,6 +308,27 @@ function DashboardSkeleton() {
           </Card>
         ))}
       </div>
+      <div className="grid gap-4 md:grid-cols-2">
+        {[1, 2].map((i) => (
+          <Card key={i}>
+            <CardHeader>
+              <Skeleton className="h-6 w-32" />
+            </CardHeader>
+            <CardContent>
+              <Skeleton className="h-20 w-full" />
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+      <Card>
+        <CardHeader>
+          <Skeleton className="h-6 w-40" />
+        </CardHeader>
+        <CardContent>
+          <Skeleton className="h-3 w-full" />
+          <Skeleton className="mt-2 h-3 w-3/4" />
+        </CardContent>
+      </Card>
     </div>
   );
 }

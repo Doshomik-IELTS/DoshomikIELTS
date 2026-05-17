@@ -105,7 +105,7 @@ export function SpeakingRecorder({ onRecordingComplete }: SpeakingRecorderProps)
       });
 
       if (!uploadRes2.ok) {
-        throw new Error("Upload failed");
+        throw new Error(`Upload failed with status ${uploadRes2.status}`);
       }
 
       setMediaAssetId(uploadRes.mediaAssetId);

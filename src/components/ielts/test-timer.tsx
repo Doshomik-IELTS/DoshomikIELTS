@@ -39,7 +39,9 @@ export function TestTimer({ attemptId, totalDuration, onTimeExpired, onSync }: T
           body: JSON.stringify({ action: "keep-alive", timeSpent: 10 }),
         });
         onSync?.(10);
-      } catch {}
+      } catch {
+        // Intentionally silent — background keep-alive sync, user-facing errors would be distracting
+      }
     }, 10000);
     return () => clearInterval(syncInterval);
   }, [attemptId, isExpired, totalDuration, onSync]);
