@@ -1,5 +1,5 @@
 import { fail, ok } from "@/lib/api/response";
-import { requireAdminActor } from "@/lib/auth/admin-api";
+import { requireAdminActorOrResponse } from "@/lib/auth/admin-api";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import type { ReferralStatus } from "@prisma/client";
@@ -9,7 +9,8 @@ const statusSchema = z.object({
 });
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ code: string }> }) {
-  await requireAdminActor();
+  const adminAuth = await requireAdminActorOrResponse();
+  if (adminAuth.response) return adminAuth.response;
 
   const { code } = await params;
 

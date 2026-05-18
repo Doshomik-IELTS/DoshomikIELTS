@@ -1,4 +1,5 @@
 import { fail, ok } from "@/lib/api/response";
+import { logRouteError } from "@/lib/api/logging";
 import { requireCurrentUser } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
 import { profileUpdateSchema } from "@/lib/validators/profile";
@@ -52,6 +53,7 @@ export async function PATCH(request: Request) {
       return fail({ code: "UNAUTHENTICATED", message: "You must be logged in." }, 401);
     }
 
+    logRouteError("/api/profile", error, { method: "PATCH" });
     return fail({ code: "INTERNAL_ERROR", message: "Could not update profile." }, 500);
   }
 }

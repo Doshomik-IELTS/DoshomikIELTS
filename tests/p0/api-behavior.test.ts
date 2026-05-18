@@ -199,6 +199,48 @@ test("media upload forbids learner listening-audio uploads", async () => {
   assert.equal(payload.error.code, "FORBIDDEN");
 });
 
+test("media upload rejects unsupported speaking audio types before storage calls", async () => {
+  let touchedStorage = false;
+
+  const response = await postMediaUpload(
+    new Request("http://localhost/api/media/upload-url", {
+      method: "POST",
+      body: JSON.stringify({
+        purpose: "speaking_recording",
+        contentType: "image/png",
+        sizeBytes: 2048,
+      }),
+    }),
+    {
+      requireCurrentUser: async () => learnerActor,
+      checkRateLimitForIdentifier: async () => null,
+      mediaRateLimiter: async () => ({ allowed: true, remaining: 20, resetIn: 60 }),
+      createSupabaseServiceClient: (() => ({
+        storage: {
+          from: () => {
+            touchedStorage = true;
+            return {
+              createSignedUploadUrl: async () => ({
+                data: { signedUrl: "https://example.com/upload", token: "token", path: "path" },
+                error: null,
+              }),
+            };
+          },
+        },
+      })) as never,
+      supabaseCircuitBreaker: {
+        execute: async <T>(operation: () => Promise<T>) => operation(),
+      } as never,
+      prisma: { mediaAsset: { create: async () => ({ id: "media_1" }) } } as never,
+    },
+  );
+
+  assert.equal(response.status, 400);
+  assert.equal(touchedStorage, false);
+  const payload = await response.json();
+  assert.equal(payload.error.code, "VALIDATION_ERROR");
+});
+
 test("attempt answers rejects invalid request payload", async () => {
   const response = await postAttemptAnswers(
     new Request("http://localhost/api/attempts/attempt_1/answers", {
@@ -217,6 +259,36 @@ test("attempt answers rejects invalid request payload", async () => {
   assert.equal(response.status, 400);
   const payload = await response.json();
   assert.equal(payload.error.code, "VALIDATION_ERROR");
+});
+
+test("attempt answers returns not found for attempts owned by another profile", async () => {
+  const response = await postAttemptAnswers(
+    new Request("http://localhost/api/attempts/attempt_1/answers", {
+      method: "POST",
+      body: JSON.stringify({
+        sectionId: "section_1",
+        answers: { q1: "Answer" },
+      }),
+    }),
+    { params: Promise.resolve({ attemptId: "attempt_1" }) },
+    {
+      requireCurrentUser: async () => learnerActor,
+      prisma: {
+        mockTestAttempt: {
+          findUnique: async () => ({
+            id: "attempt_1",
+            profileId: "another_profile",
+            status: "in_progress",
+            testId: "test_1",
+          }),
+        },
+      } as never,
+    },
+  );
+
+  assert.equal(response.status, 404);
+  const payload = await response.json();
+  assert.equal(payload.error.code, "NOT_FOUND");
 });
 
 test("submit section rejects empty answered sections", async () => {
@@ -248,6 +320,35 @@ test("submit section rejects empty answered sections", async () => {
   assert.equal(response.status, 400);
   const payload = await response.json();
   assert.equal(payload.error.code, "VALIDATION_ERROR");
+});
+
+test("submit section returns not found for attempts owned by another profile", async () => {
+  const response = await postSubmitSection(
+    new Request("http://localhost/api/attempts/attempt_1/submit-section", {
+      method: "POST",
+      body: JSON.stringify({ sectionId: "section_1", responseText: "Essay response" }),
+    }),
+    { params: Promise.resolve({ attemptId: "attempt_1" }) },
+    {
+      requireCurrentUser: async () => learnerActor,
+      prisma: {
+        mockTestAttempt: {
+          findUnique: async () => ({
+            id: "attempt_1",
+            profileId: "another_profile",
+            status: "in_progress",
+            test: { sections: [] },
+            answers: [],
+          }),
+        },
+      } as never,
+      enqueueLlmJob: async () => true,
+    },
+  );
+
+  assert.equal(response.status, 404);
+  const payload = await response.json();
+  assert.equal(payload.error.code, "NOT_FOUND");
 });
 
 test("admin tests route returns auth response when admin access is missing", async () => {

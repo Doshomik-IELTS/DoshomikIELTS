@@ -1,4 +1,5 @@
 import { fail, ok } from "@/lib/api/response";
+import { logRouteError } from "@/lib/api/logging";
 import { hasRole } from "@/lib/auth/roles";
 import { requireCurrentUser } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
@@ -53,6 +54,11 @@ export async function GET(
       durationSeconds: mediaAsset.durationSeconds,
     });
   } catch (error) {
+    logRouteError("/api/media/[assetId]/download-url", error, {
+      method: request.method,
+      actorId: actor.profile.id,
+      assetId,
+    });
     return fail({
       code: "INTERNAL_ERROR",
       message: error instanceof Error ? error.message : "Could not create download URL",

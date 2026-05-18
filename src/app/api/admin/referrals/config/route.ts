@@ -1,5 +1,5 @@
 import { fail, ok } from "@/lib/api/response";
-import { requireAdminActor } from "@/lib/auth/admin-api";
+import { requireAdminActorOrResponse } from "@/lib/auth/admin-api";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 
@@ -14,7 +14,8 @@ const updateConfigSchema = z.object({
 });
 
 export async function GET() {
-  await requireAdminActor();
+  const adminAuth = await requireAdminActorOrResponse();
+  if (adminAuth.response) return adminAuth.response;
 
   const config = await prisma.referralConfig.upsert({
     where: { id: "singleton" },
@@ -26,7 +27,8 @@ export async function GET() {
 }
 
 export async function PATCH(request: Request) {
-  await requireAdminActor();
+  const adminAuth = await requireAdminActorOrResponse();
+  if (adminAuth.response) return adminAuth.response;
 
   const body = await request.json().catch(() => null);
   const parsed = updateConfigSchema.safeParse(body);

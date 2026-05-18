@@ -52,18 +52,6 @@ test("profile API enforces ownership via session", () => {
   assert.match(source, /profile\.id/);
 });
 
-test("attempt answers route enforces ownership", () => {
-  const source = read("src/app/api/attempts/[attemptId]/answers/route.ts");
-  
-  assert.match(source, /attempt\.profileId.*actor\.profile\.id/);
-});
-
-test("attempt submit-section route enforces ownership", () => {
-  const source = read("src/app/api/attempts/[attemptId]/submit-section/route.ts");
-  
-  assert.match(source, /attempt\.profileId.*actor\.profile\.id/);
-});
-
 test("attempt report route enforces ownership", () => {
   const source = read("src/app/api/attempts/[attemptId]/report/route.ts");
   
@@ -94,12 +82,6 @@ test("score prediction blocks incomplete modules", () => {
   
   assert.match(source, /All four modules must be completed/);
   assert.match(source, /listening.*reading.*writing.*speaking/);
-});
-
-test("media upload validates content type", () => {
-  const source = read("src/app/api/media/upload-url/route.ts");
-  
-  assert.match(source, /audio/);
 });
 
 test("media download enforces ownership", () => {

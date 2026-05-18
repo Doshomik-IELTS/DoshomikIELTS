@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { requireAdminActor } from "@/lib/auth/admin-api";
+import { requireAdminActorOrResponse } from "@/lib/auth/admin-api";
 import { ok, fail } from "@/lib/api/response";
 import { z } from "zod";
 import type { Prisma } from "@prisma/client";
@@ -20,15 +20,9 @@ const createSectionSchema = z.object({
 const updateSectionSchema = createSectionSchema.partial();
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  let actor;
-  try {
-    actor = await requireAdminActor();
-  } catch (error) {
-    if (error instanceof Error && error.message === "UNAUTHENTICATED") {
-      return fail({ code: "UNAUTHENTICATED", message: "Authentication required" }, 401);
-    }
-    return fail({ code: "FORBIDDEN", message: "Admin access required" }, 403);
-  }
+  const adminAuth = await requireAdminActorOrResponse();
+  if (adminAuth.response) return adminAuth.response;
+  const actor = adminAuth.actor;
 
   const { id: testId } = await params;
 
@@ -92,15 +86,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 }
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  let actor;
-  try {
-    actor = await requireAdminActor();
-  } catch (error) {
-    if (error instanceof Error && error.message === "UNAUTHENTICATED") {
-      return fail({ code: "UNAUTHENTICATED", message: "Authentication required" }, 401);
-    }
-    return fail({ code: "FORBIDDEN", message: "Admin access required" }, 403);
-  }
+  const adminAuth = await requireAdminActorOrResponse();
+  if (adminAuth.response) return adminAuth.response;
+  const actor = adminAuth.actor;
 
   const { id: testId } = await params;
   const { searchParams } = new URL(request.url);
@@ -157,15 +145,9 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 }
 
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  let actor;
-  try {
-    actor = await requireAdminActor();
-  } catch (error) {
-    if (error instanceof Error && error.message === "UNAUTHENTICATED") {
-      return fail({ code: "UNAUTHENTICATED", message: "Authentication required" }, 401);
-    }
-    return fail({ code: "FORBIDDEN", message: "Admin access required" }, 403);
-  }
+  const adminAuth = await requireAdminActorOrResponse();
+  if (adminAuth.response) return adminAuth.response;
+  const actor = adminAuth.actor;
 
   const { id: testId } = await params;
   const { searchParams } = new URL(request.url);

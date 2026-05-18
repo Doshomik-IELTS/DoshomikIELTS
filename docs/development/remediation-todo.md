@@ -22,7 +22,7 @@
 - [x] Add route contract tests for invalid pagination and invalid JSON body protections.
 
 ## Low Priority
-- [ ] Standardize API route error logging with request context.
-- [ ] Consolidate repeated admin auth error handling helpers.
+- [x] Standardize API route error logging with request context.
+- [x] Consolidate repeated admin auth error handling helpers.
 - [x] Add dashboard/runbook notes for Strapi sync health and content rollback.
 - [x] Add `EXPLAIN ANALYZE` examples for key Prisma queries before scaling.

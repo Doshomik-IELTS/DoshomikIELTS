@@ -1,9 +1,10 @@
 import { ok } from "@/lib/api/response";
-import { requireAdminActor } from "@/lib/auth/admin-api";
+import { requireAdminActorOrResponse } from "@/lib/auth/admin-api";
 import { prisma } from "@/lib/prisma";
 
 export async function GET() {
-  await requireAdminActor();
+  const adminAuth = await requireAdminActorOrResponse();
+  if (adminAuth.response) return adminAuth.response;
 
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 

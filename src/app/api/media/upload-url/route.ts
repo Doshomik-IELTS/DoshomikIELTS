@@ -1,5 +1,6 @@
 import type { Prisma, Role } from "@prisma/client";
 import { fail, ok } from "@/lib/api/response";
+import { logRouteError } from "@/lib/api/logging";
 import { hasRole } from "@/lib/auth/roles";
 import { requireCurrentUser } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
@@ -89,6 +90,11 @@ export async function postMediaUpload(
     signedUrl = data.signedUrl;
     token = data.token;
   } catch (error) {
+    logRouteError("/api/media/upload-url", error, {
+      method: request.method,
+      actorId: actor.profile.id,
+      purpose: body.purpose,
+    });
     return fail({
       code: "INTERNAL_ERROR",
       message: error instanceof Error ? error.message : "Could not create upload URL",

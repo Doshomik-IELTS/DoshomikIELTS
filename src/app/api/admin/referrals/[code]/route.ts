@@ -1,5 +1,5 @@
 import { fail, ok } from "@/lib/api/response";
-import { requireAdminActor } from "@/lib/auth/admin-api";
+import { requireAdminActorOrResponse } from "@/lib/auth/admin-api";
 import { prisma } from "@/lib/prisma";
 import type { ReferralStatus } from "@prisma/client";
 import { z } from "zod";
@@ -9,7 +9,8 @@ const statusSchema = z.object({
 });
 
 export async function GET(request: Request) {
-  await requireAdminActor();
+  const adminAuth = await requireAdminActorOrResponse();
+  if (adminAuth.response) return adminAuth.response;
 
   const { searchParams } = new URL(request.url);
   const code = searchParams.get("code");
@@ -63,7 +64,8 @@ export async function GET(request: Request) {
 }
 
 export async function PATCH(request: Request) {
-  await requireAdminActor();
+  const adminAuth = await requireAdminActorOrResponse();
+  if (adminAuth.response) return adminAuth.response;
 
   const { searchParams } = new URL(request.url);
   const code = searchParams.get("code");

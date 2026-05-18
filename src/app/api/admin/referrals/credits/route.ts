@@ -1,6 +1,6 @@
 import { fail, ok } from "@/lib/api/response";
 import { paginationSchema, parseQuery } from "@/lib/api/validation";
-import { requireAdminActor } from "@/lib/auth/admin-api";
+import { requireAdminActorOrResponse } from "@/lib/auth/admin-api";
 import { prisma } from "@/lib/prisma";
 import { logAuditEvent } from "@/lib/audit";
 import { z } from "zod";
@@ -17,7 +17,8 @@ const querySchema = paginationSchema.extend({
 });
 
 export async function GET(request: Request) {
-  await requireAdminActor();
+  const adminAuth = await requireAdminActorOrResponse();
+  if (adminAuth.response) return adminAuth.response;
 
   const parsedQuery = parseQuery(request, querySchema);
   if (parsedQuery.response) return parsedQuery.response;
@@ -59,12 +60,9 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  let actor;
-  try {
-    actor = await requireAdminActor();
-  } catch {
-    return fail({ code: "UNAUTHENTICATED", message: "Authentication required" }, 401);
-  }
+  const adminAuth = await requireAdminActorOrResponse();
+  if (adminAuth.response) return adminAuth.response;
+  const actor = adminAuth.actor;
 
   const body = await request.json().catch(() => null);
   const parsed = grantSchema.safeParse(body);

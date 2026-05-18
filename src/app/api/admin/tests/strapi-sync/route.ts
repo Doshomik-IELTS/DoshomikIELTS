@@ -1,21 +1,13 @@
 import { prisma } from "@/lib/prisma";
-import { requireCurrentUser } from "@/lib/auth/session";
-import { canAccessAdminRoutes } from "@/lib/auth/roles";
 import { ok, fail } from "@/lib/api/response";
+import { requireAdminActorOrResponse } from "@/lib/auth/admin-api";
 import { fetchStrapiMockTests, ensureLocalTestFromStrapi } from "@/lib/strapi/content";
 import { checkRateLimitForIdentifier, submissionRateLimiter } from "@/lib/rate-limit";
 
 export async function POST() {
-  let actor;
-  try {
-    actor = await requireCurrentUser();
-  } catch {
-    return fail({ code: "UNAUTHENTICATED", message: "Authentication required" }, 401);
-  }
-
-  if (!canAccessAdminRoutes(actor.profile.roles)) {
-    return fail({ code: "FORBIDDEN", message: "Admin access required" }, 403);
-  }
+  const adminAuth = await requireAdminActorOrResponse();
+  if (adminAuth.response) return adminAuth.response;
+  const actor = adminAuth.actor;
 
   const rateLimitResponse = await checkRateLimitForIdentifier(submissionRateLimiter, actor.profile.id);
   if (rateLimitResponse) return rateLimitResponse;

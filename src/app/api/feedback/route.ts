@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { logRouteError } from "@/lib/api/logging";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth/session";
 
@@ -53,7 +54,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ data: { id: feedback.id, success: true }, error: null });
   } catch (error) {
-    console.error("[feedback] POST error:", error);
+    logRouteError("/api/feedback", error, { method: request.method });
     return NextResponse.json(
       { data: null, error: { code: "SERVER_ERROR", message: "Failed to submit feedback" } },
       { status: 500 }
@@ -81,7 +82,7 @@ export async function GET() {
 
     return NextResponse.json({ data: feedbacks, error: null });
   } catch (error) {
-    console.error("[feedback] GET error:", error);
+    logRouteError("/api/feedback", error, { method: "GET" });
     return NextResponse.json(
       { data: null, error: { code: "SERVER_ERROR", message: "Failed to fetch feedback" } },
       { status: 500 }

@@ -1,6 +1,6 @@
 import { ok } from "@/lib/api/response";
 import { paginationSchema, parseQuery } from "@/lib/api/validation";
-import { requireAdminActor } from "@/lib/auth/admin-api";
+import { requireAdminActorOrResponse } from "@/lib/auth/admin-api";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 
@@ -10,7 +10,8 @@ const querySchema = paginationSchema.extend({
 });
 
 export async function GET(request: Request) {
-  await requireAdminActor();
+  const adminAuth = await requireAdminActorOrResponse();
+  if (adminAuth.response) return adminAuth.response;
 
   const parsedQuery = parseQuery(request, querySchema);
   if (parsedQuery.response) return parsedQuery.response;

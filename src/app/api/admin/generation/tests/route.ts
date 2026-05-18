@@ -1,5 +1,5 @@
 import { fail, ok } from "@/lib/api/response";
-import { requireAdminActor } from "@/lib/auth/admin-api";
+import { requireAdminActorOrResponse } from "@/lib/auth/admin-api";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import type { Prisma } from "@prisma/client";
@@ -11,15 +11,9 @@ const generationRequestSchema = z.object({
 });
 
 export async function POST(request: Request) {
-  let actor;
-  try {
-    actor = await requireAdminActor();
-  } catch (error) {
-    if (error instanceof Error && error.message === "UNAUTHENTICATED") {
-      return fail({ code: "UNAUTHENTICATED", message: "Authentication required" }, 401);
-    }
-    return fail({ code: "FORBIDDEN", message: "Admin access required" }, 403);
-  }
+  const adminAuth = await requireAdminActorOrResponse();
+  if (adminAuth.response) return adminAuth.response;
+  const actor = adminAuth.actor;
 
   const body = await request.json().catch(() => null);
   const parsed = generationRequestSchema.safeParse(body);
