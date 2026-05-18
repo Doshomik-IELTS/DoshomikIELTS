@@ -103,7 +103,18 @@ test("writing evaluation success returns created envelope", async () => {
       evaluationRateLimiter: async () => ({ allowed: true, remaining: 10, resetIn: 60 }),
       prisma: {
         mockTestAttempt: {
-          findUnique: async () => ({ id: "attempt_1", profileId: learnerActor.profile.id }),
+          findUnique: async () => ({
+            id: "attempt_1",
+            profileId: learnerActor.profile.id,
+            status: "in_progress",
+            startedAt: new Date(),
+            test: {
+              type: "section_practice",
+              sections: [{ id: "section_1", module: "writing", durationMinutes: null }],
+            },
+            answers: [],
+          }),
+          update: async () => ({ id: "attempt_1", status: "evaluating" }),
         },
         $transaction: async (callback: (tx: {
           writingEvaluation: {
@@ -113,6 +124,9 @@ test("writing evaluation success returns created envelope", async () => {
           llmJob: {
             create: (args: { data: { type: string; status: string; inputJson: Record<string, unknown> } }) => Promise<{ id: string; type: string }>;
           };
+          attemptAnswer: {
+            upsert: (args: { where: { id: string }; create: Record<string, unknown>; update: Record<string, unknown> }) => Promise<{ id: string }>;
+          };
         }) => Promise<{ evaluation: { id: string; createdAt: Date; status: string }; job: { id: string; type: string } }>) =>
           callback({
             writingEvaluation: {
@@ -121,6 +135,9 @@ test("writing evaluation success returns created envelope", async () => {
             },
             llmJob: {
               create: async () => ({ id: "job_1", type: "writing_evaluation" }),
+            },
+            attemptAnswer: {
+              upsert: async () => ({ id: "marker_1" }),
             },
           }),
       } as never,
@@ -771,6 +788,7 @@ test("health route returns degraded status when any dependency is degraded", asy
     checkRedis: async () => ({ status: "degraded", detail: "redis down" }),
     checkStrapi: async () => ({ status: "ok" }),
     checkSupabaseConfig: async () => ({ status: "ok" }),
+    checkWorkerLiveness: async () => ({ status: "ok" }),
     checkEnvironment: async () => ({ status: "ok" }),
   });
 
@@ -786,6 +804,7 @@ test("health route returns ok when dependencies are healthy", async () => {
     checkRedis: async () => ({ status: "ok" }),
     checkStrapi: async () => ({ status: "ok" }),
     checkSupabaseConfig: async () => ({ status: "ok" }),
+    checkWorkerLiveness: async () => ({ status: "ok" }),
     checkEnvironment: async () => ({ status: "ok" }),
   });
 

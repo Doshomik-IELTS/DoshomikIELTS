@@ -153,41 +153,60 @@ export async function postSubmitSection(
     const taskType = inferTaskType(section.title, section.contentJson);
     const wordCount = responseText.split(/\s+/).filter(Boolean).length;
 
-    const { job } = await deps.prisma.$transaction(async (tx) => {
-      const evaluation = await tx.writingEvaluation.create({
-        data: {
-          profileId: actor.profile.id,
-          attemptId,
-          sectionId,
-          taskType,
-          responseText,
-          wordCount,
-          status: "queued",
-        },
-      });
+    let job: { type: string; id: string } | null = null;
 
-      const job = await tx.llmJob.create({
-        data: {
-          type: "writing_evaluation",
-          status: "queued",
-          inputJson: {
-            evaluationId: evaluation.id,
+    try {
+      const result = await deps.prisma.$transaction(async (tx) => {
+        const evaluation = await tx.writingEvaluation.create({
+          data: {
+            profileId: actor.profile.id,
+            attemptId,
+            sectionId,
             taskType,
             responseText,
             wordCount,
+            status: "queued",
           },
-        },
+        });
+
+        const job = await tx.llmJob.create({
+          data: {
+            type: "writing_evaluation",
+            status: "queued",
+            inputJson: {
+              evaluationId: evaluation.id,
+              taskType,
+              responseText,
+              wordCount,
+            },
+          },
+        });
+
+        await tx.writingEvaluation.update({
+          where: { id: evaluation.id },
+          data: { llmJobId: job.id },
+        });
+
+        return { evaluation, job };
       });
 
-      await tx.writingEvaluation.update({
-        where: { id: evaluation.id },
-        data: { llmJobId: job.id },
-      });
+      job = result.job;
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        (error.message.includes("Unique constraint failed") ||
+          (error as { code?: string }).code === "P2002")
+      ) {
+        // Idempotent: existing evaluation found, skip creating a duplicate job
+        job = null;
+      } else {
+        throw error;
+      }
+    }
 
-      return { evaluation, job };
-    });
-
-    await deps.enqueueLlmJob(job.type, job.id);
+    if (job) {
+      await deps.enqueueLlmJob(job.type, job.id);
+    }
   }
 
   for (const answer of sectionAnswers) {

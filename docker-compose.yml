@@ -82,6 +82,34 @@ services:
     networks:
       - ieltspp
 
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runner-worker
+    env_file:
+      - .env.local
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/ieltsplusplus
+      - DIRECT_URL=postgresql://postgres:postgres@db:5432/ieltsplusplus
+      - REDIS_URL=redis://redis:6379
+      - STRAPI_BASE_URL=http://strapi:1337
+      - STRAPI_ADMIN_URL=http://strapi:1337/admin
+      - WORKER_CONCURRENCY=2
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"require('fs').accessSync('/app/node_modules/bullmq')\""]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    networks:
+      - ieltspp
+
 volumes:
   pgdata:
   redisdata:

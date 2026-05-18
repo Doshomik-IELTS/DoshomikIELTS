@@ -7,6 +7,7 @@ interface RateLimitOptions {
   maxRequests: number;
   windowSeconds: number;
   keyPrefix: string;
+  failClosed?: boolean;
 }
 
 interface RateLimitResult {
@@ -14,6 +15,51 @@ interface RateLimitResult {
   remaining: number;
   resetIn: number;
   retryAfter?: number;
+  degraded?: boolean;
+}
+
+// In-process fallback rate limiter
+const inProcessStore = new Map<string, { count: number; resetAt: number }>();
+let inProcessCleanupScheduled = false;
+
+function scheduleInProcessCleanup() {
+  if (!inProcessCleanupScheduled) {
+    inProcessCleanupScheduled = true;
+    setTimeout(() => {
+      const now = Date.now();
+      for (const [key, entry] of inProcessStore.entries()) {
+        if (entry.resetAt < now) {
+          inProcessStore.delete(key);
+        }
+      }
+      inProcessCleanupScheduled = false;
+    }, 60_000);
+  }
+}
+
+function inProcessRateLimit(key: string, maxRequests: number, windowSeconds: number): RateLimitResult {
+  const now = Date.now();
+  const entry = inProcessStore.get(key);
+
+  if (!entry || entry.resetAt < now) {
+    inProcessStore.set(key, { count: 1, resetAt: now + windowSeconds * 1000 });
+    return { allowed: true, remaining: maxRequests - 1, resetIn: windowSeconds };
+  }
+
+  entry.count += 1;
+  scheduleInProcessCleanup();
+
+  const allowed = entry.count <= maxRequests;
+  const remaining = Math.max(0, maxRequests - entry.count);
+  const resetIn = Math.ceil((entry.resetAt - now) / 1000);
+
+  return {
+    allowed,
+    remaining,
+    resetIn,
+    retryAfter: allowed ? undefined : resetIn,
+    degraded: true,
+  };
 }
 
 function getRedisClient(): Redis | null {
@@ -32,7 +78,6 @@ function getRedisClient(): Redis | null {
     logger.warn("redis rate limiter unavailable", {
       error: error instanceof Error ? error.message : String(error),
     });
-    // Fail-open: if Redis connection fails, don't block legitimate requests
     return null;
   }
 }
@@ -41,11 +86,20 @@ const redis = getRedisClient();
 
 export function createRateLimiter(options: RateLimitOptions) {
   return async function rateLimit(identifier: string): Promise<RateLimitResult> {
-    if (!redis) {
-      return { allowed: true, remaining: options.maxRequests, resetIn: options.windowSeconds };
-    }
-
     const key = `${options.keyPrefix}:${identifier}`;
+
+    if (!redis) {
+      if (options.failClosed) {
+        return {
+          allowed: false,
+          remaining: 0,
+          resetIn: options.windowSeconds,
+          retryAfter: options.windowSeconds,
+          degraded: true,
+        };
+      }
+      return inProcessRateLimit(key, options.maxRequests, options.windowSeconds);
+    }
 
     try {
       const multi = redis.multi();
@@ -54,7 +108,16 @@ export function createRateLimiter(options: RateLimitOptions) {
       const results = await multi.exec();
 
       if (!results) {
-        return { allowed: true, remaining: options.maxRequests, resetIn: options.windowSeconds };
+        if (options.failClosed) {
+          return {
+            allowed: false,
+            remaining: 0,
+            resetIn: options.windowSeconds,
+            retryAfter: options.windowSeconds,
+            degraded: true,
+          };
+        }
+        return inProcessRateLimit(key, options.maxRequests, options.windowSeconds);
       }
 
       const [countResult, ttlResult] = results;
@@ -75,12 +138,20 @@ export function createRateLimiter(options: RateLimitOptions) {
         resetIn,
         retryAfter: allowed ? undefined : resetIn,
       };
-  } catch (error) {
-    logger.warn("redis rate limit check failed", {
-      error: error instanceof Error ? error.message : String(error),
-    });
-    // Fail-open: Redis failure shouldn't block requests
-    return { allowed: true, remaining: options.maxRequests, resetIn: options.windowSeconds };
+    } catch (error) {
+      logger.warn("redis rate limit check failed", {
+        error: error instanceof Error ? error.message : String(error),
+      });
+      if (options.failClosed) {
+        return {
+          allowed: false,
+          remaining: 0,
+          resetIn: options.windowSeconds,
+          retryAfter: options.windowSeconds,
+          degraded: true,
+        };
+      }
+      return inProcessRateLimit(key, options.maxRequests, options.windowSeconds);
     }
   };
 }
@@ -91,6 +162,19 @@ export async function checkRateLimitForIdentifier(
 ): Promise<Response | null> {
   try {
     const result = await rateLimiter(identifier);
+
+    if (result.degraded && !result.allowed) {
+      return fail(
+        {
+          code: "SERVICE_UNAVAILABLE",
+          message: "Service temporarily unavailable. Please try again later.",
+        },
+        503,
+        {
+          "Retry-After": String(result.retryAfter ?? result.resetIn),
+        },
+      );
+    }
 
     if (!result.allowed) {
       return fail(
@@ -127,6 +211,7 @@ export const authRateLimiter = createRateLimiter({
   maxRequests: 5,
   windowSeconds: 60,
   keyPrefix: "rl:auth",
+  failClosed: true,
 });
 
 export const submissionRateLimiter = createRateLimiter({
@@ -139,6 +224,7 @@ export const evaluationRateLimiter = createRateLimiter({
   maxRequests: 10,
   windowSeconds: 60,
   keyPrefix: "rl:eval",
+  failClosed: true,
 });
 
 export const mediaRateLimiter = createRateLimiter({

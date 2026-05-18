@@ -534,6 +534,7 @@ model WritingEvaluation {
 
   @@index([profileId, status, createdAt])
   @@index([attemptId, status])
+  @@unique([attemptId, sectionId], name: "WritingEvaluation_attempt_section")
 }
 
 model SpeakingEvaluation {
@@ -562,6 +563,7 @@ model SpeakingEvaluation {
 
   @@index([profileId, status, createdAt])
   @@index([attemptId, status])
+  @@unique([attemptId, sectionId, part], name: "SpeakingEvaluation_attempt_section_part")
 }
 
 model ContentReview {

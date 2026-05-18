@@ -62,13 +62,14 @@ All QA and test plans are indexed in [`testing-plans/README.md`](testing-plans/R
 
 ## Company Review Agents
 
-Use [`Company/README.md`](Company/README.md) when you want role-based reviews from CTO, Product, Frontend, Backend, Security, QA, DevOps/SRE, UX, or Code Quality perspectives.
+Use [`Company/README.md`](Company/README.md) when you want role-based reviews from CTO, Product, Frontend, Backend, Security, QA, DevOps/SRE, UX, Code Quality, or Assessment and Content Integrity perspectives.
 
 | Document | Purpose |
 |---|---|
 | [`Company/README.md`](Company/README.md) | Agent roster, usage guide, review targets, and recommended review sequencing. |
 | [`Company/review-playbook.md`](Company/review-playbook.md) | Shared severity rubric, evidence standard, output contract, and cross-role handoff rules. |
 | [`Company/review-brief-template.md`](Company/review-brief-template.md) | Copyable template for requesting targeted reviews. |
+| [`Company/assessment-content-lead.md`](Company/assessment-content-lead.md) | Specialist review prompt for content provenance, assessment quality, rubric trust, and editorial workflow integrity. |
 
 ---
 

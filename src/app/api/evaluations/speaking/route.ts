@@ -121,69 +121,97 @@ export async function postSpeakingEvaluation(
 
   const submittedAt = new Date();
 
-  const { evaluation, job } = await deps.prisma.$transaction(async (tx) => {
-    const evaluation = await tx.speakingEvaluation.create({
-      data: {
-        profileId: actor.profile.id,
-        attemptId,
-        sectionId,
-        part,
-        responseText: responseText || null,
-        mediaAssetId: mediaAssetId || null,
-        status: "queued",
-      },
-    });
+  let evaluation: { id: string; status: string; createdAt: Date; llmJobId: string | null };
+  let job: { id: string; type: string } | null = null;
 
-    const job = await tx.llmJob.create({
-      data: {
-        type: "speaking_evaluation",
-        status: "queued",
-        inputJson: {
-          evaluationId: evaluation.id,
+  try {
+    const result = await deps.prisma.$transaction(async (tx) => {
+      const evaluation = await tx.speakingEvaluation.create({
+        data: {
+          profileId: actor.profile.id,
+          attemptId,
+          sectionId,
           part,
-          responseText,
-          mediaAssetId,
+          responseText: responseText || null,
+          mediaAssetId: mediaAssetId || null,
+          status: "queued",
         },
-      },
+      });
+
+      const job = await tx.llmJob.create({
+        data: {
+          type: "speaking_evaluation",
+          status: "queued",
+          inputJson: {
+            evaluationId: evaluation.id,
+            part,
+            responseText,
+            mediaAssetId,
+          },
+        },
+      });
+
+      const linkedEvaluation = await tx.speakingEvaluation.update({
+        where: { id: evaluation.id },
+        data: { llmJobId: job.id },
+      });
+
+      await tx.attemptAnswer.upsert({
+        where: {
+          id: getSectionMarkerId(attemptId, sectionId),
+        },
+        create: {
+          id: getSectionMarkerId(attemptId, sectionId),
+          attemptId,
+          sectionId,
+          questionId: null,
+          answerText: responseText || null,
+          answerJson: buildSectionResponseJson({
+            responseKind: "speaking",
+            responseText: responseText || null,
+            mediaAssetId: mediaAssetId || null,
+            isDraft: false,
+          }),
+          submittedAt,
+        },
+        update: {
+          answerText: responseText || null,
+          answerJson: buildSectionResponseJson({
+            responseKind: "speaking",
+            responseText: responseText || null,
+            mediaAssetId: mediaAssetId || null,
+            isDraft: false,
+          }),
+          submittedAt,
+        },
+      });
+
+      return { evaluation: linkedEvaluation, job };
     });
 
-    const linkedEvaluation = await tx.speakingEvaluation.update({
-      where: { id: evaluation.id },
-      data: { llmJobId: job.id },
-    });
-
-    await tx.attemptAnswer.upsert({
-      where: {
-        id: getSectionMarkerId(attemptId, sectionId),
-      },
-      create: {
-        id: getSectionMarkerId(attemptId, sectionId),
-        attemptId,
-        sectionId,
-        questionId: null,
-        answerText: responseText || null,
-        answerJson: buildSectionResponseJson({
-          responseKind: "speaking",
-          responseText: responseText || null,
-          mediaAssetId: mediaAssetId || null,
-          isDraft: false,
-        }),
-        submittedAt,
-      },
-      update: {
-        answerText: responseText || null,
-        answerJson: buildSectionResponseJson({
-          responseKind: "speaking",
-          responseText: responseText || null,
-          mediaAssetId: mediaAssetId || null,
-          isDraft: false,
-        }),
-        submittedAt,
-      },
-    });
-
-    return { evaluation: linkedEvaluation, job };
-  });
+    evaluation = result.evaluation;
+    job = result.job;
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      (error.message.includes("Unique constraint failed") ||
+        (error as { code?: string }).code === "P2002")
+    ) {
+      const existing = await deps.prisma.speakingEvaluation.findFirst({
+        where: { attemptId, sectionId, part },
+        orderBy: { createdAt: "desc" },
+      });
+      if (existing) {
+        return ok({
+          id: existing.id,
+          status: existing.status,
+          createdAt: existing.createdAt,
+          sectionSubmitted: true,
+        }, { status: 200 });
+      }
+    }
+    throw error;
+  }
 
   if (job) {
     await deps.enqueueLlmJob(job.type, job.id);
