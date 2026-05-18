@@ -1,5 +1,7 @@
 # Review Brief Template
 
+<!-- Last Updated: 2026-05-19 — Initial version tracking added. -->
+
 Copy this template when asking one of the company agents for a review.
 
 ```md

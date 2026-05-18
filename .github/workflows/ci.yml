@@ -75,4 +75,13 @@ jobs:
           NEXT_PUBLIC_SUPABASE_URL: http://localhost:54321
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-anon-key
 
+      - name: Install Playwright browsers for accessibility tests
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run accessibility tests
+        run: pnpm exec playwright test tests/e2e/accessibility.spec.ts
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: http://localhost:54321
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-anon-key
+
       - run: pnpm build

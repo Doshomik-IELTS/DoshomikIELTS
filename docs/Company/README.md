@@ -1,5 +1,7 @@
 # IELTS++ Company Review Agents
 
+<!-- Last Updated: 2026-05-19 — Added solo developer review cadence, batching guidance, and version tracking policy. -->
+
 ## Overview
 
 This directory contains role prompts for reviewing IELTS++ from distinct company perspectives. They are meant for targeted reviews, release gates, architecture decisions, and re-reviews after fixes.
@@ -124,6 +126,42 @@ Use these repo areas as common anchors when defining the target:
 - Treat content licensing, learner privacy, evaluation trust, score-prediction disclaimers, accessibility, and attempt persistence as company-level risks.
 - Avoid vague advice. Every material finding needs a fix and a way to verify it.
 - Keep praise specific and secondary. Findings come first.
+
+## Solo Developer Review Cadence
+
+When you are the only developer, running all 10 roles on every change is impractical. Use this cadence to batch reviews by change type:
+
+### By Change Type
+
+| Change | Run These Roles | When |
+|---|---|---|
+| **New API route or endpoint** | Security Engineer + Lead Backend + QA Lead | Before merge |
+| **New learner-facing page or route** | Lead Frontend + UX/Design Lead + QA Lead | Before merge |
+| **Schema migration or Prisma change** | Lead Backend + CTO + DevOps/SRE | Before running migration |
+| **Auth or session change** | Security Engineer + Lead Backend + QA Lead | Before merge |
+| **Evaluation or scoring change** | Assessment & Content Integrity + Lead Backend + QA Lead + Product Manager | Before merge |
+| **Strapi or content workflow change** | Assessment & Content Integrity + Security Engineer + DevOps/SRE | Before merge |
+| **Worker or queue change** | Lead Backend + DevOps/SRE + QA Lead | Before merge |
+| **Refactor or cleanup** | Code Quality Lead + CTO | Before merge |
+| **Release candidate / launch gate** | All roles (run in parallel batches) | 48 hours before launch |
+
+### Batch Execution Strategy
+
+For solo developers, run roles in parallel batches to minimize context switching:
+
+1. **API batch** (Security + Backend + QA): Run together on any backend change. Security checks auth and exploit paths; Backend checks contracts and data integrity; QA checks critical path coverage.
+2. **UI batch** (Frontend + UX + QA): Run together on any frontend change. Frontend checks implementation correctness; UX checks usability and cognitive load; QA checks flow resilience.
+3. **Infrastructure batch** (DevOps + CTO + Backend): Run together on any deployment, worker, or dependency change. DevOps checks deployability; CTO checks architecture fit; Backend checks reliability.
+4. **Content batch** (Assessment + Product + Security): Run together on any content, rubric, or scoring change. Assessment checks provenance and quality; Product checks learner value; Security checks exposure risk.
+
+### Review Frequency
+
+| Frequency | Action |
+|---|---|
+| **Every PR** | Run the relevant batch (API, UI, Infrastructure, or Content) |
+| **Weekly** | Run Code Quality Lead on the week's changes |
+| **Before release** | Run all roles as a launch gate |
+| **After incident** | Run DevOps/SRE + CTO + affected platform lead |
 
 ## Examples
 

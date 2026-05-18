@@ -2,6 +2,7 @@ import type { IeltsModule, TestType } from "@prisma/client";
 
 type AnswerKeyLike = {
   canonicalAnswer: string;
+  explanation?: string | null;
 };
 
 type QuestionLike = {
@@ -76,6 +77,19 @@ function validateObjectiveQuestions(section: SectionLike, issues: TestValidation
   }
 }
 
+function validateAnswerExplanations(section: SectionLike, issues: TestValidationIssue[]) {
+  for (const question of section.questions) {
+    if (!isObjectiveQuestion(question)) continue;
+    if (!question.answerKey?.explanation?.trim()) {
+      issues.push({
+        scope: "question",
+        sectionId: section.id,
+        message: `${section.title}: question is missing an answer explanation.`,
+      });
+    }
+  }
+}
+
 function validateReading(section: SectionLike, issues: TestValidationIssue[]) {
   const json = content(section);
   const hasPassage = hasText(json.passageText) || (Array.isArray(json.paragraphs) && json.paragraphs.length > 0);
@@ -85,7 +99,11 @@ function validateReading(section: SectionLike, issues: TestValidationIssue[]) {
   if (!isRecord(json.sourcePolicy) || json.sourcePolicy.copyrightChecked !== true) {
     issues.push({ scope: "section", sectionId: section.id, message: `${section.title}: confirm original/copyright-safe source policy.` });
   }
+  if (!isRecord(json.provenance) || !hasText(json.provenance.source)) {
+    issues.push({ scope: "section", sectionId: section.id, message: `${section.title}: add content provenance (source, license, attribution).` });
+  }
   validateObjectiveQuestions(section, issues);
+  validateAnswerExplanations(section, issues);
 }
 
 function validateListening(section: SectionLike, issues: TestValidationIssue[]) {
@@ -100,7 +118,11 @@ function validateListening(section: SectionLike, issues: TestValidationIssue[]) 
   if (!isRecord(json.sourcePolicy) || json.sourcePolicy.licenseChecked !== true) {
     issues.push({ scope: "section", sectionId: section.id, message: `${section.title}: confirm audio/script license metadata.` });
   }
+  if (!isRecord(json.provenance) || !hasText(json.provenance.source)) {
+    issues.push({ scope: "section", sectionId: section.id, message: `${section.title}: add content provenance (source, license, attribution).` });
+  }
   validateObjectiveQuestions(section, issues);
+  validateAnswerExplanations(section, issues);
 }
 
 function validateWriting(section: SectionLike, issues: TestValidationIssue[]) {

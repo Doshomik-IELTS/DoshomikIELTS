@@ -3,6 +3,7 @@ import { fail, ok } from "@/lib/api/response";
 import { logRouteError } from "@/lib/api/logging";
 import { hasRole } from "@/lib/auth/roles";
 import { requireCurrentUser } from "@/lib/auth/session";
+import { verifyCsrf } from "@/lib/security/csrf";
 import { prisma } from "@/lib/prisma";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
 import { checkRateLimitForIdentifier, mediaRateLimiter } from "@/lib/rate-limit";
@@ -44,6 +45,9 @@ export async function postMediaUpload(
   } catch {
     return fail({ code: "UNAUTHENTICATED", message: "Authentication required" }, 401);
   }
+
+  const csrfResponse = verifyCsrf(request);
+  if (csrfResponse) return csrfResponse;
 
   const rateLimitResponse = await deps.checkRateLimitForIdentifier(
     deps.mediaRateLimiter,

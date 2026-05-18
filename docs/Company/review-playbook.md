@@ -1,5 +1,7 @@
 # IELTS++ Review Playbook
 
+<!-- Last Updated: 2026-05-19 — Added Review Retrospective section for feedback loop and system improvement. -->
+
 Use this playbook with every company role profile in this directory. It keeps reviews consistent, evidence-based, and useful for implementation.
 
 ## Review Principles
@@ -184,3 +186,42 @@ A review is complete when it has:
 - Validation steps.
 - Assumptions clearly separated from evidence.
 - Open questions only where the answer changes priority or implementation.
+
+## Review Retrospective
+
+After each review cycle (especially launch gates), track review quality to improve the system:
+
+### Retrospective Questions
+
+1. **Did this review catch a real issue?** — If yes, was it Critical, High, Medium, or Low? If no, was the review empty because the code was clean, or because the review missed something?
+2. **Was the fix validated?** — Did the recommended fix actually resolve the issue? Was the validation step sufficient?
+3. **Did it slow delivery?** — How long did the review take? Was the time spent proportional to the risk?
+4. **Were there false positives?** — Did the review flag issues that turned out to be non-issues? This indicates the role needs tighter constraints.
+5. **Were there false negatives?** — Did an issue slip through that this role should have caught? This indicates the role needs expanded coverage.
+
+### Retrospective Tracking
+
+After each review, append a brief note to a shared log (e.g., `.sisyphus/review-retrospectives.md`):
+
+```md
+## Review Retrospective — [Date]
+
+- **Role**: [e.g., Security Engineer]
+- **Target**: [e.g., src/app/api/attempts]
+- **Findings**: [N Critical, N High, N Medium, N Low]
+- **Real issues caught**: [N] — [brief description]
+- **False positives**: [N] — [brief description]
+- **False negatives**: [N] — [brief description, if discovered post-review]
+- **Review duration**: [approximate time]
+- **Delivery impact**: [blocked for X hours / no delay / delayed by Y]
+- **Role file update needed**: [yes/no — what should change in the role definition]
+```
+
+### System Improvement
+
+Use retrospective data to:
+
+- **Tighten role constraints** if false positives are frequent (the role is too aggressive).
+- **Expand role coverage** if false negatives occur (the role missed something it should have caught).
+- **Merge or split roles** if retrospective patterns show consistent overlap or gaps.
+- **Adjust review cadence** if reviews consistently slow delivery without catching issues.

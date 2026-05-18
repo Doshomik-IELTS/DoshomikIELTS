@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { fail, ok } from "@/lib/api/response";
 import { requireCurrentUser } from "@/lib/auth/session";
+import { verifyCsrf } from "@/lib/security/csrf";
 import { prisma } from "@/lib/prisma";
 import { creditBothParties, validateReferralCode } from "@/lib/referral/service";
 import { checkRateLimitForIdentifier, referralRateLimiter } from "@/lib/rate-limit";
@@ -10,6 +11,9 @@ const applySchema = z.object({
 });
 
 export async function POST(request: Request) {
+  const csrfResponse = verifyCsrf(request);
+  if (csrfResponse) return csrfResponse;
+
   const current = await requireCurrentUser();
 
   const rateLimitResponse = await checkRateLimitForIdentifier(referralRateLimiter, current.profile.id);

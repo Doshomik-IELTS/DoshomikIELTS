@@ -7,6 +7,8 @@ import { queueNames } from "@/lib/queue/names";
 
 const connection = createRedisConnection();
 
+const WORKER_ATTEMPTS = Number(process.env.WORKER_MAX_ATTEMPTS || 3);
+
 const workers = Object.values(queueNames).map((queueName) => {
   const worker = new Worker(
       queueName,
@@ -24,7 +26,10 @@ const workers = Object.values(queueNames).map((queueName) => {
         }
         return { ok: true, queueName, jobId: job.id };
       },
-      { connection, concurrency: Number(process.env.WORKER_CONCURRENCY || 2) },
+      {
+        connection,
+        concurrency: Number(process.env.WORKER_CONCURRENCY || 2),
+      },
     );
 
   worker.on("completed", (job) => {
@@ -32,13 +37,22 @@ const workers = Object.values(queueNames).map((queueName) => {
   });
 
   worker.on("failed", (job, error) => {
-    logger.error("worker failed job", {
+    const attemptsMade = job?.attemptsMade ?? 0;
+    logger.error("worker job failed", {
       queueName,
       jobId: job?.id,
       jobName: job?.name,
-      attemptsMade: job?.attemptsMade,
+      attemptsMade,
       error: error.message,
     });
+
+    if (attemptsMade >= WORKER_ATTEMPTS) {
+      logger.error("job moved to dead-letter queue", {
+        queueName,
+        jobId: job?.id,
+        attemptsMade,
+      });
+    }
   });
 
   worker.on("error", (error) => {

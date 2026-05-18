@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { requireCurrentUser } from "@/lib/auth/session";
 import { ok, fail } from "@/lib/api/response";
+import { verifyCsrf } from "@/lib/security/csrf";
 import {
   buildAnswerJson,
   buildSectionResponseJson,
@@ -37,6 +38,9 @@ export async function postSubmitSection(
   } catch {
     return fail({ code: "UNAUTHENTICATED", message: "Authentication required" }, 401);
   }
+
+  const csrfResponse = verifyCsrf(request);
+  if (csrfResponse) return csrfResponse;
 
   const { attemptId } = await params;
 
@@ -121,7 +125,7 @@ export async function postSubmitSection(
 
     if (maxRawScore > 0) {
       const percentage = (rawScore / maxRawScore) * 100;
-      estimatedBand = calculateBandFromPercentage(percentage, section.module);
+      estimatedBand = await calculateBandFromScoreMapping(section.module, rawScore, maxRawScore, percentage);
     }
 
     await deps.prisma.moduleScore.upsert({
@@ -209,14 +213,19 @@ export async function postSubmitSection(
     }
   }
 
-  for (const answer of sectionAnswers) {
-    await deps.prisma.attemptAnswer.update({
-      where: { id: answer.id },
-      data: {
-        answerJson: buildAnswerJson(answer.answerJson, { isDraft: false }),
-        submittedAt,
-      },
-    });
+  // Batch update all answers in a single transaction to avoid N+1 queries
+  if (sectionAnswers.length > 0) {
+    await deps.prisma.$transaction(
+      sectionAnswers.map((answer) =>
+        deps.prisma.attemptAnswer.update({
+          where: { id: answer.id },
+          data: {
+            answerJson: buildAnswerJson(answer.answerJson, { isDraft: false }),
+            submittedAt,
+          },
+        }),
+      ),
+    );
   }
 
   if (sectionResponseKey) {
@@ -289,6 +298,31 @@ export async function postSubmitSection(
 
 export async function POST(request: Request, context: { params: Promise<{ attemptId: string }> }) {
   return postSubmitSection(request, context);
+}
+
+async function calculateBandFromScoreMapping(
+  module: string,
+  rawScore: number,
+  maxRawScore: number,
+  fallbackPercentage: number,
+): Promise<number> {
+  const mapping = await prisma.scoreMapping.findFirst({
+    where: {
+      module: module === "reading" ? "reading_academic" : module,
+      isDefault: true,
+    },
+  });
+
+  if (mapping?.rawToBandJson) {
+    const bands = mapping.rawToBandJson as Array<{ minRaw: number; maxRaw: number; band: number }>;
+    for (const entry of bands) {
+      if (rawScore >= entry.minRaw && rawScore <= entry.maxRaw) {
+        return entry.band;
+      }
+    }
+  }
+
+  return calculateBandFromPercentage(fallbackPercentage, module);
 }
 
 function calculateBandFromPercentage(percentage: number, module: string): number {

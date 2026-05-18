@@ -102,7 +102,7 @@ services:
       redis:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "node -e \"require('fs').accessSync('/app/node_modules/bullmq')\""]
+      test: ["CMD-SHELL", "node -e \"const h=require('http');h.get('http://127.0.0.1:3000/api/health',r=>{let d='';r.on('data',c=>d+=c);r.on('end',()=>{const j=JSON.parse(d);process.exit(j.dependencies.worker?.status==='ok'?0:1)})}).on('error',()=>process.exit(1))\""]
       interval: 30s
       timeout: 5s
       retries: 3

@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { requireCurrentUser } from "@/lib/auth/session";
 import { ok, fail } from "@/lib/api/response";
+import { verifyCsrf } from "@/lib/security/csrf";
 import { enqueueLlmJob } from "@/lib/queue/enqueue";
 import { checkRateLimitForIdentifier, evaluationRateLimiter } from "@/lib/rate-limit";
 import {
@@ -38,6 +39,9 @@ export async function postWritingEvaluation(
   } catch {
     return fail({ code: "UNAUTHENTICATED", message: "Authentication required" }, 401);
   }
+
+  const csrfResponse = verifyCsrf(request);
+  if (csrfResponse) return csrfResponse;
 
   const rateLimitResponse = await deps.checkRateLimitForIdentifier(
     deps.evaluationRateLimiter,

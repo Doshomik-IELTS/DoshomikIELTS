@@ -3,8 +3,12 @@ import { logRouteError } from "@/lib/api/logging";
 import { requireCurrentUser } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
 import { profileUpdateSchema } from "@/lib/validators/profile";
+import { verifyCsrf } from "@/lib/security/csrf";
 
 export async function PATCH(request: Request) {
+  const csrfResponse = verifyCsrf(request);
+  if (csrfResponse) return csrfResponse;
+
   try {
     const { profile } = await requireCurrentUser();
     const json = await request.json();
