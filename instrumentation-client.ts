@@ -4,7 +4,7 @@ import posthog from "posthog-js";
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN ?? "___PUBLIC_DSN___",
 
-  sendDefaultPii: true,
+  sendDefaultPii: false,
 
   tracesSampleRate: process.env.NODE_ENV === "development" ? 1.0 : 0.1,
 
@@ -15,8 +15,8 @@ Sentry.init({
 
   integrations: [
     Sentry.replayIntegration({
-      maskAllText: false,
-      blockAllMedia: false,
+      maskAllText: true,
+      blockAllMedia: true,
     }),
   ],
 

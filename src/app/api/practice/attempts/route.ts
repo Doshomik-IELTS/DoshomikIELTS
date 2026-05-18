@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { requireCurrentUser } from "@/lib/auth/session";
 import { ok, fail } from "@/lib/api/response";
+import { paginationSchema, parseQuery } from "@/lib/api/validation";
 
 export async function GET(request: Request) {
   let actor;
@@ -10,9 +11,9 @@ export async function GET(request: Request) {
     return fail({ code: "UNAUTHENTICATED", message: "Authentication required" }, 401);
   }
 
-  const { searchParams } = new URL(request.url);
-  const page = parseInt(searchParams.get("page") || "1");
-  const limit = parseInt(searchParams.get("limit") || "20");
+  const parsedQuery = parseQuery(request, paginationSchema);
+  if (parsedQuery.response) return parsedQuery.response;
+  const { page, limit } = parsedQuery.data;
 
   const skip = (page - 1) * limit;
 

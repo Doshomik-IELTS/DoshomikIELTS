@@ -2,10 +2,16 @@ import { createDevSessionToken, getDevAuthCookieName } from "@/lib/auth/dev-sess
 import { prisma } from "@/lib/prisma";
 import { fail, ok } from "@/lib/api/response";
 import { authRateLimiter, withRateLimit, getClientIp } from "@/lib/rate-limit";
+import { z } from "zod";
 
 const isDevMode = process.env.NODE_ENV !== "production";
 
 const checkRateLimit = withRateLimit(authRateLimiter, getClientIp);
+const registerSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(1),
+  name: z.string().trim().min(1).max(120),
+});
 
 export async function POST(request: Request) {
   if (!isDevMode) {
@@ -17,14 +23,12 @@ export async function POST(request: Request) {
     return rateLimitResponse;
   }
 
-  const body = (await request.json().catch(() => null)) as { email?: string; password?: string; name?: string } | null;
-  const email = body?.email ?? "";
-  const password = body?.password ?? "";
-  const name = body?.name ?? "";
-
-  if (!email || !password || !name) {
-    return fail({ code: "VALIDATION_ERROR", message: "Email, password, and name are required." }, 400);
+  const body = await request.json().catch(() => null);
+  const parsedBody = registerSchema.safeParse(body);
+  if (!parsedBody.success) {
+    return fail({ code: "VALIDATION_ERROR", message: "Invalid registration data." }, 400);
   }
+  const { email, name } = parsedBody.data;
 
   const existingProfile = await prisma.profile.findUnique({ where: { email } });
   if (existingProfile) {

@@ -1,12 +1,10 @@
 import { prisma } from "@/lib/prisma";
 import { requireCurrentUser } from "@/lib/auth/session";
 import { ok, fail } from "@/lib/api/response";
-import { predictionRateLimiter, withRateLimit } from "@/lib/rate-limit";
+import { checkRateLimitForIdentifier, predictionRateLimiter } from "@/lib/rate-limit";
+import type { IeltsModule } from "@prisma/client";
 
-const checkRateLimit = withRateLimit(predictionRateLimiter, (req: Request) => {
-  const userId = req.headers.get("x-user-id") ?? "unknown";
-  return userId;
-});
+const REQUIRED_MODULES: IeltsModule[] = ["listening", "reading", "writing", "speaking"];
 
 export async function POST(request: Request, { params }: { params: Promise<{ attemptId: string }> }) {
   let actor;
@@ -16,7 +14,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ att
     return fail({ code: "UNAUTHENTICATED", message: "Authentication required" }, 401);
   }
 
-  const rateLimitResponse = await checkRateLimit(request);
+  const rateLimitResponse = await checkRateLimitForIdentifier(predictionRateLimiter, actor.profile.id);
   if (rateLimitResponse) {
     return rateLimitResponse;
   }
@@ -40,9 +38,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ att
   }
 
   const modules = new Set(attempt.test.sections.map((s) => s.module));
-  const allModulesComplete = ["listening", "reading", "writing", "speaking"].every(
-    (m) => modules.has(m as never)
-  );
+  const allModulesComplete = REQUIRED_MODULES.every((module) => modules.has(module));
 
   if (!allModulesComplete) {
     return fail({

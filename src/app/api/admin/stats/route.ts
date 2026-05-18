@@ -1,19 +1,11 @@
 import { fail, ok } from "@/lib/api/response";
-import { requireAdminActor } from "@/lib/auth/admin-api";
+import { requireAdminActorOrResponse } from "@/lib/auth/admin-api";
+import { logRouteError } from "@/lib/api/logging";
 import { prisma } from "@/lib/prisma";
 
-export async function GET() {
-  try {
-    await requireAdminActor();
-  } catch (error) {
-    if (error instanceof Error && error.message === "UNAUTHENTICATED") {
-      return fail({ code: "UNAUTHENTICATED", message: "You must be logged in." }, 401);
-    }
-    if (error instanceof Error && error.message === "FORBIDDEN") {
-      return fail({ code: "FORBIDDEN", message: "Admin access required." }, 403);
-    }
-    throw error;
-  }
+export async function GET(request: Request) {
+  const adminAuth = await requireAdminActorOrResponse();
+  if (adminAuth.response) return adminAuth.response;
 
   try {
     const rows = await prisma.resource.groupBy({
@@ -33,7 +25,8 @@ export async function GET() {
         archived: resourcesByStatus.archived ?? 0,
       },
     });
-  } catch {
+  } catch (error) {
+    logRouteError("/api/admin/stats", error, { method: request.method });
     return fail({ code: "INTERNAL_ERROR", message: "Could not load stats." }, 500);
   }
 }

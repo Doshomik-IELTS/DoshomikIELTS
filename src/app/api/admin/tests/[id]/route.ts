@@ -2,6 +2,15 @@ import { prisma } from "@/lib/prisma";
 import { requireAdminActor } from "@/lib/auth/admin-api";
 import { ok, fail } from "@/lib/api/response";
 import { logAuditEvent } from "@/lib/audit";
+import { z } from "zod";
+
+const updateTestSchema = z.object({
+  title: z.string().trim().min(1).max(200).optional(),
+  description: z.string().max(4000).nullable().optional(),
+  type: z.enum(["practice", "short_mock", "full_mock"]).optional(),
+  status: z.enum(["draft", "review", "published", "archived"]).optional(),
+  estimatedDurationMinutes: z.number().int().min(1).max(600).optional(),
+});
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -115,14 +124,15 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     return fail({ code: "VALIDATION_ERROR", message: "Invalid JSON body" }, 400);
   }
 
-  const body = json as {
-    title?: string;
-    description?: string | null;
-    type?: string;
-    status?: string;
-    estimatedDurationMinutes?: number;
-  };
-  const { title, description, type, status, estimatedDurationMinutes } = body;
+  const parsedBody = updateTestSchema.safeParse(json);
+  if (!parsedBody.success) {
+    return fail({
+      code: "VALIDATION_ERROR",
+      message: "Invalid test update data",
+      details: z.treeifyError(parsedBody.error),
+    }, 400);
+  }
+  const { title, description, type, status, estimatedDurationMinutes } = parsedBody.data;
 
   const test = await prisma.test.findUnique({
     where: { id },

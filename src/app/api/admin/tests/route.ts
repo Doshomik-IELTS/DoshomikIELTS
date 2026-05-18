@@ -1,25 +1,58 @@
 import { prisma } from "@/lib/prisma";
-import { requireAdminActor } from "@/lib/auth/admin-api";
+import { requireAdminActorOrResponse } from "@/lib/auth/admin-api";
 import { ok, fail } from "@/lib/api/response";
+import { logRouteError } from "@/lib/api/logging";
+import { paginationSchema, parseQuery } from "@/lib/api/validation";
 import { logAuditEvent } from "@/lib/audit";
 import type { Prisma } from "@prisma/client";
+import { z } from "zod";
 
-export async function GET(request: Request) {
+const testTypeSchema = z.enum(["practice", "short_mock", "full_mock"]);
+const contentStatusSchema = z.enum(["draft", "review", "published", "archived"]);
+
+const querySchema = paginationSchema.extend({
+  status: contentStatusSchema.optional(),
+  type: testTypeSchema.optional(),
+  search: z.string().trim().min(1).max(120).optional(),
+});
+
+const sectionSchema = z.object({
+  title: z.string().trim().min(1).max(200),
+  module: z.enum(["listening", "reading", "writing", "speaking"]),
+  partNumber: z.number().int().min(1).max(4).optional(),
+  instructions: z.string().max(4000).optional(),
+  durationMinutes: z.number().int().min(1).max(240).optional(),
+  contentJson: z.record(z.string(), z.unknown()).optional(),
+});
+
+const createTestSchema = z.object({
+  title: z.string().trim().min(1).max(200),
+  description: z.string().max(4000).nullable().optional(),
+  type: testTypeSchema.optional(),
+  estimatedDurationMinutes: z.number().int().min(1).max(600).optional(),
+  sections: z.array(sectionSchema).max(20).optional(),
+});
+
+const defaultDeps = {
+  requireAdminActorOrResponse,
+  prisma,
+  logAuditEvent,
+  logRouteError,
+};
+
+type AdminTestsDeps = typeof defaultDeps;
+
+export async function getAdminTests(
+  request: Request,
+  deps: AdminTestsDeps = defaultDeps,
+) {
+  const adminAuth = await deps.requireAdminActorOrResponse();
+  if (adminAuth.response) return adminAuth.response;
+
   try {
-    await requireAdminActor();
-  } catch (error) {
-    if (error instanceof Error && error.message === "UNAUTHENTICATED") {
-      return fail({ code: "UNAUTHENTICATED", message: "Authentication required" }, 401);
-    }
-    return fail({ code: "FORBIDDEN", message: "Admin access required" }, 403);
-  }
-
-  const { searchParams } = new URL(request.url);
-  const status = searchParams.get("status");
-  const type = searchParams.get("type");
-  const search = searchParams.get("search");
-  const page = parseInt(searchParams.get("page") || "1");
-  const limit = parseInt(searchParams.get("limit") || "20");
+  const parsedQuery = parseQuery(request, querySchema);
+  if (parsedQuery.response) return parsedQuery.response;
+  const { status, type, search, page, limit } = parsedQuery.data;
 
   const where: Record<string, unknown> = {};
 
@@ -86,28 +119,21 @@ export async function GET(request: Request) {
       totalPages: Math.ceil(total / limit),
     },
   });
+  } catch (error) {
+    deps.logRouteError("/api/admin/tests", error, { method: "GET", actorId: adminAuth.actor.profile.id });
+    return fail({ code: "INTERNAL_ERROR", message: "Unexpected internal error" }, 500);
+  }
 }
 
-type SectionInput = {
-  title: string;
-  module: "listening" | "reading" | "writing" | "speaking";
-  partNumber?: number;
-  instructions?: string;
-  durationMinutes?: number;
-  contentJson?: Record<string, unknown>;
-};
+export async function postAdminTest(
+  request: Request,
+  deps: AdminTestsDeps = defaultDeps,
+) {
+  const adminAuth = await deps.requireAdminActorOrResponse();
+  if (adminAuth.response) return adminAuth.response;
+  const actor = adminAuth.actor;
 
-export async function POST(request: Request) {
-  let actor;
   try {
-    actor = await requireAdminActor();
-  } catch (error) {
-    if (error instanceof Error && error.message === "UNAUTHENTICATED") {
-      return fail({ code: "UNAUTHENTICATED", message: "Authentication required" }, 401);
-    }
-    return fail({ code: "FORBIDDEN", message: "Admin access required" }, 403);
-  }
-
   let json: unknown;
   try {
     json = await request.json();
@@ -115,24 +141,21 @@ export async function POST(request: Request) {
     return fail({ code: "VALIDATION_ERROR", message: "Invalid JSON body" }, 400);
   }
 
-  const body = json as {
-    title?: string;
-    description?: string | null;
-    type?: string;
-    estimatedDurationMinutes?: number;
-    sections?: SectionInput[];
-  };
-  const { title, description, type, estimatedDurationMinutes, sections } = body;
-
-  if (!title) {
-    return fail({ code: "VALIDATION_ERROR", message: "Title is required" }, 400);
+  const parsedBody = createTestSchema.safeParse(json);
+  if (!parsedBody.success) {
+    return fail({
+      code: "VALIDATION_ERROR",
+      message: "Invalid test data",
+      details: z.treeifyError(parsedBody.error),
+    }, 400);
   }
+  const { title, description, type, estimatedDurationMinutes, sections } = parsedBody.data;
 
-  const test = await prisma.test.create({
+  const test = await deps.prisma.test.create({
     data: {
       title,
       description: description || null,
-      type: (type as "practice" | "short_mock" | "full_mock") || "short_mock",
+      type: type || "short_mock",
       estimatedDurationMinutes: estimatedDurationMinutes || null,
       status: "draft",
       ...(sections?.length
@@ -153,7 +176,7 @@ export async function POST(request: Request) {
     },
   });
 
-  await logAuditEvent({
+  await deps.logAuditEvent({
     action: "test.create",
     entityType: "Test",
     entityId: test.id,
@@ -169,4 +192,16 @@ export async function POST(request: Request) {
     status: test.status,
     createdAt: test.createdAt,
   }, { status: 201 });
+  } catch (error) {
+    deps.logRouteError("/api/admin/tests", error, { method: "POST", actorId: actor.profile.id });
+    return fail({ code: "INTERNAL_ERROR", message: "Unexpected internal error" }, 500);
+  }
+}
+
+export async function GET(request: Request) {
+  return getAdminTests(request);
+}
+
+export async function POST(request: Request) {
+  return postAdminTest(request);
 }

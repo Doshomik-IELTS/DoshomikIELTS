@@ -2,22 +2,41 @@ import { prisma } from "@/lib/prisma";
 import { requireCurrentUser } from "@/lib/auth/session";
 import { ok, fail } from "@/lib/api/response";
 import { enqueueLlmJob } from "@/lib/queue/enqueue";
-import { evaluationRateLimiter, withRateLimit } from "@/lib/rate-limit";
+import { checkRateLimitForIdentifier, evaluationRateLimiter } from "@/lib/rate-limit";
+import { z } from "zod";
 
-const checkRateLimit = withRateLimit(evaluationRateLimiter, (req: Request) => {
-  const userId = req.headers.get("x-user-id") ?? "unknown";
-  return userId;
+const writingEvaluationSchema = z.object({
+  attemptId: z.string().trim().min(1).max(128),
+  sectionId: z.string().trim().min(1).max(128),
+  taskType: z.enum(["task_1", "task_2"]),
+  responseText: z.string().trim().min(1).max(20_000),
 });
 
-export async function POST(request: Request) {
+const defaultDeps = {
+  requireCurrentUser,
+  checkRateLimitForIdentifier,
+  evaluationRateLimiter,
+  prisma,
+  enqueueLlmJob,
+};
+
+type WritingEvaluationDeps = typeof defaultDeps;
+
+export async function postWritingEvaluation(
+  request: Request,
+  deps: WritingEvaluationDeps = defaultDeps,
+) {
   let actor;
   try {
-    actor = await requireCurrentUser();
+    actor = await deps.requireCurrentUser();
   } catch {
     return fail({ code: "UNAUTHENTICATED", message: "Authentication required" }, 401);
   }
 
-  const rateLimitResponse = await checkRateLimit(request);
+  const rateLimitResponse = await deps.checkRateLimitForIdentifier(
+    deps.evaluationRateLimiter,
+    actor.profile.id,
+  );
   if (rateLimitResponse) {
     return rateLimitResponse;
   }
@@ -29,23 +48,17 @@ export async function POST(request: Request) {
     return fail({ code: "VALIDATION_ERROR", message: "Invalid JSON body" }, 400);
   }
 
-  const body = json as {
-    attemptId?: string;
-    sectionId?: string;
-    taskType?: string;
-    responseText?: string;
-  };
-  const { attemptId, sectionId, taskType, responseText } = body;
-
-  if (!attemptId || !sectionId || !taskType || !responseText) {
-    return fail({ code: "VALIDATION_ERROR", message: "Missing required fields" }, 400);
+  const parsedBody = writingEvaluationSchema.safeParse(json);
+  if (!parsedBody.success) {
+    return fail({
+      code: "VALIDATION_ERROR",
+      message: "Invalid writing evaluation data",
+      details: z.treeifyError(parsedBody.error),
+    }, 400);
   }
+  const { attemptId, sectionId, taskType, responseText } = parsedBody.data;
 
-  if (taskType !== "task_1" && taskType !== "task_2") {
-    return fail({ code: "VALIDATION_ERROR", message: "Invalid task type" }, 400);
-  }
-
-  const attempt = await prisma.mockTestAttempt.findUnique({
+  const attempt = await deps.prisma.mockTestAttempt.findUnique({
     where: { id: attemptId },
   });
 
@@ -55,13 +68,13 @@ export async function POST(request: Request) {
 
   const wordCount = responseText.split(/\s+/).filter(Boolean).length;
 
-  const { evaluation, job } = await prisma.$transaction(async (tx) => {
+  const { evaluation, job } = await deps.prisma.$transaction(async (tx) => {
     const evaluation = await tx.writingEvaluation.create({
       data: {
         profileId: actor.profile.id,
         attemptId,
         sectionId,
-        taskType: taskType as "task_1" | "task_2",
+        taskType,
         responseText,
         wordCount,
         status: "queued",
@@ -89,11 +102,15 @@ export async function POST(request: Request) {
     return { evaluation: linkedEvaluation, job };
   });
 
-  await enqueueLlmJob(job.type, job.id);
+  await deps.enqueueLlmJob(job.type, job.id);
 
   return ok({
     id: evaluation.id,
     status: evaluation.status,
     createdAt: evaluation.createdAt,
   }, { status: 201 });
+}
+
+export async function POST(request: Request) {
+  return postWritingEvaluation(request);
 }

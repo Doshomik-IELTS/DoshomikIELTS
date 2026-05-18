@@ -2,22 +2,44 @@ import { prisma } from "@/lib/prisma";
 import { requireCurrentUser } from "@/lib/auth/session";
 import { ok, fail } from "@/lib/api/response";
 import { enqueueLlmJob } from "@/lib/queue/enqueue";
-import { evaluationRateLimiter, withRateLimit } from "@/lib/rate-limit";
+import { checkRateLimitForIdentifier, evaluationRateLimiter } from "@/lib/rate-limit";
+import { z } from "zod";
 
-const checkRateLimit = withRateLimit(evaluationRateLimiter, (req: Request) => {
-  const userId = req.headers.get("x-user-id") ?? "unknown";
-  return userId;
+const speakingEvaluationSchema = z.object({
+  attemptId: z.string().trim().min(1).max(128),
+  sectionId: z.string().trim().min(1).max(128),
+  part: z.enum(["part_1", "part_2", "part_3"]),
+  responseText: z.string().trim().min(1).max(20_000).optional(),
+  mediaAssetId: z.string().trim().min(1).max(128).optional(),
+}).refine((value) => value.responseText || value.mediaAssetId, {
+  message: "responseText or mediaAssetId is required",
 });
 
-export async function POST(request: Request) {
+const defaultDeps = {
+  requireCurrentUser,
+  checkRateLimitForIdentifier,
+  evaluationRateLimiter,
+  prisma,
+  enqueueLlmJob,
+};
+
+type SpeakingEvaluationDeps = typeof defaultDeps;
+
+export async function postSpeakingEvaluation(
+  request: Request,
+  deps: SpeakingEvaluationDeps = defaultDeps,
+) {
   let actor;
   try {
-    actor = await requireCurrentUser();
+    actor = await deps.requireCurrentUser();
   } catch {
     return fail({ code: "UNAUTHENTICATED", message: "Authentication required" }, 401);
   }
 
-  const rateLimitResponse = await checkRateLimit(request);
+  const rateLimitResponse = await deps.checkRateLimitForIdentifier(
+    deps.evaluationRateLimiter,
+    actor.profile.id,
+  );
   if (rateLimitResponse) {
     return rateLimitResponse;
   }
@@ -29,24 +51,17 @@ export async function POST(request: Request) {
     return fail({ code: "VALIDATION_ERROR", message: "Invalid JSON body" }, 400);
   }
 
-  const body = json as {
-    attemptId?: string;
-    sectionId?: string;
-    part?: string;
-    responseText?: string;
-    mediaAssetId?: string;
-  };
-  const { attemptId, sectionId, part, responseText, mediaAssetId } = body;
-
-  if (!attemptId || !sectionId || !part) {
-    return fail({ code: "VALIDATION_ERROR", message: "Missing required fields" }, 400);
+  const parsedBody = speakingEvaluationSchema.safeParse(json);
+  if (!parsedBody.success) {
+    return fail({
+      code: "VALIDATION_ERROR",
+      message: "Invalid speaking evaluation data",
+      details: z.treeifyError(parsedBody.error),
+    }, 400);
   }
+  const { attemptId, sectionId, part, responseText, mediaAssetId } = parsedBody.data;
 
-  if (part !== "part_1" && part !== "part_2" && part !== "part_3") {
-    return fail({ code: "VALIDATION_ERROR", message: "Invalid part" }, 400);
-  }
-
-  const attempt = await prisma.mockTestAttempt.findUnique({
+  const attempt = await deps.prisma.mockTestAttempt.findUnique({
     where: { id: attemptId },
   });
 
@@ -54,22 +69,18 @@ export async function POST(request: Request) {
     return fail({ code: "NOT_FOUND", message: "Attempt not found" }, 404);
   }
 
-  const { evaluation, job } = await prisma.$transaction(async (tx) => {
+  const { evaluation, job } = await deps.prisma.$transaction(async (tx) => {
     const evaluation = await tx.speakingEvaluation.create({
       data: {
         profileId: actor.profile.id,
         attemptId,
         sectionId,
-        part: part as "part_1" | "part_2" | "part_3",
+        part,
         responseText: responseText || null,
         mediaAssetId: mediaAssetId || null,
         status: "queued",
       },
     });
-
-    if (!mediaAssetId && !responseText) {
-      return { evaluation, job: null };
-    }
 
     const job = await tx.llmJob.create({
       data: {
@@ -93,7 +104,7 @@ export async function POST(request: Request) {
   });
 
   if (job) {
-    await enqueueLlmJob(job.type, job.id);
+    await deps.enqueueLlmJob(job.type, job.id);
   }
 
   return ok({
@@ -101,4 +112,8 @@ export async function POST(request: Request) {
     status: evaluation.status,
     createdAt: evaluation.createdAt,
   }, { status: 201 });
+}
+
+export async function POST(request: Request) {
+  return postSpeakingEvaluation(request);
 }

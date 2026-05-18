@@ -1,6 +1,13 @@
 import { requireCurrentUser } from "@/lib/auth/session";
 import { ok, fail } from "@/lib/api/response";
 import { prisma } from "@/lib/prisma";
+import { z } from "zod";
+
+const progressPatchSchema = z.object({
+  status: z.enum(["not_started", "in_progress", "completed", "skipped"]).optional(),
+  progress: z.number().int().min(0).max(100).optional(),
+  timeSpent: z.number().int().min(0).max(24 * 60 * 60).optional(),
+});
 
 export async function GET(request: Request, { params }: { params: Promise<{ resourceId: string }> }) {
   let actor;
@@ -48,16 +55,16 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ re
   }
 
   const { resourceId } = await params;
-  const body = await request.json();
-  const { status, progress, timeSpent } = body;
-
-  if (status && !["not_started", "in_progress", "completed", "skipped"].includes(status)) {
-    return fail({ code: "VALIDATION_ERROR", message: "Invalid status" }, 400);
+  const body = await request.json().catch(() => null);
+  const parsedBody = progressPatchSchema.safeParse(body);
+  if (!parsedBody.success) {
+    return fail({
+      code: "VALIDATION_ERROR",
+      message: "Invalid progress data",
+      details: z.treeifyError(parsedBody.error),
+    }, 400);
   }
-
-  if (progress !== undefined && (progress < 0 || progress > 100)) {
-    return fail({ code: "VALIDATION_ERROR", message: "Progress must be 0-100" }, 400);
-  }
+  const { status, progress, timeSpent } = parsedBody.data;
 
   const resource = await prisma.resource.findUnique({
     where: { id: resourceId },

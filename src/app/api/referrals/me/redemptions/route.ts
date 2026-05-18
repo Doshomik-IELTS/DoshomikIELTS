@@ -1,4 +1,5 @@
 import { fail, ok } from "@/lib/api/response";
+import { paginationSchema, parseQuery } from "@/lib/api/validation";
 import { requireCurrentUser } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
 import { getReferralCodeForProfile } from "@/lib/referral/service";
@@ -11,9 +12,9 @@ export async function GET(request: Request) {
     return fail({ code: "NOT_FOUND", message: "No referral code found." }, 404);
   }
 
-  const { searchParams } = new URL(request.url);
-  const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10));
-  const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") ?? "20", 10)));
+  const parsedQuery = parseQuery(request, paginationSchema);
+  if (parsedQuery.response) return parsedQuery.response;
+  const { page, limit } = parsedQuery.data;
   const skip = (page - 1) * limit;
 
   const [total, redemptions] = await Promise.all([

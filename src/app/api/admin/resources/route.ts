@@ -1,5 +1,9 @@
 import { fail, ok } from "@/lib/api/response";
-import { assertCanSetResourceStatus, requireAdminActor } from "@/lib/auth/admin-api";
+import {
+  assertCanSetResourceStatus,
+  requireAdminActorOrResponse,
+} from "@/lib/auth/admin-api";
+import { logRouteError } from "@/lib/api/logging";
 import { prisma } from "@/lib/prisma";
 import { ensureUniqueResourceSlug, slugifyTitle } from "@/lib/slug";
 import { logAuditEvent } from "@/lib/audit";
@@ -8,24 +12,9 @@ import {
   adminResourceListQuerySchema,
 } from "@/lib/validators/admin-resource";
 
-function adminErrorResponse(error: unknown) {
-  if (error instanceof Error && error.message === "UNAUTHENTICATED") {
-    return fail({ code: "UNAUTHENTICATED", message: "You must be logged in." }, 401);
-  }
-  if (error instanceof Error && error.message === "FORBIDDEN") {
-    return fail({ code: "FORBIDDEN", message: "Admin access required." }, 403);
-  }
-  return null;
-}
-
 export async function GET(request: Request) {
-  try {
-    await requireAdminActor();
-  } catch (error) {
-    const r = adminErrorResponse(error);
-    if (r) return r;
-    throw error;
-  }
+  const adminAuth = await requireAdminActorOrResponse();
+  if (adminAuth.response) return adminAuth.response;
 
   const { searchParams } = new URL(request.url);
   const raw = Object.fromEntries(searchParams.entries());
@@ -86,14 +75,9 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  let actor;
-  try {
-    actor = await requireAdminActor();
-  } catch (error) {
-    const r = adminErrorResponse(error);
-    if (r) return r;
-    throw error;
-  }
+  const adminAuth = await requireAdminActorOrResponse();
+  if (adminAuth.response) return adminAuth.response;
+  const actor = adminAuth.actor;
 
   let json: unknown;
   try {
@@ -172,7 +156,8 @@ export async function POST(request: Request) {
     });
 
     return ok({ resource: created }, { status: 201 });
-  } catch {
+  } catch (error) {
+    logRouteError("/api/admin/resources", error, { method: "POST", actorId: actor.profile.id });
     return fail({ code: "INTERNAL_ERROR", message: "Could not create resource." }, 500);
   }
 }

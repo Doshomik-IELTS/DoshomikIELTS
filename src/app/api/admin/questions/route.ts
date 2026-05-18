@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { requireAdminActor } from "@/lib/auth/admin-api";
+import { requireAdminActorOrResponse } from "@/lib/auth/admin-api";
 import { ok, fail } from "@/lib/api/response";
 import { z } from "zod";
 import type { Prisma } from "@prisma/client";
@@ -52,14 +52,8 @@ const updateQuestionSchema = createQuestionSchema.partial().omit({ sectionId: tr
 void updateQuestionSchema;
 
 export async function GET(request: Request) {
-  try {
-    await requireAdminActor();
-  } catch (error) {
-    if (error instanceof Error && error.message === "UNAUTHENTICATED") {
-      return fail({ code: "UNAUTHENTICATED", message: "Authentication required" }, 401);
-    }
-    return fail({ code: "FORBIDDEN", message: "Admin access required" }, 403);
-  }
+  const adminAuth = await requireAdminActorOrResponse();
+  if (adminAuth.response) return adminAuth.response;
 
   const { searchParams } = new URL(request.url);
   const sectionId = searchParams.get("sectionId");
@@ -96,15 +90,9 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  let actor;
-  try {
-    actor = await requireAdminActor();
-  } catch (error) {
-    if (error instanceof Error && error.message === "UNAUTHENTICATED") {
-      return fail({ code: "UNAUTHENTICATED", message: "Authentication required" }, 401);
-    }
-    return fail({ code: "FORBIDDEN", message: "Admin access required" }, 403);
-  }
+  const adminAuth = await requireAdminActorOrResponse();
+  if (adminAuth.response) return adminAuth.response;
+  const actor = adminAuth.actor;
 
   const body = await request.json().catch(() => null);
   const parsed = createQuestionSchema.safeParse(body);

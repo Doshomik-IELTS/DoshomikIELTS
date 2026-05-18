@@ -1,17 +1,17 @@
 import "dotenv/config";
 import { Worker } from "bullmq";
 import { processLlmJob } from "@/lib/evaluation/processors";
+import { logger } from "@/lib/observability/logger";
 import { createRedisConnection } from "@/lib/queue/connection";
 import { queueNames } from "@/lib/queue/names";
 
 const connection = createRedisConnection();
 
-const workers = Object.values(queueNames).map(
-  (queueName) =>
-    new Worker(
+const workers = Object.values(queueNames).map((queueName) => {
+  const worker = new Worker(
       queueName,
       async (job) => {
-        console.log(`[worker:${queueName}] received job`, job.id, job.name);
+        logger.info("worker received job", { queueName, jobId: job.id, jobName: job.name });
         if (
           queueName === queueNames.writingEvaluation ||
           queueName === queueNames.speakingEvaluation
@@ -24,9 +24,33 @@ const workers = Object.values(queueNames).map(
         }
         return { ok: true, queueName, jobId: job.id };
       },
-      { connection },
-    ),
-);
+      { connection, concurrency: Number(process.env.WORKER_CONCURRENCY || 2) },
+    );
+
+  worker.on("completed", (job) => {
+    logger.info("worker completed job", { queueName, jobId: job.id, jobName: job.name });
+  });
+
+  worker.on("failed", (job, error) => {
+    logger.error("worker failed job", {
+      queueName,
+      jobId: job?.id,
+      jobName: job?.name,
+      attemptsMade: job?.attemptsMade,
+      error: error.message,
+    });
+  });
+
+  worker.on("error", (error) => {
+    logger.error("worker runtime error", { queueName, error: error.message });
+  });
+
+  worker.on("stalled", (jobId) => {
+    logger.warn("worker job stalled", { queueName, jobId });
+  });
+
+  return worker;
+});
 
 process.on("SIGTERM", async () => {
   await Promise.all(workers.map((worker) => worker.close()));
@@ -34,4 +58,4 @@ process.on("SIGTERM", async () => {
   process.exit(0);
 });
 
-console.log(`Started ${workers.length} IELTS++ workers`);
+logger.info("started workers", { count: workers.length });

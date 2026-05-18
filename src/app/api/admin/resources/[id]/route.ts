@@ -1,20 +1,14 @@
 import { fail, ok } from "@/lib/api/response";
-import { assertCanSetResourceStatus, requireAdminActor } from "@/lib/auth/admin-api";
+import {
+  assertCanSetResourceStatus,
+  requireAdminActorOrResponse,
+} from "@/lib/auth/admin-api";
+import { logRouteError } from "@/lib/api/logging";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import { ensureUniqueResourceSlug, slugifyTitle } from "@/lib/slug";
 import { adminResourcePatchSchema } from "@/lib/validators/admin-resource";
 import { logAuditEvent } from "@/lib/audit";
-
-function adminErrorResponse(error: unknown) {
-  if (error instanceof Error && error.message === "UNAUTHENTICATED") {
-    return fail({ code: "UNAUTHENTICATED", message: "You must be logged in." }, 401);
-  }
-  if (error instanceof Error && error.message === "FORBIDDEN") {
-    return fail({ code: "FORBIDDEN", message: "Admin access required." }, 403);
-  }
-  return null;
-}
 
 function resourceSnapshot(resource: {
   id: string;
@@ -47,13 +41,8 @@ function resourceSnapshot(resource: {
 }
 
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
-  try {
-    await requireAdminActor();
-  } catch (error) {
-    const r = adminErrorResponse(error);
-    if (r) return r;
-    throw error;
-  }
+  const adminAuth = await requireAdminActorOrResponse();
+  if (adminAuth.response) return adminAuth.response;
 
   const { id } = await params;
   const resource = await prisma.resource.findUnique({
@@ -82,14 +71,9 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
 }
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  let actor;
-  try {
-    actor = await requireAdminActor();
-  } catch (error) {
-    const r = adminErrorResponse(error);
-    if (r) return r;
-    throw error;
-  }
+  const adminAuth = await requireAdminActorOrResponse();
+  if (adminAuth.response) return adminAuth.response;
+  const actor = adminAuth.actor;
 
   const { id } = await params;
 
@@ -229,7 +213,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     });
 
     return ok({ resource: updated });
-  } catch {
+  } catch (error) {
+    logRouteError("/api/admin/resources/[id]", error, { method: "PATCH", actorId: actor.profile.id });
     return fail({ code: "INTERNAL_ERROR", message: "Could not update resource." }, 500);
   }
 }

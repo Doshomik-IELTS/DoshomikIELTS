@@ -1,16 +1,21 @@
 import { ok } from "@/lib/api/response";
+import { paginationSchema, parseQuery } from "@/lib/api/validation";
 import { requireAdminActor } from "@/lib/auth/admin-api";
 import { prisma } from "@/lib/prisma";
+import { z } from "zod";
+
+const querySchema = paginationSchema.extend({
+  status: z.enum(["active", "suspended", "deactivated"]).optional(),
+  search: z.string().trim().min(1).max(120).optional(),
+});
 
 export async function GET(request: Request) {
   await requireAdminActor();
 
-  const { searchParams } = new URL(request.url);
-  const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10));
-  const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") ?? "20", 10)));
+  const parsedQuery = parseQuery(request, querySchema);
+  if (parsedQuery.response) return parsedQuery.response;
+  const { page, limit, status, search } = parsedQuery.data;
   const skip = (page - 1) * limit;
-  const status = searchParams.get("status");
-  const search = searchParams.get("search");
 
   const where: Record<string, unknown> = {
     ...(status ? { status } : {}),

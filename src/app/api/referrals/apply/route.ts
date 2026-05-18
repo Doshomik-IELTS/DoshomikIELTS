@@ -3,21 +3,16 @@ import { fail, ok } from "@/lib/api/response";
 import { requireCurrentUser } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
 import { creditBothParties, validateReferralCode } from "@/lib/referral/service";
-import { referralRateLimiter, withRateLimit } from "@/lib/rate-limit";
+import { checkRateLimitForIdentifier, referralRateLimiter } from "@/lib/rate-limit";
 
 const applySchema = z.object({
   code: z.string().min(1).max(32),
 });
 
-const checkRateLimit = withRateLimit(referralRateLimiter, (req: Request) => {
-  const userId = req.headers.get("x-user-id") ?? "unknown";
-  return userId;
-});
-
 export async function POST(request: Request) {
   const current = await requireCurrentUser();
 
-  const rateLimitResponse = await checkRateLimit(request);
+  const rateLimitResponse = await checkRateLimitForIdentifier(referralRateLimiter, current.profile.id);
   if (rateLimitResponse) {
     return rateLimitResponse;
   }

@@ -1,6 +1,11 @@
 import { requireCurrentUser } from "@/lib/auth/session";
 import { ok, fail } from "@/lib/api/response";
 import { prisma } from "@/lib/prisma";
+import { z } from "zod";
+
+const bodySchema = z.object({
+  nextSectionId: z.string().trim().min(1).max(128).optional(),
+});
 
 export async function POST(request: Request, { params }: { params: Promise<{ attemptId: string }> }) {
   let actor;
@@ -11,7 +16,12 @@ export async function POST(request: Request, { params }: { params: Promise<{ att
   }
 
   const { attemptId } = await params;
-  const { nextSectionId } = await request.json();
+  const body = await request.json().catch(() => null);
+  const parsedBody = bodySchema.safeParse(body);
+  if (!parsedBody.success) {
+    return fail({ code: "VALIDATION_ERROR", message: "Invalid request body." }, 400);
+  }
+  const { nextSectionId } = parsedBody.data;
 
   const attempt = await prisma.mockTestAttempt.findUnique({
     where: { id: attemptId },

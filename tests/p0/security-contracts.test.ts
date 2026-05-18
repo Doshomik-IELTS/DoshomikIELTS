@@ -9,12 +9,6 @@ function read(relativePath: string) {
   return readFileSync(join(root, relativePath), "utf8");
 }
 
-test("admin tests route requires admin actor", () => {
-  const source = read("src/app/api/admin/tests/route.ts");
-  
-  assert.match(source, /requireAdminActor/);
-});
-
 test("admin resources route requires admin actor", () => {
   const source = read("src/app/api/admin/resources/route.ts");
   
@@ -82,18 +76,6 @@ test("score prediction route enforces ownership", () => {
   assert.match(source, /attempt\.profileId.*actor\.profile\.id/);
 });
 
-test("writing evaluation requires authentication", () => {
-  const source = read("src/app/api/evaluations/writing/route.ts");
-  
-  assert.match(source, /requireCurrentUser/);
-});
-
-test("speaking evaluation requires authentication", () => {
-  const source = read("src/app/api/evaluations/speaking/route.ts");
-  
-  assert.match(source, /requireCurrentUser/);
-});
-
 test("evaluation detail enforces ownership", () => {
   const source = read("src/app/api/evaluations/[id]/route.ts");
   
@@ -124,12 +106,6 @@ test("media download enforces ownership", () => {
   const source = read("src/app/api/media/[assetId]/download-url/route.ts");
   
   assert.match(source, /profileId.*actor\.profile\.id/);
-});
-
-test("media upload requires authentication", () => {
-  const source = read("src/app/api/media/upload-url/route.ts");
-  
-  assert.match(source, /requireCurrentUser/);
 });
 
 test("mock test detail excludes answer keys", () => {

@@ -85,35 +85,41 @@ export function createRateLimiter(options: RateLimitOptions) {
   };
 }
 
+export async function checkRateLimitForIdentifier(
+  rateLimiter: (id: string) => Promise<RateLimitResult>,
+  identifier: string,
+): Promise<Response | null> {
+  try {
+    const result = await rateLimiter(identifier);
+
+    if (!result.allowed) {
+      return fail(
+        {
+          code: "RATE_LIMITED",
+          message: `Too many requests. Please try again in ${result.resetIn} seconds.`,
+          details: { retryAfter: result.retryAfter },
+        },
+        429,
+        {
+          "X-RateLimit-Remaining": String(result.remaining),
+          "X-RateLimit-Reset": String(result.resetIn),
+          "Retry-After": String(result.retryAfter ?? result.resetIn),
+        },
+      );
+    }
+
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 export function withRateLimit(
   rateLimiter: (id: string) => Promise<RateLimitResult>,
   getIdentifier: (request: Request) => string,
 ) {
   return async function checkRateLimit(request: Request): Promise<Response | null> {
-    try {
-      const identifier = getIdentifier(request);
-      const result = await rateLimiter(identifier);
-
-      if (!result.allowed) {
-        return fail(
-          {
-            code: "RATE_LIMITED",
-            message: `Too many requests. Please try again in ${result.resetIn} seconds.`,
-            details: { retryAfter: result.retryAfter },
-          },
-          429,
-          {
-            "X-RateLimit-Remaining": String(result.remaining),
-            "X-RateLimit-Reset": String(result.resetIn),
-            "Retry-After": String(result.retryAfter ?? result.resetIn),
-          },
-        );
-      }
-
-      return null;
-    } catch {
-      return null;
-    }
+    return checkRateLimitForIdentifier(rateLimiter, getIdentifier(request));
   };
 }
 

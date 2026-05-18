@@ -3,18 +3,38 @@ import { requireCurrentUser } from "@/lib/auth/session";
 import { ok, fail } from "@/lib/api/response";
 import { enqueueLlmJob } from "@/lib/queue/enqueue";
 import type { IeltsModule, Prisma } from "@prisma/client";
+import { z } from "zod";
 
-export async function POST(request: Request, { params }: { params: Promise<{ attemptId: string }> }) {
+const REQUIRED_MODULES: IeltsModule[] = ["listening", "reading", "writing", "speaking"];
+
+const submitSectionSchema = z.object({
+  sectionId: z.string().trim().min(1).max(128),
+  responseText: z.string().trim().min(1).max(20_000).optional(),
+});
+
+const defaultDeps = {
+  requireCurrentUser,
+  prisma,
+  enqueueLlmJob,
+};
+
+type SubmitSectionDeps = typeof defaultDeps;
+
+export async function postSubmitSection(
+  request: Request,
+  { params }: { params: Promise<{ attemptId: string }> },
+  deps: SubmitSectionDeps = defaultDeps,
+) {
   let actor;
   try {
-    actor = await requireCurrentUser();
+    actor = await deps.requireCurrentUser();
   } catch {
     return fail({ code: "UNAUTHENTICATED", message: "Authentication required" }, 401);
   }
 
   const { attemptId } = await params;
 
-  const attempt = await prisma.mockTestAttempt.findUnique({
+  const attempt = await deps.prisma.mockTestAttempt.findUnique({
     where: { id: attemptId },
     include: {
       test: {
@@ -43,12 +63,15 @@ export async function POST(request: Request, { params }: { params: Promise<{ att
     return fail({ code: "VALIDATION_ERROR", message: "Invalid JSON body" }, 400);
   }
 
-  const body = json as { sectionId?: string; responseText?: string };
-  const { sectionId, responseText } = body;
-
-  if (!sectionId) {
-    return fail({ code: "VALIDATION_ERROR", message: "Section ID required" }, 400);
+  const parsedBody = submitSectionSchema.safeParse(json);
+  if (!parsedBody.success) {
+    return fail({
+      code: "VALIDATION_ERROR",
+      message: "Invalid section submission data",
+      details: z.treeifyError(parsedBody.error),
+    }, 400);
   }
+  const { sectionId, responseText } = parsedBody.data;
 
   const section = attempt.test.sections.find((s) => s.id === sectionId);
   if (!section) {
@@ -70,7 +93,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ att
     const correctAnswers = sectionAnswers.filter((a) => a.isCorrect === true);
     rawScore = correctAnswers.length;
     
-    const allQuestionsInSection = await prisma.question.count({
+    const allQuestionsInSection = await deps.prisma.question.count({
       where: { sectionId },
     });
     maxRawScore = allQuestionsInSection;
@@ -80,7 +103,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ att
       estimatedBand = calculateBandFromPercentage(percentage, section.module);
     }
 
-    await prisma.moduleScore.upsert({
+    await deps.prisma.moduleScore.upsert({
       where: {
         attemptId_module: {
           attemptId,
@@ -109,7 +132,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ att
     const taskType = inferTaskType(section.title, section.contentJson);
     const wordCount = responseText.split(/\s+/).filter(Boolean).length;
 
-    const { job } = await prisma.$transaction(async (tx) => {
+    const { job } = await deps.prisma.$transaction(async (tx) => {
       const evaluation = await tx.writingEvaluation.create({
         data: {
           profileId: actor.profile.id,
@@ -143,10 +166,10 @@ export async function POST(request: Request, { params }: { params: Promise<{ att
       return { evaluation, job };
     });
 
-    await enqueueLlmJob(job.type, job.id);
+    await deps.enqueueLlmJob(job.type, job.id);
   }
 
-  await prisma.attemptAnswer.updateMany({
+  await deps.prisma.attemptAnswer.updateMany({
     where: { attemptId, sectionId },
     data: { answerJson: { isDraft: false } },
   });
@@ -159,15 +182,14 @@ export async function POST(request: Request, { params }: { params: Promise<{ att
   const allSectionsCompleted = submittedSectionIds.size === totalSections;
 
   if (allSectionsCompleted) {
-    const allModules = ["listening", "reading", "writing", "speaking"];
     const completedModules = new Set(
       attempt.test.sections.map((s) => s.module)
     );
     
-    const hasAllModules = allModules.every((m) => completedModules.has(m as never));
+    const hasAllModules = REQUIRED_MODULES.every((module) => completedModules.has(module));
 
     if (hasAllModules) {
-      await prisma.mockTestAttempt.update({
+      await deps.prisma.mockTestAttempt.update({
         where: { id: attemptId },
         data: {
           status: "evaluating",
@@ -188,6 +210,10 @@ export async function POST(request: Request, { params }: { params: Promise<{ att
     allSectionsCompleted,
     status: allSectionsCompleted ? "evaluating" : "in_progress",
   });
+}
+
+export async function POST(request: Request, context: { params: Promise<{ attemptId: string }> }) {
+  return postSubmitSection(request, context);
 }
 
 function isDraftAnswer(answerJson: Prisma.JsonValue) {

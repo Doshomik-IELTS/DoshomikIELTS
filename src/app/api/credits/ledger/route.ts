@@ -1,16 +1,20 @@
 import { ok } from "@/lib/api/response";
+import { paginationSchema, parseQuery } from "@/lib/api/validation";
 import { requireCurrentUser } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
-import type { CreditTxType } from "@prisma/client";
+import { z } from "zod";
+
+const querySchema = paginationSchema.extend({
+  type: z.enum(["referral_bonus", "redemption", "admin_grant", "admin_revoke", "refund", "promo"]).optional(),
+});
 
 export async function GET(request: Request) {
   const current = await requireCurrentUser();
 
-  const { searchParams } = new URL(request.url);
-  const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10));
-  const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") ?? "20", 10)));
+  const parsedQuery = parseQuery(request, querySchema);
+  if (parsedQuery.response) return parsedQuery.response;
+  const { page, limit, type } = parsedQuery.data;
   const skip = (page - 1) * limit;
-  const type = searchParams.get("type") as CreditTxType | null;
 
   const where = {
     profileId: current.profile.id,

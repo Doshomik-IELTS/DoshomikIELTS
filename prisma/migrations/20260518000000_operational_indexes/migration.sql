@@ -1,0 +1,14 @@
+CREATE INDEX "Resource_status_category_difficulty_createdAt_idx" ON "Resource"("status", "category", "difficulty", "createdAt");
+CREATE INDEX "Test_status_type_createdAt_idx" ON "Test"("status", "type", "createdAt");
+CREATE INDEX "PracticeAttempt_profileId_createdAt_idx" ON "PracticeAttempt"("profileId", "createdAt");
+CREATE INDEX "MockTestAttempt_profileId_status_startedAt_idx" ON "MockTestAttempt"("profileId", "status", "startedAt");
+CREATE INDEX "MockTestAttempt_testId_status_idx" ON "MockTestAttempt"("testId", "status");
+CREATE INDEX "AttemptAnswer_attemptId_sectionId_idx" ON "AttemptAnswer"("attemptId", "sectionId");
+CREATE INDEX "MediaAsset_profileId_createdAt_idx" ON "MediaAsset"("profileId", "createdAt");
+CREATE INDEX "MediaAsset_purpose_createdAt_idx" ON "MediaAsset"("purpose", "createdAt");
+CREATE INDEX "LlmJob_status_type_createdAt_idx" ON "LlmJob"("status", "type", "createdAt");
+CREATE INDEX "WritingEvaluation_profileId_status_createdAt_idx" ON "WritingEvaluation"("profileId", "status", "createdAt");
+CREATE INDEX "WritingEvaluation_attemptId_status_idx" ON "WritingEvaluation"("attemptId", "status");
+CREATE INDEX "SpeakingEvaluation_profileId_status_createdAt_idx" ON "SpeakingEvaluation"("profileId", "status", "createdAt");
+CREATE INDEX "SpeakingEvaluation_attemptId_status_idx" ON "SpeakingEvaluation"("attemptId", "status");
+CREATE INDEX "ContentReview_status_contentType_updatedAt_idx" ON "ContentReview"("status", "contentType", "updatedAt");

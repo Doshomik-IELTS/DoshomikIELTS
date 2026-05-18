@@ -1,38 +1,38 @@
 import { ContentStatus, JobStatus, Prisma } from "@prisma/client";
 import { fail, ok } from "@/lib/api/response";
-import { requireAdminActor } from "@/lib/auth/admin-api";
+import { logRouteError } from "@/lib/api/logging";
+import { paginationSchema, parseQuery } from "@/lib/api/validation";
+import { requireAdminActorOrResponse } from "@/lib/auth/admin-api";
 import { prisma } from "@/lib/prisma";
+import { z } from "zod";
 
-function adminErrorResponse(error: unknown) {
-  if (error instanceof Error && error.message === "UNAUTHENTICATED") {
-    return fail({ code: "UNAUTHENTICATED", message: "You must be logged in." }, 401);
-  }
-  if (error instanceof Error && error.message === "FORBIDDEN") {
-    return fail({ code: "FORBIDDEN", message: "Admin access required." }, 403);
-  }
-  return null;
-}
+const querySchema = paginationSchema.extend({
+  status: z.enum([
+    "draft",
+    "review",
+    "published",
+    "archived",
+    "pending",
+    "completed",
+    "queued",
+    "processing",
+    "succeeded",
+    "failed",
+    "needs_review",
+  ]).optional(),
+  type: z.enum(["content", "writing", "speaking"]).optional(),
+});
 
 export async function GET(request: Request) {
+  const adminAuth = await requireAdminActorOrResponse();
+  if (adminAuth.response) return adminAuth.response;
+
   try {
-    await requireAdminActor();
-  } catch (error) {
-    const r = adminErrorResponse(error);
-    if (r) return r;
-    throw error;
-  }
+    const parsedQuery = parseQuery(request, querySchema);
+    if (parsedQuery.response) return parsedQuery.response;
+    const { page, limit, status, type } = parsedQuery.data;
 
-  const { searchParams } = new URL(request.url);
-  const page = parseInt(searchParams.get("page") || "1", 10);
-  const limit = parseInt(searchParams.get("limit") || "20", 10);
-  const status = searchParams.get("status") || undefined;
-  const type = searchParams.get("type") || undefined;
-
-  if (isNaN(page) || page < 1 || isNaN(limit) || limit < 1 || limit > 100) {
-    return fail({ code: "VALIDATION_ERROR", message: "Invalid pagination parameters." }, 400);
-  }
-
-  const skip = (page - 1) * limit;
+    const skip = (page - 1) * limit;
 
   const contentReviewWhere: Prisma.ContentReviewWhereInput = {};
   const writingReviewWhere: Prisma.WritingEvaluationWhereInput = {};
@@ -164,17 +164,21 @@ export async function GET(request: Request) {
     prisma.speakingEvaluation.count({ where: speakingReviewWhere }),
   ]);
 
-  const total = contentCount + writingCount + speakingCount;
+    const total = contentCount + writingCount + speakingCount;
 
-  return ok({
-    reviews,
-    page,
-    limit,
-    total,
-    breakdown: {
-      content: contentCount,
-      writing: writingCount,
-      speaking: speakingCount,
-    },
-  });
+    return ok({
+      reviews,
+      page,
+      limit,
+      total,
+      breakdown: {
+        content: contentCount,
+        writing: writingCount,
+        speaking: speakingCount,
+      },
+    });
+  } catch (error) {
+    logRouteError("/api/admin/reviews", error, { method: "GET", actorId: adminAuth.actor.profile.id });
+    return fail({ code: "INTERNAL_ERROR", message: "Unexpected internal error" }, 500);
+  }
 }

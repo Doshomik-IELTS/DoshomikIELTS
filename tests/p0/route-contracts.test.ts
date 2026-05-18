@@ -43,3 +43,56 @@ test("private media signed URL routes exist and enforce ownership checks", () =>
   assert.match(downloadSource, /createSignedUrl/);
   assert.match(downloadSource, /mediaAsset\.profileId === actor\.profile\.id/);
 });
+
+test("authenticated rate limited routes use server-side actor identity", () => {
+  for (const relativePath of [
+    "src/app/api/evaluations/writing/route.ts",
+    "src/app/api/evaluations/speaking/route.ts",
+    "src/app/api/media/upload-url/route.ts",
+    "src/app/api/attempts/[attemptId]/predict-score/route.ts",
+    "src/app/api/referrals/apply/route.ts",
+  ]) {
+    const source = read(relativePath);
+    assert.match(source, /actor\.profile\.id|current\.profile\.id/);
+    assert.doesNotMatch(source, /x-user-id/);
+  }
+});
+
+test("api routes do not parse pagination manually", () => {
+  const apiFiles = [
+    "src/app/api/practice/route.ts",
+    "src/app/api/practice/attempts/route.ts",
+    "src/app/api/mock-tests/route.ts",
+    "src/app/api/admin/tests/route.ts",
+    "src/app/api/admin/reviews/route.ts",
+    "src/app/api/admin/referrals/route.ts",
+    "src/app/api/admin/referrals/credits/route.ts",
+    "src/app/api/credits/ledger/route.ts",
+    "src/app/api/referrals/me/redemptions/route.ts",
+  ];
+
+  for (const relativePath of apiFiles) {
+    const source = read(relativePath);
+    assert.doesNotMatch(source, /parseInt\(searchParams/);
+    assert.match(source, /parseQuery\(request/);
+  }
+});
+
+test("llm provider calls use timeout and circuit breakers", () => {
+  const source = read("src/lib/evaluation/llm-provider.ts");
+
+  assert.match(source, /withTimeout/);
+  assert.match(source, /openAiCircuitBreaker\.execute/);
+  assert.match(source, /anthropicCircuitBreaker\.execute/);
+  assert.match(source, /geminiCircuitBreaker\.execute/);
+});
+
+test("queue enqueue path reuses queues and records failed jobs", () => {
+  const source = read("src/lib/queue/enqueue.ts");
+  const workerSource = read("src/workers/index.ts");
+
+  assert.match(source, /getQueue/);
+  assert.doesNotMatch(source, /finally\s*{[\s\S]*queue\.close/);
+  assert.match(workerSource, /worker\.on\("failed"/);
+  assert.match(workerSource, /worker\.on\("stalled"/);
+});

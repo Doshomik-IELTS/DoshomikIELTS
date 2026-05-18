@@ -1,6 +1,14 @@
 import { prisma } from "@/lib/prisma";
 import { requireCurrentUser } from "@/lib/auth/session";
 import { ok, fail } from "@/lib/api/response";
+import { paginationSchema, parseQuery } from "@/lib/api/validation";
+import { z } from "zod";
+
+const querySchema = paginationSchema.extend({
+  type: z.enum(["vocabulary", "synonym", "grammar", "reading", "listening"]).optional(),
+  category: z.string().trim().min(1).max(64).optional(),
+  difficulty: z.string().trim().min(1).max(32).optional(),
+});
 
 export async function GET(request: Request) {
   try {
@@ -9,12 +17,9 @@ export async function GET(request: Request) {
     return fail({ code: "UNAUTHENTICATED", message: "Authentication required" }, 401);
   }
 
-  const { searchParams } = new URL(request.url);
-  const type = searchParams.get("type");
-  const category = searchParams.get("category");
-  const difficulty = searchParams.get("difficulty");
-  const page = parseInt(searchParams.get("page") || "1");
-  const limit = parseInt(searchParams.get("limit") || "20");
+  const parsedQuery = parseQuery(request, querySchema);
+  if (parsedQuery.response) return parsedQuery.response;
+  const { type, category, difficulty, page, limit } = parsedQuery.data;
 
   const where: Record<string, unknown> = {
     status: "published",

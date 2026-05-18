@@ -4,8 +4,9 @@ import { hasRole } from "@/lib/auth/roles";
 import { requireCurrentUser } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
-import { mediaRateLimiter, withRateLimit } from "@/lib/rate-limit";
+import { checkRateLimitForIdentifier, mediaRateLimiter } from "@/lib/rate-limit";
 import { supabaseCircuitBreaker } from "@/lib/resilience/external-services";
+import { z } from "zod";
 
 const SPEAKING_TYPES = new Set(["audio/webm", "audio/mpeg", "audio/mp4", "audio/wav"]);
 const LISTENING_TYPES = new Set(["audio/mpeg", "audio/mp4", "audio/wav"]);
@@ -13,20 +14,40 @@ const DEFAULT_SIGNED_URL_TTL_SECONDS = 900;
 
 type UploadPurpose = "speaking_recording" | "listening_audio";
 
-const checkRateLimit = withRateLimit(mediaRateLimiter, (req: Request) => {
-  const userId = req.headers.get("x-user-id") ?? "unknown";
-  return userId;
+const uploadRequestSchema = z.object({
+  purpose: z.enum(["speaking_recording", "listening_audio"]),
+  contentType: z.string().trim().min(1).max(100),
+  sizeBytes: z.number().int().positive(),
+  durationSeconds: z.number().int().positive().optional(),
+  licenseMetadata: z.unknown().optional(),
 });
 
-export async function POST(request: Request) {
+const defaultDeps = {
+  requireCurrentUser,
+  checkRateLimitForIdentifier,
+  mediaRateLimiter,
+  createSupabaseServiceClient,
+  supabaseCircuitBreaker,
+  prisma,
+};
+
+type MediaUploadDeps = typeof defaultDeps;
+
+export async function postMediaUpload(
+  request: Request,
+  deps: MediaUploadDeps = defaultDeps,
+) {
   let actor;
   try {
-    actor = await requireCurrentUser();
+    actor = await deps.requireCurrentUser();
   } catch {
     return fail({ code: "UNAUTHENTICATED", message: "Authentication required" }, 401);
   }
 
-  const rateLimitResponse = await checkRateLimit(request);
+  const rateLimitResponse = await deps.checkRateLimitForIdentifier(
+    deps.mediaRateLimiter,
+    actor.profile.id,
+  );
   if (rateLimitResponse) {
     return rateLimitResponse;
   }
@@ -38,17 +59,15 @@ export async function POST(request: Request) {
     return fail({ code: "VALIDATION_ERROR", message: "Invalid JSON body" }, 400);
   }
 
-  const body = json as {
-    purpose?: UploadPurpose;
-    contentType?: string;
-    sizeBytes?: number;
-    durationSeconds?: number;
-    licenseMetadata?: unknown;
-  };
-
-  if (!body.purpose || !body.contentType || !body.sizeBytes) {
-    return fail({ code: "VALIDATION_ERROR", message: "purpose, contentType, and sizeBytes are required" }, 400);
+  const parsedBody = uploadRequestSchema.safeParse(json);
+  if (!parsedBody.success) {
+    return fail({
+      code: "VALIDATION_ERROR",
+      message: "Invalid upload request data",
+      details: z.treeifyError(parsedBody.error),
+    }, 400);
   }
+  const body = parsedBody.data;
 
   const validation = validateUploadRequest(body, actor.profile.roles);
   if (validation) return validation;
@@ -60,8 +79,8 @@ export async function POST(request: Request) {
   let signedUrl: string;
   let token: string | undefined;
   try {
-    const { data, error } = await supabaseCircuitBreaker.execute(async () => {
-      const supabase = createSupabaseServiceClient();
+    const { data, error } = await deps.supabaseCircuitBreaker.execute(async () => {
+      const supabase = deps.createSupabaseServiceClient();
       return supabase.storage.from(bucket).createSignedUploadUrl(path);
     });
     if (error || !data?.signedUrl) {
@@ -76,7 +95,7 @@ export async function POST(request: Request) {
     }, 500);
   }
 
-  const mediaAsset = await prisma.mediaAsset.create({
+  const mediaAsset = await deps.prisma.mediaAsset.create({
     data: {
       profileId: actor.profile.id,
       bucket,
@@ -97,6 +116,10 @@ export async function POST(request: Request) {
     token,
     expiresIn: Number(process.env.SIGNED_URL_TTL_SECONDS || DEFAULT_SIGNED_URL_TTL_SECONDS),
   }, { status: 201 });
+}
+
+export async function POST(request: Request) {
+  return postMediaUpload(request);
 }
 
 function validateUploadRequest(

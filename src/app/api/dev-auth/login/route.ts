@@ -7,10 +7,16 @@ import {
 import { prisma } from "@/lib/prisma";
 import { fail, ok } from "@/lib/api/response";
 import { authRateLimiter, withRateLimit, getClientIp } from "@/lib/rate-limit";
+import { z } from "zod";
 
 const isDevMode = process.env.NODE_ENV !== "production";
 
 const checkRateLimit = withRateLimit(authRateLimiter, getClientIp);
+const loginSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(1),
+  role: z.string().optional(),
+});
 
 export async function POST(request: Request) {
   if (!isDevMode) {
@@ -22,13 +28,12 @@ export async function POST(request: Request) {
     return rateLimitResponse;
   }
 
-  const body = (await request.json().catch(() => null)) as {
-    email?: string;
-    password?: string;
-    role?: string;
-  } | null;
-  const email = body?.email ?? "";
-  const password = body?.password ?? "";
+  const body = await request.json().catch(() => null);
+  const parsedBody = loginSchema.safeParse(body);
+  if (!parsedBody.success) {
+    return fail({ code: "VALIDATION_ERROR", message: "Invalid login data." }, 400);
+  }
+  const { email, password } = parsedBody.data;
   const role = getDevCredentialRole(email, password);
 
   if (!role) {

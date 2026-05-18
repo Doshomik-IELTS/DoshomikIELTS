@@ -6,8 +6,17 @@ import { fetchStrapiResources } from "@/lib/strapi/content";
 import { z } from "zod";
 
 const querySchema = z.object({
-  category: z.string().trim().min(1).max(64).optional(),
-  difficulty: z.string().trim().min(1).max(32).optional(),
+  category: z.enum([
+    "basic_english",
+    "words",
+    "synonyms",
+    "grammar",
+    "reading_strategy",
+    "listening_strategy",
+    "writing_strategy",
+    "speaking_strategy",
+  ]).optional(),
+  difficulty: z.enum(["basic", "intermediate", "advanced"]).optional(),
   search: z.string().trim().min(1).max(120).optional(),
 });
 
@@ -28,8 +37,8 @@ export async function GET(request: Request) {
   const resources = await prisma.resource.findMany({
     where: {
       status: "published",
-      ...(category ? { category: category as never } : {}),
-      ...(difficulty ? { difficulty: difficulty as never } : {}),
+      ...(category ? { category } : {}),
+      ...(difficulty ? { difficulty } : {}),
       ...(search
         ? {
             OR: [

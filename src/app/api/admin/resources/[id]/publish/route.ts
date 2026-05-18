@@ -1,18 +1,9 @@
 import { fail, ok } from "@/lib/api/response";
-import { requireAdminActor, canPublishResource } from "@/lib/auth/admin-api";
+import { canPublishResource, requireAdminActorOrResponse } from "@/lib/auth/admin-api";
 import { logAuditEvent } from "@/lib/audit";
+import { logRouteError } from "@/lib/api/logging";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
-
-function adminErrorResponse(error: unknown) {
-  if (error instanceof Error && error.message === "UNAUTHENTICATED") {
-    return fail({ code: "UNAUTHENTICATED", message: "You must be logged in." }, 401);
-  }
-  if (error instanceof Error && error.message === "FORBIDDEN") {
-    return fail({ code: "FORBIDDEN", message: "Admin access required." }, 403);
-  }
-  return null;
-}
 
 function snapshot(resource: {
   id: string;
@@ -45,14 +36,9 @@ function snapshot(resource: {
 }
 
 export async function POST(_request: Request, { params }: { params: Promise<{ id: string }> }) {
-  let actor;
-  try {
-    actor = await requireAdminActor();
-  } catch (error) {
-    const response = adminErrorResponse(error);
-    if (response) return response;
-    throw error;
-  }
+  const adminAuth = await requireAdminActorOrResponse();
+  if (adminAuth.response) return adminAuth.response;
+  const actor = adminAuth.actor;
 
   if (!canPublishResource(actor.profile.roles)) {
     return fail({ code: "FORBIDDEN", message: "You cannot publish resources." }, 403);
@@ -128,7 +114,11 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
     });
 
     return ok({ resource: updated });
-  } catch {
+  } catch (error) {
+    logRouteError("/api/admin/resources/[id]/publish", error, {
+      method: "POST",
+      actorId: actor.profile.id,
+    });
     return fail({ code: "INTERNAL_ERROR", message: "Could not publish resource." }, 500);
   }
 }

@@ -1,5 +1,7 @@
 import { fail, ok } from "@/lib/api/response";
-import { requireAdminActor } from "@/lib/auth/admin-api";
+import { logRouteError } from "@/lib/api/logging";
+import { paginationSchema, parseQuery } from "@/lib/api/validation";
+import { requireAdminActorOrResponse } from "@/lib/auth/admin-api";
 import { logAuditEvent } from "@/lib/audit";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
@@ -18,22 +20,21 @@ const mediaSchema = z.object({
   licenseMetadataJson: z.record(z.string(), z.unknown()).optional().nullable(),
 });
 
+const querySchema = paginationSchema.pick({ limit: true }).extend({
+  search: z.string().trim().min(1).max(120).optional(),
+  purpose: z.string().trim().min(1).max(64).optional(),
+});
+
 export async function GET(request: Request) {
+  const adminAuth = await requireAdminActorOrResponse();
+  if (adminAuth.response) return adminAuth.response;
+
   try {
-    await requireAdminActor();
-  } catch (error) {
-    if (error instanceof Error && error.message === "UNAUTHENTICATED") {
-      return fail({ code: "UNAUTHENTICATED", message: "Authentication required" }, 401);
-    }
-    return fail({ code: "FORBIDDEN", message: "Admin access required" }, 403);
-  }
+    const parsedQuery = parseQuery(request, querySchema);
+    if (parsedQuery.response) return parsedQuery.response;
+    const { search, purpose, limit } = parsedQuery.data;
 
-  const { searchParams } = new URL(request.url);
-  const search = searchParams.get("search")?.trim();
-  const purpose = searchParams.get("purpose")?.trim();
-  const limit = Math.min(parseInt(searchParams.get("limit") || "20", 10), 100);
-
-  const media = await prisma.mediaAsset.findMany({
+    const media = await prisma.mediaAsset.findMany({
     where: {
       ...(purpose ? { purpose } : {}),
       ...(search
@@ -64,28 +65,27 @@ export async function GET(request: Request) {
     },
   });
 
-  return ok({ media });
+    return ok({ media });
+  } catch (error) {
+    logRouteError("/api/admin/media", error, { method: "GET", actorId: adminAuth.actor.profile.id });
+    return fail({ code: "INTERNAL_ERROR", message: "Unexpected internal error" }, 500);
+  }
 }
 
 export async function POST(request: Request) {
-  let actor;
+  const adminAuth = await requireAdminActorOrResponse();
+  if (adminAuth.response) return adminAuth.response;
+  const actor = adminAuth.actor;
+
   try {
-    actor = await requireAdminActor();
-  } catch (error) {
-    if (error instanceof Error && error.message === "UNAUTHENTICATED") {
-      return fail({ code: "UNAUTHENTICATED", message: "Authentication required" }, 401);
+    const body = await request.json().catch(() => null);
+    const parsed = mediaSchema.safeParse(body);
+    if (!parsed.success) {
+      return fail({ code: "VALIDATION_ERROR", message: "Invalid media asset data.", details: parsed.error.flatten() }, 400);
     }
-    return fail({ code: "FORBIDDEN", message: "Admin access required" }, 403);
-  }
 
-  const body = await request.json().catch(() => null);
-  const parsed = mediaSchema.safeParse(body);
-  if (!parsed.success) {
-    return fail({ code: "VALIDATION_ERROR", message: "Invalid media asset data.", details: parsed.error.flatten() }, 400);
-  }
-
-  const data = parsed.data;
-  const media = await prisma.mediaAsset.create({
+    const data = parsed.data;
+    const media = await prisma.mediaAsset.create({
     data: {
       profileId: actor.profile.id,
       title: data.title ?? null,
@@ -101,7 +101,7 @@ export async function POST(request: Request) {
     },
   });
 
-  await logAuditEvent({
+    await logAuditEvent({
     action: "media.create",
     entityType: "MediaAsset",
     entityId: media.id,
@@ -109,5 +109,9 @@ export async function POST(request: Request) {
     metadata: { title: media.title, purpose: media.purpose, path: media.path },
   });
 
-  return ok({ media }, { status: 201 });
+    return ok({ media }, { status: 201 });
+  } catch (error) {
+    logRouteError("/api/admin/media", error, { method: "POST", actorId: actor.profile.id });
+    return fail({ code: "INTERNAL_ERROR", message: "Unexpected internal error" }, 500);
+  }
 }

@@ -1,9 +1,9 @@
 import { fail, ok } from "@/lib/api/response";
+import { paginationSchema, parseQuery } from "@/lib/api/validation";
 import { requireAdminActor } from "@/lib/auth/admin-api";
 import { prisma } from "@/lib/prisma";
 import { logAuditEvent } from "@/lib/audit";
 import { z } from "zod";
-import type { CreditTxType } from "@prisma/client";
 
 const grantSchema = z.object({
   profileId: z.string().uuid(),
@@ -11,17 +11,18 @@ const grantSchema = z.object({
   description: z.string().min(1).max(255),
 });
 
-
+const querySchema = paginationSchema.extend({
+  profileId: z.string().uuid().optional(),
+  type: z.enum(["referral_bonus", "redemption", "admin_grant", "admin_revoke", "refund", "promo"]).optional(),
+});
 
 export async function GET(request: Request) {
   await requireAdminActor();
 
-  const { searchParams } = new URL(request.url);
-  const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10));
-  const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") ?? "20", 10)));
+  const parsedQuery = parseQuery(request, querySchema);
+  if (parsedQuery.response) return parsedQuery.response;
+  const { page, limit, profileId, type } = parsedQuery.data;
   const skip = (page - 1) * limit;
-  const profileId = searchParams.get("profileId");
-  const type = searchParams.get("type") as CreditTxType | null;
 
   const where: Record<string, unknown> = {
     ...(profileId ? { profileId } : {}),

@@ -153,6 +153,8 @@ model Resource {
   progress   ResourceProgress[]
   prereqs    ResourcePrerequisite[]     @relation("ResourcePrereqs")
   dependents ResourcePrerequisite[]     @relation("ResourceDependents")
+
+  @@index([status, category, difficulty, createdAt])
 }
 
 model SavedResource {
@@ -198,6 +200,8 @@ model Test {
   sections TestSection[]
   attempts MockTestAttempt[]
   versions TestVersion[]
+
+  @@index([status, type, createdAt])
 }
 
 model TestVersion {
@@ -289,6 +293,8 @@ model PracticeAttempt {
 
   profile  Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
   resource Resource? @relation(fields: [resourceId], references: [id])
+
+  @@index([profileId, createdAt])
 }
 
 model MockTestAttempt {
@@ -309,6 +315,9 @@ model MockTestAttempt {
   scorePrediction     ScorePrediction?
   writingEvaluations  WritingEvaluation[]
   speakingEvaluations SpeakingEvaluation[]
+
+  @@index([profileId, status, startedAt])
+  @@index([testId, status])
 }
 
 model AttemptAnswer {
@@ -325,6 +334,8 @@ model AttemptAnswer {
   attempt  MockTestAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
   section  TestSection     @relation(fields: [sectionId], references: [id])
   question Question?       @relation(fields: [questionId], references: [id])
+
+  @@index([attemptId, sectionId])
 }
 
 model ModuleScore {
@@ -377,6 +388,9 @@ model MediaAsset {
 
   profile            Profile?            @relation(fields: [profileId], references: [id])
   speakingEvaluations SpeakingEvaluation[]
+
+  @@index([profileId, createdAt])
+  @@index([purpose, createdAt])
 }
 
 model LlmJob {
@@ -395,6 +409,8 @@ model LlmJob {
 
   writingEvaluations  WritingEvaluation[]
   speakingEvaluations SpeakingEvaluation[]
+
+  @@index([status, type, createdAt])
 }
 
 model AuditLog {
@@ -515,6 +531,9 @@ model WritingEvaluation {
   profile Profile        @relation(fields: [profileId], references: [id], onDelete: Cascade)
   attempt MockTestAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
   job     LlmJob?          @relation(fields: [llmJobId], references: [id])
+
+  @@index([profileId, status, createdAt])
+  @@index([attemptId, status])
 }
 
 model SpeakingEvaluation {
@@ -540,6 +559,9 @@ model SpeakingEvaluation {
   attempt MockTestAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
   media   MediaAsset?      @relation(fields: [mediaAssetId], references: [id])
   job     LlmJob?          @relation(fields: [llmJobId], references: [id])
+
+  @@index([profileId, status, createdAt])
+  @@index([attemptId, status])
 }
 
 model ContentReview {
@@ -553,6 +575,8 @@ model ContentReview {
   updatedAt   DateTime      @updatedAt
 
   reviewer Profile? @relation(fields: [reviewerId], references: [id])
+
+  @@index([status, contentType, updatedAt])
 }
 
 model ExternalStudyRecord {

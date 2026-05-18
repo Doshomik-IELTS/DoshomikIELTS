@@ -1,32 +1,20 @@
 import { ContentStatus, type Prisma } from "@prisma/client";
 import { fail, ok } from "@/lib/api/response";
-import { requireAdminActor } from "@/lib/auth/admin-api";
+import { logRouteError } from "@/lib/api/logging";
+import { requireAdminActorOrResponse } from "@/lib/auth/admin-api";
 import { prisma } from "@/lib/prisma";
 import { logAuditEvent } from "@/lib/audit";
-
-function adminErrorResponse(error: unknown) {
-  if (error instanceof Error && error.message === "UNAUTHENTICATED") {
-    return fail({ code: "UNAUTHENTICATED", message: "You must be logged in." }, 401);
-  }
-  if (error instanceof Error && error.message === "FORBIDDEN") {
-    return fail({ code: "FORBIDDEN", message: "Admin access required." }, 403);
-  }
-  return null;
-}
+import { z } from "zod";
 
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  try {
-    await requireAdminActor();
-  } catch (error) {
-    const r = adminErrorResponse(error);
-    if (r) return r;
-    throw error;
-  }
+  const adminAuth = await requireAdminActorOrResponse();
+  if (adminAuth.response) return adminAuth.response;
 
-  const { id } = await params;
+  try {
+    const { id } = await params;
 
   // Try to find the review in all three collections
   const [contentReview, writingEvaluation, speakingEvaluation] = await Promise.all([
@@ -84,46 +72,52 @@ export async function GET(
     });
   }
 
-  return fail({ code: "NOT_FOUND", message: "Review not found." }, 404);
+    return fail({ code: "NOT_FOUND", message: "Review not found." }, 404);
+  } catch (error) {
+    logRouteError("/api/admin/reviews/[id]", error, { method: "GET", actorId: adminAuth.actor.profile.id });
+    return fail({ code: "INTERNAL_ERROR", message: "Unexpected internal error" }, 500);
+  }
 }
 
 // PATCH endpoint to update review status (approve/reject content reviews, flag for human review)
+const reviewActionSchema = z.object({
+  action: z.enum(["approve", "reject", "flag_for_review", "set_band"]),
+  type: z.enum(["content", "writing", "speaking"]),
+  notes: z.string().max(4000).optional(),
+  band: z.number().min(0).max(9).optional(),
+  feedback: z.unknown().optional(),
+});
+
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  let actor;
-  try {
-    actor = await requireAdminActor();
-  } catch (error) {
-    const r = adminErrorResponse(error);
-    if (r) return r;
-    throw error;
-  }
-
-  const { id } = await params;
-
-  let json: unknown;
-  try {
-    json = await request.json();
-  } catch {
-    return fail({ code: "VALIDATION_ERROR", message: "Invalid JSON body." }, 400);
-  }
-
-  const parsed = json as {
-    action?: string;
-    type?: string;
-    notes?: string;
-    band?: number;
-    feedback?: unknown;
-  };
-  if (!parsed.action || !parsed.type) {
-    return fail({ code: "VALIDATION_ERROR", message: "Missing action or type." }, 400);
-  }
-
-  const { action, type } = parsed;
+  const adminAuth = await requireAdminActorOrResponse();
+  if (adminAuth.response) return adminAuth.response;
+  const actor = adminAuth.actor;
 
   try {
+    const { id } = await params;
+
+    let json: unknown;
+    try {
+      json = await request.json();
+    } catch {
+      return fail({ code: "VALIDATION_ERROR", message: "Invalid JSON body." }, 400);
+    }
+
+    const parsedBody = reviewActionSchema.safeParse(json);
+    if (!parsedBody.success) {
+      return fail({
+        code: "VALIDATION_ERROR",
+        message: "Invalid review action data.",
+        details: z.treeifyError(parsedBody.error),
+      }, 400);
+    }
+    const parsed = parsedBody.data;
+
+    const { action, type } = parsed;
+
     if (type === "content") {
       if (action === "approve") {
         await prisma.$transaction(async (tx) => {
@@ -261,7 +255,8 @@ export async function PATCH(
     }
 
     return ok({ success: true });
-  } catch {
+  } catch (error) {
+    logRouteError("/api/admin/reviews/[id]", error, { method: "PATCH", actorId: actor.profile.id });
     return fail({ code: "INTERNAL_ERROR", message: "Could not update review." }, 500);
   }
 }

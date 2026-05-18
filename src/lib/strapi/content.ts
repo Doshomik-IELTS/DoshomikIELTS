@@ -151,8 +151,16 @@ function stringValue(value: unknown, fallback = "") {
   return typeof value === "string" ? value : fallback;
 }
 
+function nullableStringValue(value: unknown) {
+  return typeof value === "string" ? value : null;
+}
+
 function numberValue(value: unknown) {
   return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+function enumValue<T extends string>(value: unknown, allowed: readonly T[], fallback: T) {
+  return typeof value === "string" && allowed.includes(value as T) ? (value as T) : fallback;
 }
 
 function jsonValue(value: unknown): Prisma.InputJsonValue | undefined {
@@ -241,15 +249,15 @@ function resourceFromEntry(raw: unknown): StrapiResourceDetail | null {
     slug: stringValue(r.slug, documentId),
     category: stringValue(r.category, "basic_english"),
     difficulty: stringValue(r.difficulty, "basic"),
-    banglaTitle: stringValue(r.banglaTitle, null as never),
-    banglaSummary: stringValue(r.banglaSummary, null as never),
+    banglaTitle: nullableStringValue(r.banglaTitle),
+    banglaSummary: nullableStringValue(r.banglaSummary),
     body: stringValue(r.body),
-    banglaTranslation: stringValue(r.banglaTranslation, null as never),
+    banglaTranslation: nullableStringValue(r.banglaTranslation),
     examplesJson: componentCollection(r.examples),
     vocabularyItemsJson: componentCollection(r.vocabularyItems),
     tags: tagsValue(r.tags, r.tagItems),
-    createdAt: stringValue(r.createdAt, null as never),
-    publishedAt: stringValue(r.publishedAt, null as never),
+    createdAt: nullableStringValue(r.createdAt),
+    publishedAt: nullableStringValue(r.publishedAt),
   };
 }
 
@@ -340,15 +348,15 @@ function normalizeQuestion(raw: unknown, groups: NormalizedGroup[]): NormalizedQ
     prompt: stringValue(q.prompt),
     optionsJson: jsonValue(componentCollection(q.options)),
     orderIndex: numberValue(q.orderIndex) ?? 0,
-    difficulty: stringValue(q.difficulty, "basic") as NormalizedQuestion["difficulty"],
-    explanation: stringValue(q.explanation, null as never),
+    difficulty: enumValue(q.difficulty, ["basic", "intermediate", "advanced"], "basic"),
+    explanation: nullableStringValue(q.explanation),
     sourceSpanJson: jsonValue(q.sourceSpan),
     answerKey: canonicalAnswer
         ? {
           canonicalAnswer,
           acceptedAnswersJson: acceptedAnswers,
           scoringRuleJson: scoringRule,
-          explanation: stringValue(answerKey.explanation, null as never),
+          explanation: nullableStringValue(answerKey.explanation),
         }
       : null,
   };
@@ -371,10 +379,10 @@ function normalizeSection(raw: unknown): NormalizedSection | null {
 
   return {
     id: appId(`section_${documentId}`),
-    module: stringValue(s.module, "reading") as NormalizedSection["module"],
+    module: enumValue(s.module, ["listening", "reading", "writing", "speaking"], "reading"),
     partNumber: numberValue(s.partNumber),
     title: stringValue(s.title, "Section"),
-    instructions: stringValue(s.instructions, null as never),
+    instructions: nullableStringValue(s.instructions),
     durationMinutes: numberValue(s.durationMinutes),
     orderIndex: numberValue(s.orderIndex) ?? 0,
     contentJson: sectionContentValue(s),
@@ -396,10 +404,10 @@ function mockTestFromEntry(raw: unknown): NormalizedMockTest | null {
     id: appId(documentId),
     strapiDocumentId: documentId,
     title: stringValue(t.title, "Untitled mock test"),
-    description: stringValue(t.description, null as never),
-    type: stringValue(t.type, "short_mock") as NormalizedMockTest["type"],
+    description: nullableStringValue(t.description),
+    type: enumValue(t.type, ["practice", "short_mock", "full_mock"], "short_mock"),
     estimatedDurationMinutes: numberValue(t.estimatedDurationMinutes),
-    publishedAt: stringValue(t.publishedAt, null as never),
+    publishedAt: nullableStringValue(t.publishedAt),
     sections,
   };
 }

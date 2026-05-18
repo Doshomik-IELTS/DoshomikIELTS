@@ -1,18 +1,38 @@
 import { prisma } from "@/lib/prisma";
 import { requireCurrentUser } from "@/lib/auth/session";
 import { ok, fail } from "@/lib/api/response";
+import { z } from "zod";
 
-export async function POST(request: Request, { params }: { params: Promise<{ attemptId: string }> }) {
+const answerSaveSchema = z.object({
+  sectionId: z.string().trim().min(1).max(128),
+  answers: z.record(z.string().min(1), z.string().max(10_000)).refine((value) => Object.keys(value).length > 0, {
+    message: "At least one answer is required",
+  }),
+  isDraft: z.boolean().optional().default(false),
+});
+
+const defaultDeps = {
+  requireCurrentUser,
+  prisma,
+};
+
+type AttemptAnswersDeps = typeof defaultDeps;
+
+export async function postAttemptAnswers(
+  request: Request,
+  { params }: { params: Promise<{ attemptId: string }> },
+  deps: AttemptAnswersDeps = defaultDeps,
+) {
   let actor;
   try {
-    actor = await requireCurrentUser();
+    actor = await deps.requireCurrentUser();
   } catch {
     return fail({ code: "UNAUTHENTICATED", message: "Authentication required" }, 401);
   }
 
   const { attemptId } = await params;
 
-  const attempt = await prisma.mockTestAttempt.findUnique({
+  const attempt = await deps.prisma.mockTestAttempt.findUnique({
     where: { id: attemptId },
   });
 
@@ -31,14 +51,17 @@ export async function POST(request: Request, { params }: { params: Promise<{ att
     return fail({ code: "VALIDATION_ERROR", message: "Invalid JSON body" }, 400);
   }
 
-  const body = json as { sectionId?: string; answers?: Record<string, string>; isDraft?: boolean };
-  const { sectionId, answers, isDraft = false } = body;
-
-  if (!sectionId || !answers) {
-    return fail({ code: "VALIDATION_ERROR", message: "Section ID and answers required" }, 400);
+  const parsedBody = answerSaveSchema.safeParse(json);
+  if (!parsedBody.success) {
+    return fail({
+      code: "VALIDATION_ERROR",
+      message: "Invalid answer data",
+      details: z.treeifyError(parsedBody.error),
+    }, 400);
   }
+  const { sectionId, answers, isDraft } = parsedBody.data;
 
-  const section = await prisma.testSection.findUnique({
+  const section = await deps.prisma.testSection.findUnique({
     where: { id: sectionId },
     include: {
       questions: {
@@ -63,7 +86,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ att
         
         if (isCorrect) correctCount++;
 
-        await prisma.attemptAnswer.upsert({
+        await deps.prisma.attemptAnswer.upsert({
           where: {
             id: `${attemptId}-${sectionId}-${question.id}`,
           },
@@ -95,6 +118,10 @@ export async function POST(request: Request, { params }: { params: Promise<{ att
     savedAnswers: Object.keys(answers).length,
     autoScored: totalQuestions > 0 ? { correct: correctCount, total: totalQuestions } : null,
   });
+}
+
+export async function POST(request: Request, context: { params: Promise<{ attemptId: string }> }) {
+  return postAttemptAnswers(request, context);
 }
 
 function scoreObjectiveAnswer(

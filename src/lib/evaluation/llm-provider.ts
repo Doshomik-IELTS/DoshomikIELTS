@@ -1,6 +1,10 @@
 import { evaluateWithDeterministicProvider } from "./deterministic-provider";
 import type { EvaluationRequest, EvaluationProviderResult } from "./types";
 import { evaluationSchema, WRITING_SYSTEM_PROMPT, SPEAKING_SYSTEM_PROMPT, WRITING_CRITIQUE_PROMPT, SPEAKING_CRITIQUE_PROMPT } from "./schemas";
+import { anthropicCircuitBreaker, geminiCircuitBreaker, openAiCircuitBreaker } from "@/lib/resilience/external-services";
+import { withTimeout } from "@/lib/resilience/circuit-breaker";
+
+const LLM_TIMEOUT_MS = Number(process.env.LLM_TIMEOUT_MS || 30_000);
 
 export async function evaluateWithLLM(
   request: EvaluationRequest,
@@ -53,22 +57,30 @@ async function evaluateWithOpenAI(
       .replace("{{WORD_COUNT}}", String(request.wordCount ?? request.responseText.split(/\s+/).length))
       .replace("{{TASK_TYPE}}", request.promptLabel);
 
-  const response = await fetch(`${baseUrl}/chat/completions`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${process.env.LLM_API_KEY || ""}`,
-    },
-    body: JSON.stringify({
-      model,
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt },
-      ],
-      temperature: 0.3,
-      response_format: { type: "json_object" },
-    }),
-  });
+  const response = await openAiCircuitBreaker.execute(() =>
+    withTimeout(
+      (signal) =>
+        fetch(`${baseUrl}/chat/completions`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${process.env.LLM_API_KEY || ""}`,
+          },
+          body: JSON.stringify({
+            model,
+            messages: [
+              { role: "system", content: systemPrompt },
+              { role: "user", content: userPrompt },
+            ],
+            temperature: 0.3,
+            response_format: { type: "json_object" },
+          }),
+          signal,
+        }),
+      LLM_TIMEOUT_MS,
+      "OpenAI request timed out",
+    ),
+  );
 
   if (!response.ok) {
     const error = await response.text();
@@ -125,21 +137,29 @@ async function evaluateWithAnthropic(
       .replace("{{WORD_COUNT}}", String(request.wordCount ?? request.responseText.split(/\s+/).length))
       .replace("{{TASK_TYPE}}", request.promptLabel);
 
-  const response = await fetch(`${baseUrl}/messages`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": process.env.LLM_API_KEY || "",
-      "anthropic-version": "2023-06-01",
-    },
-    body: JSON.stringify({
-      model,
-      system: systemPrompt,
-      messages: [{ role: "user", content: userPrompt }],
-      temperature: 0.3,
-      max_tokens: 2048,
-    }),
-  });
+  const response = await anthropicCircuitBreaker.execute(() =>
+    withTimeout(
+      (signal) =>
+        fetch(`${baseUrl}/messages`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-api-key": process.env.LLM_API_KEY || "",
+            "anthropic-version": "2023-06-01",
+          },
+          body: JSON.stringify({
+            model,
+            system: systemPrompt,
+            messages: [{ role: "user", content: userPrompt }],
+            temperature: 0.3,
+            max_tokens: 2048,
+          }),
+          signal,
+        }),
+      LLM_TIMEOUT_MS,
+      "Anthropic request timed out",
+    ),
+  );
 
   if (!response.ok) {
     const error = await response.text();
@@ -198,26 +218,34 @@ async function evaluateWithGemini(
   const apiKey = process.env.LLM_API_KEY || "";
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
-  const response = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      contents: [
-        {
-          parts: [
-            { text: systemPrompt },
-            { text: userPrompt },
-          ],
-        },
-      ],
-      generationConfig: {
-        temperature: 0.3,
-        responseMimeType: "application/json",
-      },
-    }),
-  });
+  const response = await geminiCircuitBreaker.execute(() =>
+    withTimeout(
+      (signal) =>
+        fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            contents: [
+              {
+                parts: [
+                  { text: systemPrompt },
+                  { text: userPrompt },
+                ],
+              },
+            ],
+            generationConfig: {
+              temperature: 0.3,
+              responseMimeType: "application/json",
+            },
+          }),
+          signal,
+        }),
+      LLM_TIMEOUT_MS,
+      "Gemini request timed out",
+    ),
+  );
 
   if (!response.ok) {
     const error = await response.text();
