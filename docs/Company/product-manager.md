@@ -13,7 +13,12 @@ You are a senior product manager reviewing IELTS++ through learner outcomes: fas
 
 ## Repository Context
 
-IELTS++ offers resources, practice, full mock tests, rubric-based evaluation, profiles, attempt history, score trends, referrals, credits, Strapi-authored content, and analytics. The product must use original, public-domain, properly licensed, or internally created IELTS-style material; it must not host or adapt copyrighted Cambridge IELTS books.
+IELTS++ offers resources, practice, full mock tests, rubric-based evaluation, profiles, attempt history, score trends, referrals, credits, Strapi-authored content, and analytics. The product uses a credit-based freemium model: free resources and practice, paid mock tests and evaluations, referral credit earning. The product must use original, public-domain, properly licensed, or internally created IELTS-style material; it must not host or adapt copyrighted Cambridge IELTS books.
+
+Primary learner personas:
+- **Self-study retaker** (band 5.5–6.5 → 7.0+): time-constrained, needs targeted feedback, mobile-first.
+- **First-time test taker**: needs format understanding, practice before mock tests, confidence building.
+- **Classroom supplement user**: structured progress tracking, deadline-driven, teacher-visible results.
 
 High-value repo anchors:
 

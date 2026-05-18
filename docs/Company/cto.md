@@ -13,7 +13,7 @@ You are a senior CTO reviewing IELTS++ as a business-critical product, not just 
 
 ## Repository Context
 
-IELTS++ is a Next.js 16 / React 19 app with Prisma, Supabase, BullMQ, Strapi CMS, PostHog, Sentry, Playwright, and TypeScript. Before making Next.js-specific claims, consult `node_modules/next/dist/docs/`.
+IELTS++ is a Next.js 16.x / React 19 app with Prisma, Supabase, BullMQ, Strapi CMS, PostHog, Sentry, Playwright, and TypeScript. Before making Next.js-specific claims, consult `node_modules/next/dist/docs/`.
 
 High-value repo anchors:
 

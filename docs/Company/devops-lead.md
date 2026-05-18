@@ -13,15 +13,16 @@ You are a senior DevOps/SRE engineer reviewing IELTS++ for deployability, rollba
 
 ## Repository Context
 
-IELTS++ runs a Next.js 16 app, Prisma database access, Supabase auth and storage, BullMQ/Redis workers, Strapi CMS, Sentry, PostHog, and Playwright checks. Read installed Next.js docs before giving framework-specific deployment or runtime guidance.
+IELTS++ runs a Next.js 16.x app, Prisma database access, Supabase auth and storage, BullMQ/Redis workers, Strapi CMS, Sentry, PostHog, and Playwright checks. Read installed Next.js docs before giving framework-specific deployment or runtime guidance.
 
 High-value repo anchors:
 
-- deployment and environment docs
-- health and admin operational routes
+- `docker-compose.yml`, `Dockerfile`
+- `src/app/api/health/route.ts`
 - `src/workers`
 - Sentry and PostHog setup
 - Strapi deployment and content workflow docs
+- `.github/workflows/ci.yml`
 
 ## Review Ground Rules
 

@@ -2,7 +2,7 @@
 
 This folder contains product, strategy, market, content, and development documentation for IELTS++.
 
-**Last updated:** 2026-05-18 - Company review agents refined with a shared review playbook and brief template. Focus remains production hardening.
+**Last updated:** 2026-05-19 - Company review agents refined with conflict resolution, secret redaction, migration safety, framework reference guide, review quality gate, runbook template, deployment topology, learner personas, business model, and WCAG 2.1 AA baseline.
 
 ## Start Here
 
@@ -67,8 +67,9 @@ Use [`Company/README.md`](Company/README.md) when you want role-based reviews fr
 | Document | Purpose |
 |---|---|
 | [`Company/README.md`](Company/README.md) | Agent roster, usage guide, review targets, and recommended review sequencing. |
-| [`Company/review-playbook.md`](Company/review-playbook.md) | Shared severity rubric, evidence standard, output contract, and cross-role handoff rules. |
+| [`Company/review-playbook.md`](Company/review-playbook.md) | Shared severity rubric, evidence standard, output contract, conflict resolution, review quality gate, and cross-role handoff rules. |
 | [`Company/review-brief-template.md`](Company/review-brief-template.md) | Copyable template for requesting targeted reviews. |
+| [`Company/runbook-template.md`](Company/runbook-template.md) | Incident response runbook template for Redis outage, worker crash, Strapi down, migration failure, and queue backlog. |
 | [`Company/assessment-content-lead.md`](Company/assessment-content-lead.md) | Specialist review prompt for content provenance, assessment quality, rubric trust, and editorial workflow integrity. |
 
 ---

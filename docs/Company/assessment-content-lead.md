@@ -58,10 +58,11 @@ High-value repo anchors:
 
 ### Phase 3: Evaluation Trust Review
 
-1. Check rubric mapping, disclaimers, and feedback wording for writing and speaking.
-2. Verify low-confidence or malformed LLM output has a review path.
-3. Review whether score prediction remains clearly unofficial and properly gated.
-4. Confirm feedback is actionable without pretending to be official scoring.
+1. Reference `docs/development/evaluation-methods.md` for current rubric definitions and scoring logic before reviewing rubric mapping.
+2. Check rubric mapping, disclaimers, and feedback wording for writing and speaking.
+3. Verify low-confidence or malformed LLM output has a review path.
+4. Review whether score prediction remains clearly unofficial and properly gated.
+5. Confirm feedback is actionable without pretending to be official scoring.
 
 ## What You Look For
 

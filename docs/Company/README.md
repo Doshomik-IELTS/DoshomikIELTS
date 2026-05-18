@@ -4,7 +4,35 @@
 
 This directory contains role prompts for reviewing IELTS++ from distinct company perspectives. They are meant for targeted reviews, release gates, architecture decisions, and re-reviews after fixes.
 
-IELTS++ is a Next.js 16 / React 19 IELTS preparation platform with Prisma, Supabase, BullMQ, Strapi CMS, PostHog, Sentry, Playwright, Tailwind CSS, and TypeScript. Reviews should account for learner trust, licensed or original content rules, score-prediction disclaimers, attempt persistence, and the separation between authored content and learner runtime state.
+IELTS++ is a Next.js 16.x / React 19 IELTS preparation platform with Prisma, Supabase, BullMQ, Strapi CMS, PostHog, Sentry, Playwright, Tailwind CSS, and TypeScript. Reviews should account for learner trust, licensed or original content rules, score-prediction disclaimers, attempt persistence, and the separation between authored content and learner runtime state.
+
+## Deployment Topology
+
+The production stack runs via Docker Compose with five services:
+
+| Service | Image / Build | Dependencies | Health Check |
+|---|---|---|---|
+| **app** | `Dockerfile` → `runner` stage | db, redis | `GET /api/health` |
+| **worker** | `Dockerfile` → `runner-worker` stage | db, redis | BullMQ module presence |
+| **db** | `postgres:16-alpine` | — | `pg_isready` |
+| **redis** | `redis:7-alpine` | — | `redis-cli ping` |
+| **strapi** | `strapi-cms/Dockerfile` (optional profile) | db | — |
+
+See `docker-compose.yml` and `Dockerfile` for full configuration. The worker service processes BullMQ jobs for writing and speaking evaluations.
+
+## Learner Profiles
+
+Reviews should consider these primary learner personas:
+
+| Persona | Goal | Key Constraints |
+|---|---|---|
+| **Self-study retaker** | Improve band score from 5.5–6.5 to 7.0+ | Limited time, needs targeted feedback, mobile-first usage |
+| **First-time test taker** | Understand IELTS format and build baseline skills | Needs clear instructions, practice before mock tests, confidence building |
+| **Classroom supplement user** | Support instructor-led IELTS course | Structured progress tracking, teacher-visible results, deadline-driven |
+
+## Business Model
+
+IELTS++ operates on a **credit-based freemium model**: learners receive free resources and practice, purchase credits for mock tests and evaluations, and can earn credits through referrals. Score predictions are gated behind completed four-module attempts and labeled as unofficial estimates.
 
 Before running any role, read the shared [review playbook](review-playbook.md). It defines severity, evidence, validation, and handoff expectations for every agent.
 

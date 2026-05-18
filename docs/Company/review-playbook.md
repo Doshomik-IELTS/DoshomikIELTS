@@ -12,6 +12,7 @@ Use this playbook with every company role profile in this directory. It keeps re
 - Respect the existing architecture unless the architecture is the problem under review.
 - For Next.js work, check this project's installed documentation under `node_modules/next/dist/docs/` before giving framework-specific guidance.
 - Do not bury blockers in summaries. Critical and High findings must appear before general commentary.
+- **Never reproduce secrets, tokens, passwords, API keys, or learner PII in review output.** Use `[REDACTED]` or describe the class of value without echoing it.
 
 ## Review Preflight
 
@@ -73,6 +74,36 @@ Agents should actively check for these IELTS++ risks when relevant:
 - Queue reliability: retries, idempotency, dead-letter handling, and replay safety matter for evaluation jobs and sync work.
 - Analytics and privacy: PostHog, Sentry, and logs should not leak learner writing, audio, or sensitive identifiers unnecessarily.
 - Accessibility and mobile ergonomics: timed flows, audio controls, and submission states must remain usable on small screens and keyboards.
+- Schema migration safety: no destructive column drops, type changes, or constraint additions without a dual-write, backfill, or rollback plan.
+
+## Framework Reference Guide
+
+When reviewing Next.js behavior, consult these installed documentation paths instead of relying on training data:
+
+| Topic | Documentation Path |
+|---|---|
+| App Router | `node_modules/next/dist/docs/app.md` |
+| Route Handlers | `node_modules/next/dist/docs/app/api-reference/file-conventions/route.md` |
+| Server Actions | `node_modules/next/dist/docs/app/api-reference/functions/server-actions.md` |
+| Data Fetching | `node_modules/next/dist/docs/app/building-your-application/data-fetching/fetching.md` |
+| Caching | `node_modules/next/dist/docs/app/building-your-application/caching.md` |
+| Middleware | `node_modules/next/dist/docs/app/api-reference/edge/middleware.md` |
+| Deployment | `node_modules/next/dist/docs/app/building-your-application/deploying.md` |
+| API Reference | `node_modules/next/dist/docs/api-reference.md` |
+
+If a path does not exist in the installed version, note the version gap and recommend checking the official Next.js docs for the current release.
+
+## Review Quality Gate
+
+Before delivering a review, verify:
+
+- Every Critical and High finding has a file, route, endpoint, or flow reference.
+- No finding uses only "should" or "consider" without a concrete action and validation step.
+- Assumptions are explicitly labeled and separated from observed facts.
+- The Output Contract structure is followed unless the role file specifies otherwise.
+- No secrets, tokens, or PII appear in the output.
+
+If any of these fail, revise before delivering.
 
 ## Suggested Validation Commands
 
@@ -130,6 +161,17 @@ Use this structure unless a role file gives a more specific format:
 - Reliability issues with learner or editor impact should be handed to Product, QA, and DevOps/SRE.
 - Content, rubric, scoring, or disclaimer issues should be handed to Assessment & Content Integrity, Product, Backend, and QA as needed.
 - Code quality issues that affect release confidence should include QA validation.
+
+## Conflict Resolution
+
+When two roles produce contradictory findings or recommendations:
+
+1. **Technical disputes** (e.g., Security demands fail-closed rate limiting, Product argues it blocks legitimate users): The CTO role is the final arbiter. Evaluate whether the technical risk outweighs the user friction, and choose the smallest change that addresses both concerns.
+2. **User-value disputes** (e.g., Product wants a feature, UX argues it increases cognitive load): The Product Manager role is the final arbiter, but must explicitly justify why the user value outweighs the usability cost.
+3. **Severity disagreements** (e.g., one role marks Critical, another marks Medium): Default to the higher severity until evidence proves otherwise. The role that assigned the lower severity must provide concrete evidence why the risk is bounded.
+4. **Implementation disputes** (e.g., Backend wants a schema change, Code Quality argues it introduces coupling): The CTO role decides, with preference for the smallest change that reduces risk without adding architectural debt.
+
+Document the resolution in the review output under a "Conflict Resolution" section, naming the roles involved, the disagreement, and the final decision with reasoning.
 
 ## Definition of Done for a Review
 
