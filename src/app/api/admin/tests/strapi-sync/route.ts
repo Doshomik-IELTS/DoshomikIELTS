@@ -3,8 +3,13 @@ import { requireCurrentUser } from "@/lib/auth/session";
 import { canAccessAdminRoutes } from "@/lib/auth/roles";
 import { ok, fail } from "@/lib/api/response";
 import { fetchStrapiMockTests, ensureLocalTestFromStrapi } from "@/lib/strapi/content";
+import { submissionRateLimiter, withRateLimit } from "@/lib/rate-limit";
 
-export async function POST() {
+const checkRateLimit = withRateLimit(submissionRateLimiter, (request: Request) => {
+  return request.headers.get("x-user-id") ?? request.headers.get("x-forwarded-for") ?? "unknown";
+});
+
+export async function POST(request: Request) {
   let actor;
   try {
     actor = await requireCurrentUser();
@@ -15,6 +20,9 @@ export async function POST() {
   if (!canAccessAdminRoutes(actor.profile.roles)) {
     return fail({ code: "FORBIDDEN", message: "Admin access required" }, 403);
   }
+
+  const rateLimitResponse = await checkRateLimit(request);
+  if (rateLimitResponse) return rateLimitResponse;
 
   const strapiTests = await fetchStrapiMockTests();
   if (!strapiTests) {

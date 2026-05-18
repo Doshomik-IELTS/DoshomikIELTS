@@ -1,5 +1,8 @@
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { logger } from "@/lib/observability/logger";
+import { strapiCircuitBreaker } from "@/lib/resilience/external-services";
+import { withTimeout } from "@/lib/resilience/circuit-breaker";
 
 export const STRAPI_ID_PREFIX = "strapi_";
 
@@ -196,23 +199,34 @@ function sectionContentValue(section: StrapiEntry): Prisma.InputJsonValue | unde
 async function strapiFetch<T>(path: string): Promise<T | null> {
   if (!strapiEnabled()) return null;
 
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 4000);
-
   try {
-    const res = await fetch(`${strapiBaseUrl()}${path}`, {
-      headers: {
-        Authorization: `Bearer ${process.env.STRAPI_API_TOKEN}`,
-      },
-      cache: "no-store",
-      signal: controller.signal,
+    return await strapiCircuitBreaker.execute(async () => {
+      const res = await withTimeout(
+        (signal) =>
+          fetch(`${strapiBaseUrl()}${path}`, {
+            headers: {
+              Authorization: `Bearer ${process.env.STRAPI_API_TOKEN}`,
+            },
+            cache: "no-store",
+            signal,
+          }),
+        4000,
+        "Strapi request timed out",
+      );
+
+      if (!res.ok) {
+        throw new Error(`Strapi returned ${res.status}`);
+      }
+
+      return (await res.json()) as T;
     });
-    if (!res.ok) return null;
-    return (await res.json()) as T;
-  } catch {
+  } catch (error) {
+    logger.warn("strapi fetch failed", {
+      path,
+      error: error instanceof Error ? error.message : String(error),
+      circuit: strapiCircuitBreaker.status(),
+    });
     return null;
-  } finally {
-    clearTimeout(timeout);
   }
 }
 

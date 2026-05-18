@@ -3,6 +3,7 @@ import { hasRole } from "@/lib/auth/roles";
 import { requireCurrentUser } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
+import { supabaseCircuitBreaker } from "@/lib/resilience/external-services";
 
 export async function GET(
   request: Request,
@@ -32,10 +33,12 @@ export async function GET(
 
   try {
     const expiresIn = Number(process.env.SIGNED_URL_TTL_SECONDS || 900);
-    const supabase = createSupabaseServiceClient();
-    const { data, error } = await supabase.storage
-      .from(mediaAsset.bucket)
-      .createSignedUrl(mediaAsset.path, expiresIn);
+    const { data, error } = await supabaseCircuitBreaker.execute(async () => {
+      const supabase = createSupabaseServiceClient();
+      return supabase.storage
+        .from(mediaAsset.bucket)
+        .createSignedUrl(mediaAsset.path, expiresIn);
+    });
 
     if (error || !data?.signedUrl) {
       return fail({ code: "INTERNAL_ERROR", message: error?.message ?? "Could not create download URL" }, 500);

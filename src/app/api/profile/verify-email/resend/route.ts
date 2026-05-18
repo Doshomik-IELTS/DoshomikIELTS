@@ -2,6 +2,7 @@ import { fail, ok } from "@/lib/api/response";
 import { getCurrentUser } from "@/lib/auth/session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
+import { supabaseCircuitBreaker } from "@/lib/resilience/external-services";
 
 export async function POST() {
   const current = await getCurrentUser();
@@ -19,14 +20,17 @@ export async function POST() {
   if (getUserError || !user?.email) {
     return fail({ code: "INTERNAL_ERROR", message: "Could not fetch user data." }, 500);
   }
+  const email = user.email;
 
   if (user.email_confirmed_at) {
     return fail({ code: "INVALID_STATE", message: "Email is already verified." }, 400);
   }
 
-  const serviceClient = createSupabaseServiceClient();
-  const { error } = await serviceClient.auth.admin.inviteUserByEmail(user.email, {
-    redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/profile/verify-email/callback`,
+  const { error } = await supabaseCircuitBreaker.execute(async () => {
+    const serviceClient = createSupabaseServiceClient();
+    return serviceClient.auth.admin.inviteUserByEmail(email, {
+      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/profile/verify-email/callback`,
+    });
   });
 
   if (error) {

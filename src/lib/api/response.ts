@@ -28,6 +28,6 @@ export function ok<T>(data: T, init?: ResponseInit) {
   return NextResponse.json<ApiEnvelope<T>>({ data, error: null }, init);
 }
 
-export function fail(error: ApiError, status = 400) {
-  return NextResponse.json<ApiEnvelope<never>>({ data: null, error }, { status });
+export function fail(error: ApiError, status = 400, headers?: HeadersInit) {
+  return NextResponse.json<ApiEnvelope<never>>({ data: null, error }, { status, headers });
 }

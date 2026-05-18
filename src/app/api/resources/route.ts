@@ -1,13 +1,20 @@
 import { ok } from "@/lib/api/response";
+import { parseQuery } from "@/lib/api/validation";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth/session";
 import { fetchStrapiResources } from "@/lib/strapi/content";
+import { z } from "zod";
+
+const querySchema = z.object({
+  category: z.string().trim().min(1).max(64).optional(),
+  difficulty: z.string().trim().min(1).max(32).optional(),
+  search: z.string().trim().min(1).max(120).optional(),
+});
 
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const category = searchParams.get("category") ?? undefined;
-  const difficulty = searchParams.get("difficulty") ?? undefined;
-  const search = searchParams.get("search") ?? undefined;
+  const parsedQuery = parseQuery(request, querySchema);
+  if (parsedQuery.response) return parsedQuery.response;
+  const { category, difficulty, search } = parsedQuery.data;
 
   const current = await getCurrentUser();
 

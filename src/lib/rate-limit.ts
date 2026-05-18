@@ -1,5 +1,7 @@
 import Redis from "ioredis";
 import { env } from "process";
+import { fail } from "@/lib/api/response";
+import { logger } from "@/lib/observability/logger";
 
 interface RateLimitOptions {
   maxRequests: number;
@@ -23,9 +25,13 @@ function getRedisClient(): Redis | null {
     return new Redis(url, {
       tls: isTls ? {} : undefined,
       maxRetriesPerRequest: 3,
+      enableOfflineQueue: false,
       lazyConnect: true,
     });
-  } catch {
+  } catch (error) {
+    logger.warn("redis rate limiter unavailable", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     // Fail-open: if Redis connection fails, don't block legitimate requests
     return null;
   }
@@ -69,7 +75,10 @@ export function createRateLimiter(options: RateLimitOptions) {
         resetIn,
         retryAfter: allowed ? undefined : resetIn,
       };
-  } catch {
+  } catch (error) {
+    logger.warn("redis rate limit check failed", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     // Fail-open: Redis failure shouldn't block requests
     return { allowed: true, remaining: options.maxRequests, resetIn: options.windowSeconds };
     }
@@ -86,20 +95,17 @@ export function withRateLimit(
       const result = await rateLimiter(identifier);
 
       if (!result.allowed) {
-        return new Response(
-          JSON.stringify({
+        return fail(
+          {
             code: "RATE_LIMITED",
             message: `Too many requests. Please try again in ${result.resetIn} seconds.`,
-            retryAfter: result.retryAfter,
-          }),
+            details: { retryAfter: result.retryAfter },
+          },
+          429,
           {
-            status: 429,
-            headers: {
-              "Content-Type": "application/json",
-              "X-RateLimit-Remaining": String(result.remaining),
-              "X-RateLimit-Reset": String(result.resetIn),
-              "Retry-After": String(result.retryAfter ?? result.resetIn),
-            },
+            "X-RateLimit-Remaining": String(result.remaining),
+            "X-RateLimit-Reset": String(result.resetIn),
+            "Retry-After": String(result.retryAfter ?? result.resetIn),
           },
         );
       }

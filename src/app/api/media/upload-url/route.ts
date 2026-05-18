@@ -5,6 +5,7 @@ import { requireCurrentUser } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
 import { mediaRateLimiter, withRateLimit } from "@/lib/rate-limit";
+import { supabaseCircuitBreaker } from "@/lib/resilience/external-services";
 
 const SPEAKING_TYPES = new Set(["audio/webm", "audio/mpeg", "audio/mp4", "audio/wav"]);
 const LISTENING_TYPES = new Set(["audio/mpeg", "audio/mp4", "audio/wav"]);
@@ -59,8 +60,10 @@ export async function POST(request: Request) {
   let signedUrl: string;
   let token: string | undefined;
   try {
-    const supabase = createSupabaseServiceClient();
-    const { data, error } = await supabase.storage.from(bucket).createSignedUploadUrl(path);
+    const { data, error } = await supabaseCircuitBreaker.execute(async () => {
+      const supabase = createSupabaseServiceClient();
+      return supabase.storage.from(bucket).createSignedUploadUrl(path);
+    });
     if (error || !data?.signedUrl) {
       return fail({ code: "INTERNAL_ERROR", message: error?.message ?? "Could not create upload URL" }, 500);
     }

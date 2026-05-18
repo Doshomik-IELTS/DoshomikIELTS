@@ -1,7 +1,13 @@
 import { prisma } from "@/lib/prisma";
 import { requireCurrentUser } from "@/lib/auth/session";
 import { ok, fail } from "@/lib/api/response";
+import { paginateArray, paginationSchema, parseQuery } from "@/lib/api/validation";
 import { fetchStrapiMockTests } from "@/lib/strapi/content";
+import { z } from "zod";
+
+const querySchema = paginationSchema.extend({
+  type: z.enum(["practice", "short_mock", "full_mock"]).optional(),
+});
 
 export async function GET(request: Request) {
   try {
@@ -10,24 +16,13 @@ export async function GET(request: Request) {
     return fail({ code: "UNAUTHENTICATED", message: "Authentication required" }, 401);
   }
 
-  const { searchParams } = new URL(request.url);
-  const type = searchParams.get("type");
-  const page = parseInt(searchParams.get("page") || "1");
-  const limit = parseInt(searchParams.get("limit") || "20");
+  const parsedQuery = parseQuery(request, querySchema);
+  if (parsedQuery.response) return parsedQuery.response;
+  const { type, page, limit } = parsedQuery.data;
 
-  const strapiTests = await fetchStrapiMockTests(type ?? undefined);
+  const strapiTests = await fetchStrapiMockTests(type);
   if (strapiTests) {
-    const start = (page - 1) * limit;
-    const items = strapiTests.slice(start, start + limit);
-    return ok({
-      items,
-      pagination: {
-        page,
-        limit,
-        total: strapiTests.length,
-        totalPages: Math.ceil(strapiTests.length / limit),
-      },
-    });
+    return ok(paginateArray(strapiTests, page, limit));
   }
 
   const where: Record<string, unknown> = {
