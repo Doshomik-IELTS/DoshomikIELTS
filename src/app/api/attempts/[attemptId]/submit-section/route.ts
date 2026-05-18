@@ -1,11 +1,17 @@
 import { prisma } from "@/lib/prisma";
 import { requireCurrentUser } from "@/lib/auth/session";
 import { ok, fail } from "@/lib/api/response";
+import {
+  buildAnswerJson,
+  buildSectionResponseJson,
+  getSectionWriteAccessError,
+  getSectionMarkerId,
+  getSectionResponseKey,
+  getSubmittedSectionIds,
+} from "@/lib/attempts/mock-test";
 import { enqueueLlmJob } from "@/lib/queue/enqueue";
 import type { IeltsModule, Prisma } from "@prisma/client";
 import { z } from "zod";
-
-const REQUIRED_MODULES: IeltsModule[] = ["listening", "reading", "writing", "speaking"];
 
 const submitSectionSchema = z.object({
   sectionId: z.string().trim().min(1).max(128),
@@ -78,10 +84,25 @@ export async function postSubmitSection(
     return fail({ code: "NOT_FOUND", message: "Section not found" }, 404);
   }
 
+  const writeAccessError = getSectionWriteAccessError({
+    attemptStartedAt: attempt.startedAt,
+    testType: attempt.test.type,
+    sections: attempt.test.sections,
+    answers: attempt.answers,
+    sectionId,
+  });
+  if (writeAccessError) {
+    return fail(writeAccessError, writeAccessError.code === "TIME_EXPIRED" ? 409 : 400);
+  }
+
+  const submittedAt = new Date();
   const sectionAnswers = attempt.answers.filter((a) => a.sectionId === sectionId);
+  const sectionResponseKey = getSectionResponseKey(section.module);
+  const hasSectionResponse =
+    Boolean(responseText?.trim()) || sectionAnswers.some((answer) => answer.answerText || answer.answerJson);
   const answeredCount = sectionAnswers.filter((a) => a.answerText || a.answerJson).length;
 
-  if (answeredCount === 0) {
+  if (answeredCount === 0 && !hasSectionResponse) {
     return fail({ code: "VALIDATION_ERROR", message: "No answers provided for this section" }, 400);
   }
 
@@ -169,34 +190,65 @@ export async function postSubmitSection(
     await deps.enqueueLlmJob(job.type, job.id);
   }
 
-  await deps.prisma.attemptAnswer.updateMany({
-    where: { attemptId, sectionId },
-    data: { answerJson: { isDraft: false } },
-  });
+  for (const answer of sectionAnswers) {
+    await deps.prisma.attemptAnswer.update({
+      where: { id: answer.id },
+      data: {
+        answerJson: buildAnswerJson(answer.answerJson, { isDraft: false }),
+        submittedAt,
+      },
+    });
+  }
 
-  const submittedSectionIds = new Set(
-    attempt.answers.filter((a) => !isDraftAnswer(a.answerJson)).map((a) => a.sectionId),
-  );
+  if (sectionResponseKey) {
+    await deps.prisma.attemptAnswer.upsert({
+      where: {
+        id: getSectionMarkerId(attemptId, sectionId),
+      },
+      create: {
+        id: getSectionMarkerId(attemptId, sectionId),
+        attemptId,
+        sectionId,
+        questionId: null,
+        answerText: responseText?.trim() || null,
+        answerJson: buildSectionResponseJson({
+          responseKind: sectionResponseKey,
+          responseText: responseText?.trim() || null,
+          isDraft: false,
+        }),
+        submittedAt,
+      },
+      update: {
+        answerText: responseText?.trim() || null,
+        answerJson: buildSectionResponseJson({
+          responseKind: sectionResponseKey,
+          responseText: responseText?.trim() || null,
+          isDraft: false,
+        }),
+        submittedAt,
+      },
+    });
+  }
+
+  const submittedSectionIds = getSubmittedSectionIds(attempt.answers);
   submittedSectionIds.add(sectionId);
   const totalSections = attempt.test.sections.length;
   const allSectionsCompleted = submittedSectionIds.size === totalSections;
 
   if (allSectionsCompleted) {
-    const completedModules = new Set(
-      attempt.test.sections.map((s) => s.module)
+    const requiresEvaluation = attempt.test.sections.some(
+      (attemptSection) => attemptSection.module === "writing" || attemptSection.module === "speaking",
     );
-    
-    const hasAllModules = REQUIRED_MODULES.every((module) => completedModules.has(module));
+    const nextStatus = requiresEvaluation ? "evaluating" : "completed";
 
-    if (hasAllModules) {
-      await deps.prisma.mockTestAttempt.update({
-        where: { id: attemptId },
-        data: {
-          status: "evaluating",
-          submittedAt: new Date(),
-        },
-      });
-    }
+    await deps.prisma.mockTestAttempt.update({
+      where: { id: attemptId },
+      data: {
+        status: nextStatus,
+        submittedAt,
+        completedAt: nextStatus === "completed" ? submittedAt : null,
+      },
+    });
   }
 
   return ok({
@@ -208,19 +260,16 @@ export async function postSubmitSection(
       ? { rawScore, maxRawScore, estimatedBand }
       : null,
     allSectionsCompleted,
-    status: allSectionsCompleted ? "evaluating" : "in_progress",
+    status: allSectionsCompleted
+      ? attempt.test.sections.some((attemptSection) => attemptSection.module === "writing" || attemptSection.module === "speaking")
+        ? "evaluating"
+        : "completed"
+      : "in_progress",
   });
 }
 
 export async function POST(request: Request, context: { params: Promise<{ attemptId: string }> }) {
   return postSubmitSection(request, context);
-}
-
-function isDraftAnswer(answerJson: Prisma.JsonValue) {
-  if (typeof answerJson !== "object" || answerJson === null || Array.isArray(answerJson)) {
-    return false;
-  }
-  return (answerJson as { isDraft?: unknown }).isDraft === true;
 }
 
 function calculateBandFromPercentage(percentage: number, module: string): number {

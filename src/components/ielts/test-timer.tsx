@@ -5,16 +5,28 @@ import { useEffect, useState } from "react";
 interface TestTimerProps {
   attemptId: string;
   totalDuration: number;
+  initialRemainingSeconds?: number;
   onTimeExpired?: () => void;
   onSync?: (elapsed: number) => void;
 }
 
-export function TestTimer({ attemptId, totalDuration, onTimeExpired, onSync }: TestTimerProps) {
-  const [remaining, setRemaining] = useState(totalDuration * 60);
+export function TestTimer({
+  attemptId,
+  totalDuration,
+  initialRemainingSeconds,
+  onTimeExpired,
+  onSync,
+}: TestTimerProps) {
+  const [remaining, setRemaining] = useState(initialRemainingSeconds ?? totalDuration * 60);
   const [isExpired, setIsExpired] = useState(false);
 
   useEffect(() => {
-    if (totalDuration <= 0) return;
+    setRemaining(initialRemainingSeconds ?? totalDuration * 60);
+    setIsExpired(false);
+  }, [initialRemainingSeconds, totalDuration]);
+
+  useEffect(() => {
+    if (totalDuration <= 0 || isExpired) return;
     const interval = setInterval(() => {
       setRemaining((prev) => {
         const newVal = prev - 1;
@@ -27,7 +39,13 @@ export function TestTimer({ attemptId, totalDuration, onTimeExpired, onSync }: T
       });
     }, 1000);
     return () => clearInterval(interval);
-  }, [totalDuration, onTimeExpired]);
+  }, [isExpired, onTimeExpired, totalDuration]);
+
+  useEffect(() => {
+    if (remaining > 0 || isExpired) return;
+    setIsExpired(true);
+    onTimeExpired?.();
+  }, [isExpired, onTimeExpired, remaining]);
 
   useEffect(() => {
     if (isExpired || totalDuration <= 0) return;

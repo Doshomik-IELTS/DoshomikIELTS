@@ -186,7 +186,17 @@ function useSignedMediaUrl(mediaAssetId?: string | null) {
   return { url, error };
 }
 
-function SectionMaterial({ section, sourceSpans, attemptId }: { section: IeltsSection; sourceSpans: SourceSpan[]; attemptId?: string }) {
+function SectionMaterial({
+  section,
+  sourceSpans,
+  attemptId,
+  showTranscript = true,
+}: {
+  section: IeltsSection;
+  sourceSpans: SourceSpan[];
+  attemptId?: string;
+  showTranscript?: boolean;
+}) {
   const content = section.contentJson;
   const paragraphs = getParagraphs(content);
   const passageTitle = getString(content, "passageTitle");
@@ -241,7 +251,7 @@ function SectionMaterial({ section, sourceSpans, attemptId }: { section: IeltsSe
           ) : (
             <p className="text-sm text-amber-700">No audio has been attached to this listening section.</p>
           )}
-          {transcript ? (
+          {showTranscript && transcript ? (
             <details className="rounded border border-slate-200 p-3">
               <summary className="cursor-pointer text-sm font-medium text-slate-700">Transcript</summary>
               <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-slate-700">{highlightedText(transcript, sourceSpans)}</p>
@@ -282,12 +292,14 @@ export function IeltsSectionRenderer({
   section,
   attemptId,
   answers,
+  showTranscript = true,
   disabled,
   onAnswerChange,
 }: {
   section: IeltsSection;
   attemptId?: string;
   answers: Record<string, string>;
+  showTranscript?: boolean;
   disabled?: boolean;
   onAnswerChange: (questionId: string, value: string) => void;
 }) {
@@ -302,7 +314,7 @@ export function IeltsSectionRenderer({
   return (
     <div className="grid gap-5 lg:grid-cols-2">
       <div className="space-y-4">
-        <SectionMaterial section={section} sourceSpans={sourceSpans} attemptId={attemptId} />
+        <SectionMaterial section={section} sourceSpans={sourceSpans} attemptId={attemptId} showTranscript={showTranscript} />
       </div>
       <div className="space-y-4">
         {section.instructions ? (

@@ -12,7 +12,7 @@ Use a mix of:
 ## Current Implementation Status
 
 **TypeScript, Lint, Build:** ✅ All passing
-**E2E Tests:** ⚠️ Need Supabase environment
+**E2E Tests:** ⚠️ Specs updated; browser execution still needs a normal local/CI environment
 
 ### Implemented Pages
 
@@ -112,11 +112,15 @@ Before browser-level tests, keep `pnpm typecheck` green. ✅ All passing.
 ### Mock Test
 
 - Mock test list loads. ⚠️ E2E needed
-- Start test creates/opens attempt. ⚠️ E2E needed
+- Start test creates/opens attempt. ✅ Covered by updated launch-gate specs
 - Draft answer state is preserved during active attempt. ✅ Verified via P0
+- Full-mock future-section writes are blocked on the backend. ✅ Verified via P0
+- Late timed submissions are rejected with `TIME_EXPIRED`. ✅ Verified via P0
 - Section submit shows loading and result/status. ⚠️ E2E needed
 - Final score page hides overall score if incomplete. ✅ Verified via P0
 - Final score page shows score only when backend returns complete prediction. ✅ Verified via P0
+- Listening transcripts stay hidden during active attempts. ⚠️ Browser/E2E still needed
+- Mock-test credit balance and insufficient-credit states render clearly. ⚠️ E2E needed
 
 ### Evaluation
 
@@ -145,10 +149,10 @@ Before browser-level tests, keep `pnpm typecheck` green. ✅ All passing.
 2. Login → browse resources → save resource.
 3. Complete vocabulary/grammar practice.
 4. Complete reading/listening practice.
-5. Start mock test → submit Listening/Reading.
+5. Start mock test → submit Listening/Reading without skipping future sections.
 6. Submit Writing → wait for feedback.
 7. Submit Speaking text → wait for feedback.
-8. Submit Speaking audio/upload if supported.
+8. Submit Speaking audio/upload if supported and confirm text fallback when recording is unavailable.
 9. View final predicted score after all modules complete.
 10. Admin opens Strapi resource/mock-test authoring from IELTS++ admin.
 11. Learner confirms published Strapi resource/test appears when Strapi API token is configured.
@@ -197,6 +201,9 @@ Check:
 - Answer keys accidentally appearing in learner data. ✅ Verified (P0)
 - Final score appearing before all modules complete. ✅ Verified (P0)
 - Draft answers lost on navigation. ✅ Verified (P0)
+- Timer resetting on refresh during a timed section. ✅ Server state added, browser verification still needed
+- Future-section writes/submissions succeeding through direct API calls. ✅ Verified (P0)
+- Late section submissions being accepted after the deadline. ✅ Verified (P0)
 - Audio upload failure with unclear error. ⚠️ E2E needed
 - Evaluation polling running forever. ⚠️ E2E needed
 - Admin pages accessible to learners. ⚠️ E2E needed

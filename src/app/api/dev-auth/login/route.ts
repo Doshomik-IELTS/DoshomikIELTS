@@ -66,6 +66,29 @@ export async function POST(request: Request) {
     create: { profileId: profile.id, role },
   });
 
+  if (role === "learner") {
+    const existingDemoCredits = await prisma.creditLedger.findFirst({
+      where: {
+        profileId: profile.id,
+        type: "promo",
+        refId: "dev-auth:demo-credits",
+      },
+      select: { id: true },
+    });
+
+    if (!existingDemoCredits) {
+      await prisma.creditLedger.create({
+        data: {
+          profileId: profile.id,
+          amount: 5,
+          type: "promo",
+          description: "Dev demo credits",
+          refId: "dev-auth:demo-credits",
+        },
+      });
+    }
+  }
+
   const response = ok({
     id: profile.id,
     email: profile.email,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -8,9 +8,14 @@ import { apiFetch } from "@/lib/api/client";
 import { SpeakingRecorder } from "./speaking-recorder";
 
 type SpeakingSubmissionProps = {
-  attemptId: string;
-  sectionId: string;
-  part: string;
+  attemptId?: string;
+  sectionId?: string;
+  part?: string;
+  value?: string;
+  mediaAssetId?: string | null;
+  disabled?: boolean;
+  hideSubmit?: boolean;
+  onChange?: (value: { text: string; mediaAssetId: string | null; inputMode: "text" | "audio" }) => void;
   onSubmitted?: (evaluationId: string) => void;
 };
 
@@ -23,15 +28,40 @@ export function SpeakingSubmission({
   attemptId,
   sectionId,
   part,
+  value = "",
+  mediaAssetId: initialMediaAssetId = null,
+  disabled = false,
+  hideSubmit = false,
+  onChange,
   onSubmitted,
 }: SpeakingSubmissionProps) {
-  const [text, setText] = useState("");
-  const [mediaAssetId, setMediaAssetId] = useState<string | null>(null);
+  const [text, setText] = useState(value);
+  const [mediaAssetId, setMediaAssetId] = useState<string | null>(initialMediaAssetId);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [inputMode, setInputMode] = useState<"text" | "audio">("text");
+  const [inputMode, setInputMode] = useState<"text" | "audio">(initialMediaAssetId ? "audio" : "text");
+
+  useEffect(() => {
+    setText(value);
+  }, [value]);
+
+  useEffect(() => {
+    setMediaAssetId(initialMediaAssetId);
+    if (initialMediaAssetId) {
+      setInputMode("audio");
+    }
+  }, [initialMediaAssetId]);
+
+  useEffect(() => {
+    onChange?.({ text, mediaAssetId, inputMode });
+  }, [inputMode, mediaAssetId, onChange, text]);
 
   async function submit() {
+    if (!attemptId || !sectionId || !part) {
+      setError("Speaking submission is not configured.");
+      return;
+    }
+
     if (inputMode === "text" && !text.trim()) {
       setError("Please type your response");
       return;
@@ -75,6 +105,7 @@ export function SpeakingSubmission({
           variant={inputMode === "text" ? "default" : "outline"}
           size="sm"
           onClick={() => setInputMode("text")}
+          disabled={disabled || submitting}
           aria-pressed={inputMode === "text"}
         >
           Type Response
@@ -83,6 +114,7 @@ export function SpeakingSubmission({
           variant={inputMode === "audio" ? "default" : "outline"}
           size="sm"
           onClick={() => setInputMode("audio")}
+          disabled={disabled || submitting}
           aria-pressed={inputMode === "audio"}
         >
           Record Audio
@@ -98,13 +130,14 @@ export function SpeakingSubmission({
             onChange={(e) => setText(e.target.value)}
             placeholder="Type your response here..."
             rows={6}
-            disabled={submitting}
+            disabled={disabled || submitting}
           />
         </div>
       ) : (
         <div className="space-y-2">
           <Label>Audio Recording</Label>
           <SpeakingRecorder
+            disabled={disabled || submitting}
             onRecordingComplete={(id) => setMediaAssetId(id)}
           />
         </div>
@@ -112,11 +145,13 @@ export function SpeakingSubmission({
 
       {error && <p className="text-sm text-red-600">{error}</p>}
 
-      <div className="flex gap-2">
-        <Button onClick={submit} disabled={submitting}>
-          {submitting ? "Submitting..." : "Submit Response"}
-        </Button>
-      </div>
+      {!hideSubmit && (
+        <div className="flex gap-2">
+          <Button onClick={submit} disabled={disabled || submitting}>
+            {submitting ? "Submitting..." : "Submit Response"}
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

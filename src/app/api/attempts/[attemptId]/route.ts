@@ -1,7 +1,12 @@
 import { prisma } from "@/lib/prisma";
 import { requireCurrentUser } from "@/lib/auth/session";
 import { ok, fail } from "@/lib/api/response";
-import type { Prisma } from "@prisma/client";
+import {
+  getCurrentSectionIndex,
+  getSavedAnswersForSection,
+  getSectionRemainingSeconds,
+  getSubmittedSectionIds,
+} from "@/lib/attempts/mock-test";
 
 export async function GET(request: Request, { params }: { params: Promise<{ attemptId: string }> }) {
   let actor;
@@ -81,18 +86,19 @@ export async function GET(request: Request, { params }: { params: Promise<{ atte
     return fail({ code: "NOT_FOUND", message: "Attempt not found" }, 404);
   }
 
-  const submittedSectionIds = new Set(
-    attempt.answers.filter((a) => !isDraftAnswer(a.answerJson)).map((a) => a.sectionId),
+  const currentSectionIndex = getCurrentSectionIndex(attempt.test.sections, attempt.answers);
+  const currentSectionRemainingSeconds = getSectionRemainingSeconds(
+    attempt.startedAt,
+    attempt.test.sections,
+    attempt.answers,
+    currentSectionIndex,
   );
+  const submittedSectionIds = getSubmittedSectionIds(attempt.answers);
   const sectionsWithStatus = attempt.test.sections.map((section) => ({
     ...section,
     submitted: submittedSectionIds.has(section.id),
     answeredCount: attempt.answers.filter((a) => a.sectionId === section.id && (a.answerText || a.answerJson)).length,
-    savedAnswers: Object.fromEntries(
-      attempt.answers
-        .filter((a) => a.sectionId === section.id && a.questionId)
-        .map((a) => [a.questionId, a.answerText ?? ""]),
-    ),
+    savedAnswers: getSavedAnswersForSection(section, attempt.answers),
   }));
 
   const modules = ["listening", "reading", "writing", "speaking"];
@@ -120,17 +126,12 @@ export async function GET(request: Request, { params }: { params: Promise<{ atte
     startedAt: attempt.startedAt,
     submittedAt: attempt.submittedAt,
     completedAt: attempt.completedAt,
+    currentSectionIndex,
+    currentSectionRemainingSeconds,
     sections: sectionsWithStatus,
     moduleProgress,
     allModulesComplete,
     scores: attempt.moduleScores.length > 0 ? attempt.moduleScores : null,
     prediction: attempt.scorePrediction,
   });
-}
-
-function isDraftAnswer(answerJson: Prisma.JsonValue) {
-  if (typeof answerJson !== "object" || answerJson === null || Array.isArray(answerJson)) {
-    return false;
-  }
-  return (answerJson as { isDraft?: unknown }).isDraft === true;
 }

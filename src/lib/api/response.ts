@@ -12,6 +12,7 @@ export type ApiErrorCode =
   | "INVALID_STATE"
   | "INVALID_DIRECTION"
   | "SKIP_NOT_ALLOWED"
+  | "TIME_EXPIRED"
   | "INSUFFICIENT_CREDITS";
 
 export type ApiError = {

@@ -1,6 +1,12 @@
 import { prisma } from "@/lib/prisma";
 import { requireCurrentUser } from "@/lib/auth/session";
 import { ok, fail } from "@/lib/api/response";
+import {
+  buildSectionResponseJson,
+  getSectionWriteAccessError,
+  getSectionMarkerId,
+  getSubmittedSectionIds,
+} from "@/lib/attempts/mock-test";
 import { enqueueLlmJob } from "@/lib/queue/enqueue";
 import { checkRateLimitForIdentifier, evaluationRateLimiter } from "@/lib/rate-limit";
 import { z } from "zod";
@@ -63,11 +69,57 @@ export async function postSpeakingEvaluation(
 
   const attempt = await deps.prisma.mockTestAttempt.findUnique({
     where: { id: attemptId },
+    include: {
+      test: {
+        select: {
+          type: true,
+          sections: {
+            orderBy: { orderIndex: "asc" },
+            select: {
+              id: true,
+              module: true,
+              durationMinutes: true,
+            },
+          },
+        },
+      },
+      answers: {
+        select: {
+          id: true,
+          sectionId: true,
+          questionId: true,
+          answerText: true,
+          answerJson: true,
+          submittedAt: true,
+        },
+      },
+    },
   });
 
   if (!attempt || attempt.profileId !== actor.profile.id) {
     return fail({ code: "NOT_FOUND", message: "Attempt not found" }, 404);
   }
+
+  if (attempt.status !== "in_progress") {
+    return fail({ code: "INVALID_STATE", message: "Attempt is not in progress" }, 400);
+  }
+
+  if (!attempt.test.sections.some((section) => section.id === sectionId && section.module === "speaking")) {
+    return fail({ code: "NOT_FOUND", message: "Speaking section not found" }, 404);
+  }
+
+  const writeAccessError = getSectionWriteAccessError({
+    attemptStartedAt: attempt.startedAt,
+    testType: attempt.test.type,
+    sections: attempt.test.sections,
+    answers: attempt.answers,
+    sectionId,
+  });
+  if (writeAccessError) {
+    return fail(writeAccessError, writeAccessError.code === "TIME_EXPIRED" ? 409 : 400);
+  }
+
+  const submittedAt = new Date();
 
   const { evaluation, job } = await deps.prisma.$transaction(async (tx) => {
     const evaluation = await tx.speakingEvaluation.create({
@@ -100,6 +152,36 @@ export async function postSpeakingEvaluation(
       data: { llmJobId: job.id },
     });
 
+    await tx.attemptAnswer.upsert({
+      where: {
+        id: getSectionMarkerId(attemptId, sectionId),
+      },
+      create: {
+        id: getSectionMarkerId(attemptId, sectionId),
+        attemptId,
+        sectionId,
+        questionId: null,
+        answerText: responseText || null,
+        answerJson: buildSectionResponseJson({
+          responseKind: "speaking",
+          responseText: responseText || null,
+          mediaAssetId: mediaAssetId || null,
+          isDraft: false,
+        }),
+        submittedAt,
+      },
+      update: {
+        answerText: responseText || null,
+        answerJson: buildSectionResponseJson({
+          responseKind: "speaking",
+          responseText: responseText || null,
+          mediaAssetId: mediaAssetId || null,
+          isDraft: false,
+        }),
+        submittedAt,
+      },
+    });
+
     return { evaluation: linkedEvaluation, job };
   });
 
@@ -107,10 +189,25 @@ export async function postSpeakingEvaluation(
     await deps.enqueueLlmJob(job.type, job.id);
   }
 
+  const submittedSectionIds = getSubmittedSectionIds(attempt.answers);
+  submittedSectionIds.add(sectionId);
+  const allSectionsCompleted = submittedSectionIds.size === attempt.test.sections.length;
+
+  if (allSectionsCompleted) {
+    await deps.prisma.mockTestAttempt.update({
+      where: { id: attemptId },
+      data: {
+        status: "evaluating",
+        submittedAt,
+      },
+    });
+  }
+
   return ok({
     id: evaluation.id,
     status: evaluation.status,
     createdAt: evaluation.createdAt,
+    sectionSubmitted: true,
   }, { status: 201 });
 }
 

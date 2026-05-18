@@ -251,7 +251,14 @@ test("attempt answers rejects invalid request payload", async () => {
     {
       requireCurrentUser: async () => learnerActor,
       prisma: {
-        mockTestAttempt: { findUnique: async () => ({ id: "attempt_1", profileId: learnerActor.profile.id, status: "in_progress", testId: "test_1" }) },
+        mockTestAttempt: {
+          findUnique: async () => ({
+            id: "attempt_1",
+            profileId: learnerActor.profile.id,
+            status: "in_progress",
+            testId: "test_1",
+          }),
+        },
       } as never,
     },
   );
@@ -291,6 +298,110 @@ test("attempt answers returns not found for attempts owned by another profile", 
   assert.equal(payload.error.code, "NOT_FOUND");
 });
 
+test("attempt answers stores writing responses as section markers", async () => {
+  let markerCreate: { answerJson: Record<string, unknown>; questionId: string | null } | null = null;
+
+  const response = await postAttemptAnswers(
+    new Request("http://localhost/api/attempts/attempt_1/answers", {
+      method: "POST",
+      body: JSON.stringify({
+        sectionId: "section_1",
+        answers: { writing: "This is a complete writing response." },
+        isDraft: true,
+      }),
+    }),
+    { params: Promise.resolve({ attemptId: "attempt_1" }) },
+    {
+      requireCurrentUser: async () => learnerActor,
+      prisma: {
+        mockTestAttempt: {
+          findUnique: async () => ({
+            id: "attempt_1",
+            profileId: learnerActor.profile.id,
+            status: "in_progress",
+            testId: "test_1",
+            startedAt: new Date(),
+            test: {
+              type: "full_mock",
+              sections: [{ id: "section_1", module: "writing", durationMinutes: 20 }],
+            },
+            answers: [],
+          }),
+        },
+        testSection: {
+          findUnique: async () => ({
+            id: "section_1",
+            testId: "test_1",
+            module: "writing",
+            questions: [],
+          }),
+        },
+        attemptAnswer: {
+          upsert: async (args: { create: { answerJson: Record<string, unknown>; questionId: string | null } }) => {
+            markerCreate = args.create;
+            return {};
+          },
+        },
+      } as never,
+    },
+  );
+
+  assert.equal(response.status, 200);
+  const createdMarker = markerCreate as { questionId: string | null; answerJson: Record<string, unknown> } | null;
+  assert.ok(createdMarker);
+  assert.equal(createdMarker.questionId, null);
+  assert.equal(createdMarker.answerJson.responseKind, "writing");
+  assert.equal(createdMarker.answerJson.isDraft, true);
+});
+
+test("attempt answers rejects future full mock sections", async () => {
+  const response = await postAttemptAnswers(
+    new Request("http://localhost/api/attempts/attempt_1/answers", {
+      method: "POST",
+      body: JSON.stringify({
+        sectionId: "section_2",
+        answers: { q2: "A" },
+        isDraft: true,
+      }),
+    }),
+    { params: Promise.resolve({ attemptId: "attempt_1" }) },
+    {
+      requireCurrentUser: async () => learnerActor,
+      prisma: {
+        mockTestAttempt: {
+          findUnique: async () => ({
+            id: "attempt_1",
+            profileId: learnerActor.profile.id,
+            status: "in_progress",
+            testId: "test_1",
+            startedAt: new Date(),
+            test: {
+              type: "full_mock",
+              sections: [
+                { id: "section_1", module: "reading", durationMinutes: 10 },
+                { id: "section_2", module: "reading", durationMinutes: 10 },
+              ],
+            },
+            answers: [],
+          }),
+        },
+        testSection: {
+          findUnique: async () => ({
+            id: "section_2",
+            testId: "test_1",
+            module: "reading",
+            questions: [{ id: "q2", answerKey: null }],
+          }),
+        },
+      } as never,
+    },
+  );
+
+  assert.equal(response.status, 400);
+  const payload = await response.json();
+  assert.equal(payload.error.code, "SKIP_NOT_ALLOWED");
+});
+
 test("submit section rejects empty answered sections", async () => {
   const response = await postSubmitSection(
     new Request("http://localhost/api/attempts/attempt_1/submit-section", {
@@ -306,8 +417,10 @@ test("submit section rejects empty answered sections", async () => {
             id: "attempt_1",
             profileId: learnerActor.profile.id,
             status: "in_progress",
+            startedAt: new Date(),
             test: {
-              sections: [{ id: "section_1", module: "reading", title: "Section 1", contentJson: null }],
+              type: "full_mock",
+              sections: [{ id: "section_1", module: "reading", title: "Section 1", contentJson: null, durationMinutes: 10 }],
             },
             answers: [],
           }),
@@ -320,6 +433,151 @@ test("submit section rejects empty answered sections", async () => {
   assert.equal(response.status, 400);
   const payload = await response.json();
   assert.equal(payload.error.code, "VALIDATION_ERROR");
+});
+
+test("submit section preserves objective answer values when marking them submitted", async () => {
+  let updatedAnswerJson: Record<string, unknown> | null = null;
+
+  const response = await postSubmitSection(
+    new Request("http://localhost/api/attempts/attempt_1/submit-section", {
+      method: "POST",
+      body: JSON.stringify({ sectionId: "section_1" }),
+    }),
+    { params: Promise.resolve({ attemptId: "attempt_1" }) },
+    {
+      requireCurrentUser: async () => learnerActor,
+      prisma: {
+        mockTestAttempt: {
+          findUnique: async () => ({
+            id: "attempt_1",
+            profileId: learnerActor.profile.id,
+            status: "in_progress",
+            startedAt: new Date(),
+            test: {
+              type: "full_mock",
+              sections: [{ id: "section_1", module: "reading", title: "Section 1", contentJson: null, durationMinutes: 10 }],
+            },
+            answers: [
+              {
+                id: "answer_1",
+                sectionId: "section_1",
+                answerText: "A",
+                answerJson: { value: "A", isDraft: true },
+                isCorrect: true,
+              },
+            ],
+          }),
+          update: async () => ({}),
+        },
+        attemptAnswer: {
+          update: async (args: { data: { answerJson: Record<string, unknown> } }) => {
+            updatedAnswerJson = args.data.answerJson;
+            return {};
+          },
+          upsert: async () => ({}),
+        },
+        question: {
+          count: async () => 1,
+        },
+        moduleScore: {
+          upsert: async () => ({}),
+        },
+      } as never,
+      enqueueLlmJob: async () => true,
+    },
+  );
+
+  assert.equal(response.status, 200);
+  const persistedAnswerJson = updatedAnswerJson as Record<string, unknown> | null;
+  assert.ok(persistedAnswerJson);
+  assert.equal(persistedAnswerJson.value, "A");
+  assert.equal(persistedAnswerJson.isDraft, false);
+});
+
+test("submit section rejects future full mock sections", async () => {
+  const response = await postSubmitSection(
+    new Request("http://localhost/api/attempts/attempt_1/submit-section", {
+      method: "POST",
+      body: JSON.stringify({ sectionId: "section_2" }),
+    }),
+    { params: Promise.resolve({ attemptId: "attempt_1" }) },
+    {
+      requireCurrentUser: async () => learnerActor,
+      prisma: {
+        mockTestAttempt: {
+          findUnique: async () => ({
+            id: "attempt_1",
+            profileId: learnerActor.profile.id,
+            status: "in_progress",
+            startedAt: new Date(),
+            test: {
+              type: "full_mock",
+              sections: [
+                { id: "section_1", module: "reading", title: "Section 1", contentJson: null, durationMinutes: 10 },
+                { id: "section_2", module: "reading", title: "Section 2", contentJson: null, durationMinutes: 10 },
+              ],
+            },
+            answers: [
+              {
+                id: "answer_1",
+                sectionId: "section_2",
+                answerText: "A",
+                answerJson: { value: "A", isDraft: true },
+                isCorrect: true,
+              },
+            ],
+          }),
+        },
+      } as never,
+      enqueueLlmJob: async () => true,
+    },
+  );
+
+  assert.equal(response.status, 400);
+  const payload = await response.json();
+  assert.equal(payload.error.code, "SKIP_NOT_ALLOWED");
+});
+
+test("submit section rejects expired timed sections", async () => {
+  const response = await postSubmitSection(
+    new Request("http://localhost/api/attempts/attempt_1/submit-section", {
+      method: "POST",
+      body: JSON.stringify({ sectionId: "section_1" }),
+    }),
+    { params: Promise.resolve({ attemptId: "attempt_1" }) },
+    {
+      requireCurrentUser: async () => learnerActor,
+      prisma: {
+        mockTestAttempt: {
+          findUnique: async () => ({
+            id: "attempt_1",
+            profileId: learnerActor.profile.id,
+            status: "in_progress",
+            startedAt: new Date("2026-05-18T00:00:00.000Z"),
+            test: {
+              type: "full_mock",
+              sections: [{ id: "section_1", module: "reading", title: "Section 1", contentJson: null, durationMinutes: 10 }],
+            },
+            answers: [
+              {
+                id: "answer_1",
+                sectionId: "section_1",
+                answerText: "A",
+                answerJson: { value: "A", isDraft: true },
+                isCorrect: true,
+                submittedAt: new Date("2026-05-18T00:00:00.000Z"),
+              },
+            ],
+          }),
+        },
+      } as never,
+      enqueueLlmJob: async () => true,
+    },
+  );
+
+  assert.equal(response.status, 409);
+  const payload = await response.json();
+  assert.equal(payload.error.code, "TIME_EXPIRED");
 });
 
 test("submit section returns not found for attempts owned by another profile", async () => {
@@ -337,7 +595,8 @@ test("submit section returns not found for attempts owned by another profile", a
             id: "attempt_1",
             profileId: "another_profile",
             status: "in_progress",
-            test: { sections: [] },
+            startedAt: new Date("2026-05-18T00:00:00.000Z"),
+            test: { type: "full_mock", sections: [] },
             answers: [],
           }),
         },
@@ -349,6 +608,117 @@ test("submit section returns not found for attempts owned by another profile", a
   assert.equal(response.status, 404);
   const payload = await response.json();
   assert.equal(payload.error.code, "NOT_FOUND");
+});
+
+test("speaking evaluation marks the section submitted when the response is queued", async () => {
+  const createdAt = new Date("2026-05-18T00:00:00.000Z");
+  let sectionMarkerJson: Record<string, unknown> | null = null;
+
+  const response = await postSpeakingEvaluation(
+    new Request("http://localhost/api/evaluations/speaking", {
+      method: "POST",
+      body: JSON.stringify({
+        attemptId: "attempt_1",
+        sectionId: "section_speaking",
+        part: "part_3",
+        responseText: "A spoken response transcribed as text.",
+      }),
+    }),
+    {
+      requireCurrentUser: async () => learnerActor,
+      checkRateLimitForIdentifier: async () => null,
+      evaluationRateLimiter: async () => ({ allowed: true, remaining: 10, resetIn: 60 }),
+      prisma: {
+        mockTestAttempt: {
+          findUnique: async () => ({
+            id: "attempt_1",
+            profileId: learnerActor.profile.id,
+            status: "in_progress",
+            startedAt: new Date(),
+            test: {
+              type: "full_mock",
+              sections: [{ id: "section_speaking", module: "speaking", durationMinutes: 15 }],
+            },
+            answers: [],
+          }),
+          update: async () => ({}),
+        },
+        $transaction: async (callback: (tx: {
+          speakingEvaluation: {
+            create: (args: { data: Record<string, unknown> }) => Promise<{ id: string; createdAt: Date }>;
+            update: (args: { where: { id: string }; data: { llmJobId: string } }) => Promise<{ id: string; createdAt: Date; status: string }>;
+          };
+          llmJob: {
+            create: (args: { data: Record<string, unknown> }) => Promise<{ id: string; type: string }>;
+          };
+          attemptAnswer: {
+            upsert: (args: { create: { answerJson: Record<string, unknown> } }) => Promise<Record<string, never>>;
+          };
+        }) => Promise<{ evaluation: { id: string; createdAt: Date; status: string }; job: { id: string; type: string } }>) =>
+          callback({
+            speakingEvaluation: {
+              create: async () => ({ id: "eval_1", createdAt }),
+              update: async () => ({ id: "eval_1", createdAt, status: "queued" }),
+            },
+            llmJob: {
+              create: async () => ({ id: "job_1", type: "speaking_evaluation" }),
+            },
+            attemptAnswer: {
+              upsert: async (args) => {
+                sectionMarkerJson = args.create.answerJson;
+                return {};
+              },
+            },
+          }),
+      } as never,
+      enqueueLlmJob: async () => true,
+    },
+  );
+
+  assert.equal(response.status, 201);
+  const createdSectionMarker = sectionMarkerJson as Record<string, unknown> | null;
+  assert.ok(createdSectionMarker);
+  assert.equal(createdSectionMarker.responseKind, "speaking");
+  assert.equal(createdSectionMarker.isDraft, false);
+});
+
+test("speaking evaluation rejects expired timed sections", async () => {
+  const response = await postSpeakingEvaluation(
+    new Request("http://localhost/api/evaluations/speaking", {
+      method: "POST",
+      body: JSON.stringify({
+        attemptId: "attempt_1",
+        sectionId: "section_speaking",
+        part: "part_2",
+        responseText: "Late response",
+      }),
+    }),
+    {
+      requireCurrentUser: async () => learnerActor,
+      checkRateLimitForIdentifier: async () => null,
+      evaluationRateLimiter: async () => ({ allowed: true, remaining: 10, resetIn: 60 }),
+      prisma: {
+        mockTestAttempt: {
+          findUnique: async () => ({
+            id: "attempt_1",
+            profileId: learnerActor.profile.id,
+            status: "in_progress",
+            startedAt: new Date("2026-05-18T00:00:00.000Z"),
+            test: {
+              type: "full_mock",
+              sections: [{ id: "section_speaking", module: "speaking", durationMinutes: 15 }],
+            },
+            answers: [],
+          }),
+        },
+      } as never,
+      enqueueLlmJob: async () => true,
+    },
+  );
+
+  assert.equal(response.status, 409);
+  const payload = await response.json();
+  assert.equal(payload.error.code, "TIME_EXPIRED");
 });
 
 test("admin tests route returns auth response when admin access is missing", async () => {

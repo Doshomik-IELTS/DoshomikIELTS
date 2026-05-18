@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useEffect, useMemo, useState } from "react";
+import { use, useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,10 +18,14 @@ import { IeltsSectionRenderer } from "@/components/ielts/ielts-section-renderer"
 interface AttemptDetail {
   id: string;
   testTitle: string;
+  testType: string;
   status: string;
+  currentSectionIndex: number;
+  currentSectionRemainingSeconds: number | null;
   sections: {
     id: string;
     module: string;
+    partNumber?: number | null;
     title: string;
     submitted: boolean;
     durationMinutes: number | null;
@@ -38,6 +42,7 @@ interface AttemptDetail {
 }
 
 type AnswerState = Record<string, Record<string, string>>;
+type SpeakingPart = "part_1" | "part_2" | "part_3";
 
 export default function AttemptPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: attemptId } = use(params);
@@ -136,11 +141,12 @@ export default function AttemptPage({ params }: { params: Promise<{ id: string }
 }
 
 function ActiveAttempt({ attempt, onRefresh }: { attempt: AttemptDetail; onRefresh: () => void }) {
-  const [currentSection, setCurrentSection] = useState(0);
+  const [currentSection, setCurrentSection] = useState(attempt.currentSectionIndex);
   const draftStorageKey = `ieltspp:attempt:${attempt.id}:draft`;
   const [answers, setAnswers] = useState<AnswerState>(() => getInitialAnswers(attempt, draftStorageKey));
   const [lastSavedSnapshot, setLastSavedSnapshot] = useState(() => JSON.stringify(answers));
   const [reviewing, setReviewing] = useState(false);
+  const isFullMock = attempt.testType === "full_mock";
 
   const saveMutation = useApiMutation<unknown, { sectionId: string; answers: Record<string, string>; isDraft: boolean }>({
     mutationKey: ["save-answers"],
@@ -166,6 +172,31 @@ function ActiveAttempt({ attempt, onRefresh }: { attempt: AttemptDetail; onRefre
       toast.success("Submitted!");
       setLastSavedSnapshot(JSON.stringify(answers));
       window.localStorage.removeItem(draftStorageKey);
+      setCurrentSection((previous) => Math.min(previous + 1, attempt.sections.length - 1));
+      onRefresh();
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
+
+  const speakingMutation = useApiMutation<unknown, {
+    attemptId: string;
+    sectionId: string;
+    part: SpeakingPart;
+    responseText?: string | null;
+    mediaAssetId?: string | null;
+  }>({
+    mutationKey: ["submit-speaking-section"],
+    endpoint: "/api/evaluations/speaking",
+    onSuccess: () => {
+      captureLearnerEvent("ielts_attempt_section_submitted", {
+        attempt_id: attempt.id,
+        section_id: section?.id,
+        module: section?.module,
+      });
+      toast.success("Speaking response submitted!");
+      setLastSavedSnapshot(JSON.stringify(answers));
+      window.localStorage.removeItem(draftStorageKey);
+      setCurrentSection((previous) => Math.min(previous + 1, attempt.sections.length - 1));
       onRefresh();
     },
     onError: (error: Error) => toast.error(error.message),
@@ -196,8 +227,50 @@ function ActiveAttempt({ attempt, onRefresh }: { attempt: AttemptDetail; onRefre
 
   const section = attempt.sections[currentSection];
   const sectionAnswers = answers[section?.id] || {};
+  const isWriting = section?.module === "writing";
+  const isSpeaking = section?.module === "speaking";
+  const isObjective = Boolean(section) && !isWriting && !isSpeaking;
+  const speakingText = sectionAnswers.speaking?.trim() || "";
+  const speakingMediaAssetId = sectionAnswers.mediaAssetId?.trim() || "";
   const sectionHasAnswers = Object.values(sectionAnswers).some((value) => value.trim().length > 0);
   const unansweredQuestions = section?.questions.filter((question) => !sectionAnswers[question.id]?.trim()) ?? [];
+  const canSubmitSpeaking = Boolean(speakingText || speakingMediaAssetId);
+  const activeSectionIndex = attempt.currentSectionIndex;
+  const canSaveDraft = Boolean(section) && !section.submitted && sectionHasAnswers;
+  const sectionId = section?.id;
+  const handleSpeakingDraftChange = useCallback(
+    ({ text, mediaAssetId }: { text: string; mediaAssetId: string | null; inputMode: "text" | "audio" }) => {
+      if (!sectionId) return;
+      setAnswers((current) => {
+        const currentSectionAnswers = current[sectionId] ?? {};
+        const nextSectionAnswers = {
+          ...currentSectionAnswers,
+          speaking: text,
+          mediaAssetId: mediaAssetId ?? "",
+        };
+
+        if (
+          currentSectionAnswers.speaking === nextSectionAnswers.speaking
+          && currentSectionAnswers.mediaAssetId === nextSectionAnswers.mediaAssetId
+        ) {
+          return current;
+        }
+
+        return {
+          ...current,
+          [sectionId]: nextSectionAnswers,
+        };
+      });
+    },
+    [sectionId],
+  );
+
+  useEffect(() => {
+    if (!isFullMock || currentSection <= activeSectionIndex) {
+      return;
+    }
+    setCurrentSection(activeSectionIndex);
+  }, [activeSectionIndex, currentSection, isFullMock]);
 
   async function saveDraft() {
     if (!section) return;
@@ -209,8 +282,31 @@ function ActiveAttempt({ attempt, onRefresh }: { attempt: AttemptDetail; onRefre
     });
   }
 
+  async function submitSpeakingSection() {
+    if (!section) return;
+    if (!canSubmitSpeaking) {
+      toast.error("Add a typed response or upload a recording before submitting.");
+      return;
+    }
+
+    await saveMutation.mutateAsync({ sectionId: section.id, answers: sectionAnswers, isDraft: false });
+    await speakingMutation.mutateAsync({
+      attemptId: attempt.id,
+      sectionId: section.id,
+      part: getSpeakingPart(section),
+      responseText: speakingText || null,
+      mediaAssetId: speakingMediaAssetId || null,
+    });
+    setReviewing(false);
+  }
+
   async function submitSection() {
     if (!section) return;
+    if (isSpeaking) {
+      await submitSpeakingSection();
+      return;
+    }
+
     if (!reviewing) {
       setReviewing(true);
       if (unansweredQuestions.length > 0) {
@@ -228,15 +324,18 @@ function ActiveAttempt({ attempt, onRefresh }: { attempt: AttemptDetail; onRefre
     if (!section || section.submitted) return;
     toast.warning("Time is up! Submitting your answers...");
     try {
+      if (isSpeaking) {
+        await submitSpeakingSection();
+        return;
+      }
+
       await saveMutation.mutateAsync({ sectionId: section.id, answers: sectionAnswers, isDraft: false });
-      const writingText = isWriting ? sectionAnswers["writing"] : undefined;
+      const writingText = isWriting ? sectionAnswers.writing : undefined;
       await submitMutation.mutateAsync({ sectionId: section.id, responseText: writingText });
     } catch {
       toast.error("Auto-submit failed. Please submit manually.");
     }
   }
-
-  const isWriting = section?.module === "writing";
 
   return (
     <div className="space-y-6">
@@ -251,10 +350,11 @@ function ActiveAttempt({ attempt, onRefresh }: { attempt: AttemptDetail; onRefre
           )}
         </div>
         <div className="flex items-center gap-3">
-          {section && section.durationMinutes && !section.submitted && (
+          {section && section.durationMinutes && !section.submitted && currentSection === activeSectionIndex && (
             <TestTimer
               attemptId={attempt.id}
               totalDuration={section.durationMinutes}
+              initialRemainingSeconds={attempt.currentSectionRemainingSeconds ?? section.durationMinutes * 60}
               onTimeExpired={handleTimeExpired}
             />
           )}
@@ -277,7 +377,14 @@ function ActiveAttempt({ attempt, onRefresh }: { attempt: AttemptDetail; onRefre
             key={s.id}
             variant={index === currentSection ? "default" : "outline"}
             size="sm"
-            onClick={() => setCurrentSection(index)}
+            onClick={() => {
+              if (isFullMock && index > activeSectionIndex) {
+                toast.error("Finish the current section before moving ahead.");
+                return;
+              }
+              setCurrentSection(index);
+            }}
+            disabled={isFullMock && index > activeSectionIndex}
           >
             <span className="capitalize">{s.module}</span>
             {s.submitted && <span className="ml-1 text-green-300">✓</span>}
@@ -295,7 +402,7 @@ function ActiveAttempt({ attempt, onRefresh }: { attempt: AttemptDetail; onRefre
           </ContentPanel>
 
           <div className="space-y-4">
-            {reviewing && !section.submitted && (
+            {reviewing && !section.submitted && isObjective && (
               <Card className="border-amber-200 bg-amber-50">
                 <CardHeader>
                   <CardTitle className="text-base">Review before submitting</CardTitle>
@@ -327,13 +434,11 @@ function ActiveAttempt({ attempt, onRefresh }: { attempt: AttemptDetail; onRefre
               <Card>
                 <CardContent className="p-5">
                   <SpeakingSubmission
-                    attemptId={attempt.id}
-                    sectionId={section.id}
-                    part={section.title?.toLowerCase().includes("part 2") ? "part_2" : "part_1"}
-                    onSubmitted={() => {
-                      toast.success("Speaking response submitted!");
-                      onRefresh();
-                    }}
+                    value={sectionAnswers.speaking || ""}
+                    mediaAssetId={sectionAnswers.mediaAssetId || null}
+                    disabled={section.submitted}
+                    hideSubmit
+                    onChange={handleSpeakingDraftChange}
                   />
                 </CardContent>
               </Card>
@@ -357,6 +462,7 @@ function ActiveAttempt({ attempt, onRefresh }: { attempt: AttemptDetail; onRefre
                 attemptId={attempt.id}
                 section={section}
                 answers={sectionAnswers}
+                showTranscript={false}
                 disabled={section.submitted}
                 onAnswerChange={(questionId, value) =>
                   setAnswers({
@@ -372,25 +478,32 @@ function ActiveAttempt({ attempt, onRefresh }: { attempt: AttemptDetail; onRefre
             <Button
               variant="outline"
               onClick={saveDraft}
-              disabled={saveMutation.isPending || section.submitted || !sectionHasAnswers}
+              disabled={saveMutation.isPending || speakingMutation.isPending || !canSaveDraft}
             >
               {saveMutation.isPending ? "Saving..." : "Save Draft"}
             </Button>
             <Button
               onClick={submitSection}
               disabled={
-                saveMutation.isPending || submitMutation.isPending || section.submitted || !sectionHasAnswers
+                saveMutation.isPending
+                || submitMutation.isPending
+                || speakingMutation.isPending
+                || section.submitted
+                || (!isSpeaking && !sectionHasAnswers)
+                || (isSpeaking && !canSubmitSpeaking)
               }
             >
-              {saveMutation.isPending || submitMutation.isPending
+              {saveMutation.isPending || submitMutation.isPending || speakingMutation.isPending
                 ? "Submitting..."
-                : reviewing
+                : isSpeaking
+                  ? "Submit Response"
+                  : reviewing
                   ? "Confirm Submit"
                   : unansweredQuestions.length > 0
                     ? `Review ${unansweredQuestions.length} unanswered`
                     : "Review & Submit"}
             </Button>
-            {reviewing && !section.submitted && (
+            {reviewing && !section.submitted && !isSpeaking && (
               <Button type="button" variant="ghost" onClick={() => setReviewing(false)}>
                 Keep editing
               </Button>
@@ -409,8 +522,45 @@ function getInitialAnswers(attempt: AttemptDetail, draftStorageKey: string) {
 
   try {
     const localDraft = window.localStorage.getItem(draftStorageKey);
-    return localDraft ? (JSON.parse(localDraft) as AnswerState) : savedAnswers;
+    if (!localDraft) {
+      return savedAnswers;
+    }
+
+    const parsedDraft = JSON.parse(localDraft) as AnswerState;
+    return Object.fromEntries(
+      attempt.sections.map((section) => [
+        section.id,
+        {
+          ...(savedAnswers[section.id] ?? {}),
+          ...(parsedDraft[section.id] ?? {}),
+        },
+      ]),
+    );
   } catch {
     return savedAnswers;
   }
+}
+
+function getSpeakingPart(section: AttemptDetail["sections"][number]): SpeakingPart {
+  const cueCards = Array.isArray(section.contentJson?.cueCards) ? section.contentJson?.cueCards : [];
+  const cueCardPart = cueCards[0] && typeof cueCards[0] === "object" && cueCards[0] !== null
+    ? (cueCards[0] as { part?: unknown }).part
+    : null;
+  if (cueCardPart === "part_1" || cueCardPart === "part_2" || cueCardPart === "part_3") {
+    return cueCardPart;
+  }
+
+  if (section.partNumber === 1 || section.partNumber === 2 || section.partNumber === 3) {
+    return `part_${section.partNumber}` as SpeakingPart;
+  }
+
+  const title = section.title.toLowerCase();
+  if (title.includes("part 3") || title.includes("part_3") || title.includes("part3")) {
+    return "part_3";
+  }
+  if (title.includes("part 2") || title.includes("part_2") || title.includes("part2")) {
+    return "part_2";
+  }
+
+  return "part_1";
 }

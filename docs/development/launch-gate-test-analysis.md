@@ -1,5 +1,7 @@
 # Launch Gate Test Failure: Root Cause Analysis
 
+> **Status note (2026-05-19):** This document is historical context for the earlier failing launch-gate setup. The launch-gate specs have since been rewritten to use deterministic seeded routes and stronger assertions in `tests/e2e/launch-gates.spec.ts` and `tests/e2e/05-attempts.spec.ts`. Treat the analysis below as background, not the current test contract.
+
 **Date:** 2026-05-14
 **Issue:** `scripts/run-launch-gates.ts` times out waiting for `/dashboard` after login
 **Error:** `page.waitForURL: Timeout 15000ms exceeded — waiting for navigation to "**/dashboard"`

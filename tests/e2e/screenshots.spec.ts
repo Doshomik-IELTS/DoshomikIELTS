@@ -34,7 +34,7 @@ test.describe("Learner Pages Screenshots", () => {
     { url: "/practice", name: "11-practice" },
     { url: "/mock-tests", name: "12-mock-tests" },
     { url: "/referrals", name: "13-referrals" },
-    { url: "/attempts", name: "14-attempts" },
+    { url: "/mock-tests/demo-short-mock-1", name: "14-mock-test-detail" },
   ];
 
   for (const p of learnerPages) {

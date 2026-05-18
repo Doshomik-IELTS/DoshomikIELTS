@@ -5,9 +5,9 @@
 Components implemented in `src/components/ielts/`:
 
 - `WritingEditor` - Writing response with live word count, progress bar, auto-save
-- `SpeakingRecorder` - Audio recording with playback
-- `SpeakingSubmission` - Text/audio submission support
-- `TestTimer` - Countdown timer with auto-submit on expiry
+- `SpeakingRecorder` - Audio recording with playback and MIME/capability detection
+- `SpeakingSubmission` - Text/audio submission support with typed fallback
+- `TestTimer` - Countdown timer with server-restored remaining time and auto-submit on expiry
 - `EvaluationStatusBadge` - Status display (queued/processing/succeeded/failed/needs_review)
 - `ScoreBadge` - Band score display
 - `IeltsSectionRenderer` - Section rendering with question groups
@@ -98,6 +98,12 @@ Support where browser/device allows:
 - Upload progress.
 - Submit for evaluation.
 
+Behavior notes:
+
+- The recorder should select a supported audio MIME type at runtime.
+- If `MediaRecorder` or microphone access is unavailable, the text-response path remains the required fallback.
+- Supported upload content types must stay aligned with backend validation: `audio/webm`, `audio/mpeg`, `audio/mp4`, `audio/wav`.
+
 ### Upload Path
 
 Also support file upload if direct recording is unavailable.
@@ -155,6 +161,8 @@ UX rules:
 4. Frontend submits evaluation request with `mediaAssetId`.
 5. Frontend polls evaluation/job status.
 
+Speaking submissions created from the learner attempt page should also update attempt section state so speaking responses participate in mock-test completion rules.
+
 ## Accessibility Requirements
 
 - Recording controls must be keyboard usable.
@@ -171,3 +179,9 @@ If audio recording becomes too risky for launch:
 - Allow audio file upload as P1.
 - Defer in-browser recording polish.
 - Do not block full MVP on advanced pronunciation scoring.
+
+Current implementation status:
+
+- Text fallback is live.
+- MIME detection is live.
+- Attempt-page speaking submissions are persisted as section responses before evaluation.

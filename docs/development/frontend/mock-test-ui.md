@@ -14,7 +14,9 @@ Show:
 - Test type: short mock or full mock.
 - Estimated duration.
 - Modules included.
+- Current learner credit balance.
 - Start or continue CTA.
+- Clear fetch-failure state instead of an empty-list fallback.
 
 ### `/mock-tests/[id]`
 
@@ -23,8 +25,10 @@ Show:
 - Test overview.
 - Section list.
 - Timing/instructions.
+- Mock test cost and current credit balance.
 - Score prediction requirement.
 - Start attempt CTA.
+- Clear insufficient-credit recovery state.
 
 ### `/attempts/[id]`
 
@@ -33,7 +37,7 @@ Main active attempt page.
 Show:
 
 - Section navigation.
-- Per-section countdown timer (using `section.durationMinutes`).
+- Per-section countdown timer restored from server attempt state, not reset on refresh.
 - Current section status.
 - Instructions.
 - Questions/prompts.
@@ -42,6 +46,13 @@ Show:
 - Draft save state.
 - Submit section CTA.
 - Auto-submit when timer expires.
+
+Full mock rules:
+
+- Learners cannot jump ahead to future sections.
+- Server-side section order remains authoritative even if the client is bypassed.
+- Listening transcripts stay hidden during active attempts.
+- Submitted sections are locked.
 
 ### `/attempts/[id]/score`
 
@@ -79,6 +90,7 @@ Detailed attempt report showing:
 - Question list.
 - Answer inputs.
 - Submit section.
+- No transcript access during an active learner attempt.
 
 Accessibility:
 
@@ -114,8 +126,13 @@ Optional post-MVP:
 - Prompt/cue card display.
 - Part label.
 - Text response fallback.
-- Audio recording/upload where supported.
+- Audio recording/upload where supported, with MIME-type capability detection.
 - Submit.
+
+Behavior notes:
+
+- Speaking Part 1/2/3 labeling should come from section metadata, not title substring checks.
+- If recording is unsupported, the typed path must remain available without blocking submission.
 
 ## Question Renderer
 
@@ -162,6 +179,7 @@ Use layered safety:
 - Save drafts to backend where available.
 - Optionally mirror unsent answers to local storage.
 - Warn before navigation when unsaved changes exist.
+- Merge local draft state with server-saved section answers on reload.
 
 ## Submission Rules
 
@@ -171,6 +189,7 @@ Before submitting:
 - Confirm section submission if it locks answers.
 - Disable button while submitting.
 - Preserve answers if submission fails.
+- Respect server-side `TIME_EXPIRED`, `SKIP_NOT_ALLOWED`, and `INVALID_STATE` responses.
 
 After submitting:
 

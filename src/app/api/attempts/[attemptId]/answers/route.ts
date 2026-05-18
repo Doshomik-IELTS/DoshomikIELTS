@@ -1,6 +1,12 @@
 import { prisma } from "@/lib/prisma";
 import { requireCurrentUser } from "@/lib/auth/session";
 import { ok, fail } from "@/lib/api/response";
+import {
+  buildSectionResponseJson,
+  getSectionWriteAccessError,
+  getSectionMarkerId,
+  getSectionResponseKey,
+} from "@/lib/attempts/mock-test";
 import { z } from "zod";
 
 const answerSaveSchema = z.object({
@@ -34,6 +40,31 @@ export async function postAttemptAnswers(
 
   const attempt = await deps.prisma.mockTestAttempt.findUnique({
     where: { id: attemptId },
+    include: {
+      test: {
+        select: {
+          type: true,
+          sections: {
+            orderBy: { orderIndex: "asc" },
+            select: {
+              id: true,
+              module: true,
+              durationMinutes: true,
+            },
+          },
+        },
+      },
+      answers: {
+        select: {
+          id: true,
+          sectionId: true,
+          questionId: true,
+          answerText: true,
+          answerJson: true,
+          submittedAt: true,
+        },
+      },
+    },
   });
 
   if (!attempt || attempt.profileId !== actor.profile.id) {
@@ -74,8 +105,20 @@ export async function postAttemptAnswers(
     return fail({ code: "NOT_FOUND", message: "Section not found" }, 404);
   }
 
+  const writeAccessError = getSectionWriteAccessError({
+    attemptStartedAt: attempt.startedAt,
+    testType: attempt.test.type,
+    sections: attempt.test.sections,
+    answers: attempt.answers,
+    sectionId,
+  });
+  if (writeAccessError) {
+    return fail(writeAccessError, 400);
+  }
+
   let correctCount = 0;
   let totalQuestions = 0;
+  const sectionResponseKey = getSectionResponseKey(section.module);
 
   if (section.questions && section.questions.length > 0) {
     for (const question of section.questions) {
@@ -109,6 +152,41 @@ export async function postAttemptAnswers(
         });
       }
     }
+  } else if (sectionResponseKey) {
+    const responseText = answers[sectionResponseKey]?.trim();
+    const mediaAssetId = answers.mediaAssetId?.trim();
+
+    if (!responseText && !mediaAssetId) {
+      return fail({ code: "VALIDATION_ERROR", message: "A section response is required" }, 400);
+    }
+
+    await deps.prisma.attemptAnswer.upsert({
+      where: {
+        id: getSectionMarkerId(attemptId, sectionId),
+      },
+      create: {
+        id: getSectionMarkerId(attemptId, sectionId),
+        attemptId,
+        sectionId,
+        questionId: null,
+        answerText: responseText || null,
+        answerJson: buildSectionResponseJson({
+          responseKind: sectionResponseKey,
+          responseText: responseText || null,
+          mediaAssetId: mediaAssetId || null,
+          isDraft,
+        }),
+      },
+      update: {
+        answerText: responseText || null,
+        answerJson: buildSectionResponseJson({
+          responseKind: sectionResponseKey,
+          responseText: responseText || null,
+          mediaAssetId: mediaAssetId || null,
+          isDraft,
+        }),
+      },
+    });
   }
 
   return ok({

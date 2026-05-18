@@ -37,6 +37,26 @@ async function main() {
     skipDuplicates: true,
   });
 
+  const existingSeedCredits = await prisma.creditLedger.findFirst({
+    where: {
+      profileId: demo.id,
+      type: "promo",
+      refId: "seed:demo-credits",
+    },
+  });
+
+  if (!existingSeedCredits) {
+    await prisma.creditLedger.create({
+      data: {
+        profileId: demo.id,
+        amount: 5,
+        type: "promo",
+        description: "Seed credits for demo learner",
+        refId: "seed:demo-credits",
+      },
+    });
+  }
+
   const resources = [
     {
       title: "Basic Sentence Structure",

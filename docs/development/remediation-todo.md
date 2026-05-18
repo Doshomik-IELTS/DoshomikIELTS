@@ -26,3 +26,20 @@
 - [x] Consolidate repeated admin auth error handling helpers.
 - [x] Add dashboard/runbook notes for Strapi sync health and content rollback.
 - [x] Add `EXPLAIN ANALYZE` examples for key Prisma queries before scaling.
+
+## Mock-Test Integrity Follow-up
+- [x] Hide listening transcripts during active learner attempts.
+- [x] Restore timed sections from server-side attempt state instead of resetting on refresh.
+- [x] Add the missing `/api/attempts/:attemptId/time` sync route.
+- [x] Persist writing and speaking section responses as first-class attempt answers.
+- [x] Enforce full-mock section order in the learner UI.
+- [x] Enforce full-mock section order on write/submit/evaluation APIs.
+- [x] Reject late section submissions with a `TIME_EXPIRED` API error.
+- [x] Fix speaking part detection to distinguish `part_1`, `part_2`, and `part_3`.
+- [x] Add recorder MIME-type detection with a typed-response fallback.
+- [x] Surface mock-test credit balance and start-flow error states in the learner UI.
+- [x] Replace weak launch-gate smoke checks with deterministic seeded-route Playwright specs.
+
+## Current Remaining Work
+- [ ] Continue replacing the remaining source-regex contract tests with behavior-level tests where the setup cost is justified.
+- [ ] Run the updated Playwright launch-gate specs in a normal local/CI browser environment and record the results.

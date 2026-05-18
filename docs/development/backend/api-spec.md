@@ -40,10 +40,19 @@ Common HTTP statuses:
 - `429` rate limited
 - `500` server error
 
+Common application error codes:
+
+- `VALIDATION_ERROR`
+- `INVALID_STATE`
+- `INVALID_DIRECTION`
+- `SKIP_NOT_ALLOWED`
+- `TIME_EXPIRED`
+- `INSUFFICIENT_CREDITS`
+
 ## Implementation Status
 
-> **Last updated:** 2026-05-17
-> **Code Quality**: TypeScript ✅ passes, Lint ✅ 0 errors (warnings - pre-existing unused imports)
+> **Last updated:** 2026-05-19
+> **Code Quality**: TypeScript ✅ passes, Lint ✅ passes
 > **Next.js**: 16.2.6 | **Prisma**: 6.19.3 | **Zod**: 4.4.3 | **CMS**: Strapi 5
 
 ✅ = Implemented | ⚠️ = Partial | ❌ = Not implemented
@@ -217,6 +226,13 @@ Request fields:
 - `answers` (keyed by questionId)
 - `isDraft` (default: false)
 
+Behavior notes:
+
+- Objective sections store question-level answers.
+- Writing and speaking sections store a section-level marker answer with the response payload.
+- In `full_mock` attempts, writes to future sections are rejected.
+- Timed sections are rejected with `TIME_EXPIRED` once the server-side section deadline has passed.
+
 Auto-scores objective questions immediately and stores results.
 
 ### `POST /api/attempts/:attemptId/submit-section` ✅
@@ -226,14 +242,46 @@ Submits one section. Reading/listening are scored immediately with band calculat
 Request field:
 
 - `sectionId`
+- `responseText` for writing sections where applicable
+
+Behavior notes:
+
+- Server enforces section order for `full_mock` attempts.
+- Submitted sections cannot be re-submitted.
+- Timed sections are checked against the server-side section deadline and return `TIME_EXPIRED` on late submission.
+- Writing/speaking section responses are persisted as first-class attempt answers before evaluation or completion updates.
 
 Response includes module, score, and completion status.
 
 ### `GET /api/attempts/:attemptId` ✅
 
-Returns attempt status, submitted sections, module scores, evaluation statuses, and completion state. Includes `moduleProgress` array showing completion per module. Each section includes `durationMinutes` for timer integration.
+Returns attempt status, submitted sections, module scores, evaluation statuses, and completion state.
 
-### `GET /api/attempts/:attemptId/can-proceed` ✅
+Runtime fields include:
+
+- `currentSectionIndex`
+- `currentSectionRemainingSeconds`
+- `moduleProgress`
+- per-section `durationMinutes`
+- per-section `savedAnswers`, including writing/speaking section responses where present
+
+These fields are used by the learner timer and sequential full-mock flow.
+
+### `PATCH /api/attempts/:attemptId/time` ✅
+
+Background timer keep-alive route for in-progress attempts.
+
+Request fields:
+
+- `action`: `"keep-alive"`
+- `timeSpent`: integer seconds for the sync interval
+
+Behavior notes:
+
+- Updates `timeSpentSeconds` and `lastActiveAt`
+- Rejects missing, unauthenticated, or non-`in_progress` attempts
+
+### `POST /api/attempts/:attemptId/can-proceed` ✅
 
 Checks whether a learner can proceed to a given section based on prerequisites.
 
@@ -286,6 +334,13 @@ Request fields:
 - `mediaAssetId` (optional)
 
 Creates `SpeakingEvaluation` record and a queued linked `LlmJob` database row if text/audio content is provided. Enqueues a BullMQ job when `REDIS_URL` is configured.
+
+Additional behavior:
+
+- At least one of `responseText` or `mediaAssetId` is required.
+- The backend validates that the section is the learner's active speaking section for `full_mock` attempts.
+- Late submissions are rejected with `TIME_EXPIRED`.
+- A successful request also persists the section response marker on the attempt so attempt completion state stays consistent.
 
 ### `GET /api/evaluations/:id` ✅
 

@@ -20,9 +20,14 @@ interface MockTest {
 }
 
 export default function MockTestsPage() {
-  const { data, isLoading } = useApiQuery<{ items: MockTest[] }>({
+  const { data, isLoading, isError, error } = useApiQuery<{ items: MockTest[] }>({
     queryKey: ["mock-tests"],
     endpoint: "/api/mock-tests",
+  });
+
+  const { data: credits } = useApiQuery<{ balance: number }>({
+    queryKey: ["credits"],
+    endpoint: "/api/credits",
   });
 
   if (isLoading) {
@@ -43,6 +48,22 @@ export default function MockTestsPage() {
             </Card>
           ))}
         </div>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="space-y-6">
+        <PageHeader
+          title="Mock Tests"
+          description="Complete all four modules to unlock score prediction."
+        />
+        <State
+          title="Could not load mock tests"
+          description={error.message}
+          variant="error"
+        />
       </div>
     );
   }
@@ -70,6 +91,12 @@ export default function MockTestsPage() {
         title="Mock Tests"
         description="Complete all four modules to unlock score prediction."
       />
+      {typeof credits?.balance === "number" && (
+        <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
+          Balance: <span className="font-semibold text-slate-900">{credits.balance}</span>{" "}
+          {credits.balance === 1 ? "credit" : "credits"}. Each mock test costs 1 credit.
+        </div>
+      )}
       <div className="grid gap-4 md:grid-cols-2">
         {items.map((test) => (
           <Card key={test.id} variant="interactive" className="h-full">
