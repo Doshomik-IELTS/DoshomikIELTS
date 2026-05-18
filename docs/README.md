@@ -2,7 +2,7 @@
 
 This folder contains product, strategy, market, content, and development documentation for IELTS++.
 
-**Last updated:** 2026-05-17 — Strapi authoring and PostHog learner analytics are integrated. Focus remains production hardening.
+**Last updated:** 2026-05-18 - Company review agents refined with a shared review playbook and brief template. Focus remains production hardening.
 
 ## Start Here
 
@@ -57,6 +57,18 @@ All QA and test plans are indexed in [`testing-plans/README.md`](testing-plans/R
 | [`testing-plans/frontend-testing-plan.md`](testing-plans/frontend-testing-plan.md) | Frontend automated, manual, accessibility, and responsive test plan. |
 | [`testing-plans/backend-testing-plan.md`](testing-plans/backend-testing-plan.md) | Backend test checklist for auth, resources, practice, mock tests, evaluation, score, media, and jobs. |
 | [`testing-plans/security-and-compliance-testing-plan.md`](testing-plans/security-and-compliance-testing-plan.md) | Security and compliance testing: authZ, IDOR, rate limits, media, content, audit, score disclaimers, leakage, periodic checks. |
+
+---
+
+## Company Review Agents
+
+Use [`Company/README.md`](Company/README.md) when you want role-based reviews from CTO, Product, Frontend, Backend, Security, QA, DevOps/SRE, UX, or Code Quality perspectives.
+
+| Document | Purpose |
+|---|---|
+| [`Company/README.md`](Company/README.md) | Agent roster, usage guide, review targets, and recommended review sequencing. |
+| [`Company/review-playbook.md`](Company/review-playbook.md) | Shared severity rubric, evidence standard, output contract, and cross-role handoff rules. |
+| [`Company/review-brief-template.md`](Company/review-brief-template.md) | Copyable template for requesting targeted reviews. |
 
 ---
 
