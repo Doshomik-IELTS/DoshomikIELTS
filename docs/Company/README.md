@@ -74,6 +74,7 @@ Related planning doc:
 | **UX/Design Lead** | [ux-design-lead.md](ux-design-lead.md) | Information architecture, timed-test ergonomics, feedback clarity, mobile usability |
 | **Code Quality Lead** | [code-quality-lead.md](code-quality-lead.md) | Maintainability, type safety, coupling, refactoring discipline, review rigor |
 | **Assessment & Content Integrity Lead** | [assessment-content-lead.md](assessment-content-lead.md) | Content provenance, IELTS-style assessment quality, rubric trust, editorial workflow |
+| **Principal Engineer** | [principal-engineer.md](principal-engineer.md) | Whole-app engineering judgment, architecture, failure modes, sequencing, and scale realism |
 
 ## Quick Agent Selection
 
