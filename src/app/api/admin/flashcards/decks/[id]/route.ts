@@ -54,6 +54,9 @@ export async function PATCH(
   if (adminAuth.response) return adminAuth.response;
   const actor = adminAuth.actor;
 
+  const csrfResponse = verifyCsrf(request);
+  if (csrfResponse) return csrfResponse;
+
   const { id } = await params;
   const body = await request.json().catch(() => null);
   const parsed = updateDeckSchema.safeParse(body);
@@ -90,6 +93,9 @@ export async function DELETE(
   const adminAuth = await requireAdminActorOrResponse();
   if (adminAuth.response) return adminAuth.response;
   const actor = adminAuth.actor;
+
+  const csrfResponse = verifyCsrf(request);
+  if (csrfResponse) return csrfResponse;
 
   const { id } = await params;
   await prisma.flashCardDeck.delete({ where: { id } });

@@ -1,4 +1,4 @@
-import { ContentStatus, type Prisma } from "@prisma/client";
+import { ContentStatus, type IeltsModule, type Prisma } from "@prisma/client";
 import { fail, ok } from "@/lib/api/response";
 import { logRouteError } from "@/lib/api/logging";
 import { requireAdminActorOrResponse } from "@/lib/auth/admin-api";
@@ -97,6 +97,9 @@ export async function PATCH(
   if (adminAuth.response) return adminAuth.response;
   const actor = adminAuth.actor;
 
+  const csrfResponse = verifyCsrf(request);
+  if (csrfResponse) return csrfResponse;
+
   try {
     const { id } = await params;
 
@@ -181,7 +184,7 @@ export async function PATCH(
       if (action === "flag_for_review") {
         await prisma.writingEvaluation.update({
           where: { id },
-          data: { needsHumanReview: true },
+          data: { needsHumanReview: true, status: "needs_review" },
         });
 
         logAuditEvent({
@@ -194,7 +197,7 @@ export async function PATCH(
         if (typeof parsed.band !== "number" || parsed.band < 0 || parsed.band > 9) {
           return fail({ code: "VALIDATION_ERROR", message: "Band must be a number from 0 to 9." }, 400);
         }
-        await prisma.writingEvaluation.update({
+        const evaluation = await prisma.writingEvaluation.update({
           where: { id },
           data: { 
             overallBand: parsed.band,
@@ -202,7 +205,21 @@ export async function PATCH(
             status: "succeeded",
             needsHumanReview: false,
           },
+          select: {
+            attemptId: true,
+            criteriaBandsJson: true,
+          },
         });
+
+        await upsertManualModuleScore({
+          attemptId: evaluation.attemptId,
+          module: "writing",
+          estimatedBand: parsed.band,
+          criteriaJson: evaluation.criteriaBandsJson as Prisma.InputJsonValue | undefined,
+          feedbackJson: parsed.feedback as Prisma.InputJsonValue | undefined,
+          confidence: "low",
+        });
+        await completeAttemptIfReady(evaluation.attemptId);
 
         logAuditEvent({
           action: "writing_evaluation.set_band",
@@ -218,7 +235,7 @@ export async function PATCH(
       if (action === "flag_for_review") {
         await prisma.speakingEvaluation.update({
           where: { id },
-          data: { needsHumanReview: true },
+          data: { needsHumanReview: true, status: "needs_review" },
         });
 
         logAuditEvent({
@@ -231,7 +248,7 @@ export async function PATCH(
         if (typeof parsed.band !== "number" || parsed.band < 0 || parsed.band > 9) {
           return fail({ code: "VALIDATION_ERROR", message: "Band must be a number from 0 to 9." }, 400);
         }
-        await prisma.speakingEvaluation.update({
+        const evaluation = await prisma.speakingEvaluation.update({
           where: { id },
           data: { 
             overallBand: parsed.band,
@@ -239,7 +256,22 @@ export async function PATCH(
             status: "succeeded",
             needsHumanReview: false,
           },
+          select: {
+            attemptId: true,
+            mediaAssetId: true,
+            criteriaBandsJson: true,
+          },
         });
+
+        await upsertManualModuleScore({
+          attemptId: evaluation.attemptId,
+          module: "speaking",
+          estimatedBand: parsed.band,
+          criteriaJson: evaluation.criteriaBandsJson as Prisma.InputJsonValue | undefined,
+          feedbackJson: parsed.feedback as Prisma.InputJsonValue | undefined,
+          confidence: evaluation.mediaAssetId ? "medium" : "low",
+        });
+        await completeAttemptIfReady(evaluation.attemptId);
 
         logAuditEvent({
           action: "speaking_evaluation.set_band",
@@ -260,4 +292,57 @@ export async function PATCH(
     logRouteError("/api/admin/reviews/[id]", error, { method: "PATCH", actorId: actor.profile.id });
     return fail({ code: "INTERNAL_ERROR", message: "Could not update review." }, 500);
   }
+}
+
+async function upsertManualModuleScore(params: {
+  attemptId: string;
+  module: "writing" | "speaking";
+  estimatedBand: number;
+  criteriaJson?: Prisma.InputJsonValue;
+  feedbackJson?: Prisma.InputJsonValue;
+  confidence: "low" | "medium" | "high";
+}) {
+  await prisma.moduleScore.upsert({
+    where: {
+      attemptId_module: {
+        attemptId: params.attemptId,
+        module: params.module,
+      },
+    },
+    create: {
+      attemptId: params.attemptId,
+      module: params.module,
+      estimatedBand: params.estimatedBand,
+      criteriaJson: params.criteriaJson,
+      feedbackJson: params.feedbackJson,
+      confidence: params.confidence,
+    },
+    update: {
+      estimatedBand: params.estimatedBand,
+      criteriaJson: params.criteriaJson,
+      feedbackJson: params.feedbackJson,
+      confidence: params.confidence,
+    },
+  });
+}
+
+async function completeAttemptIfReady(attemptId: string) {
+  const scores = await prisma.moduleScore.findMany({
+    where: { attemptId },
+    select: { module: true },
+  });
+  const completed = new Set(scores.map((score) => score.module));
+  const allModulesComplete = (["listening", "reading", "writing", "speaking"] as IeltsModule[]).every((module) =>
+    completed.has(module),
+  );
+
+  if (!allModulesComplete) return;
+
+  await prisma.mockTestAttempt.update({
+    where: { id: attemptId },
+    data: {
+      status: "completed",
+      completedAt: new Date(),
+    },
+  });
 }

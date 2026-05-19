@@ -104,6 +104,9 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   if (adminAuth.response) return adminAuth.response;
   const actor = adminAuth.actor;
 
+  const csrfResponse = verifyCsrf(request);
+  if (csrfResponse) return csrfResponse;
+
   const { id } = await params;
 
   let json: unknown;
@@ -221,6 +224,9 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
   const adminAuth = await requireAdminActorOrResponse();
   if (adminAuth.response) return adminAuth.response;
   const actor = adminAuth.actor;
+
+  const csrfResponse = verifyCsrf(request);
+  if (csrfResponse) return csrfResponse;
 
   const { id } = await params;
 

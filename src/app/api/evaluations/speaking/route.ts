@@ -9,6 +9,7 @@ import {
 } from "@/lib/attempts/mock-test";
 import { enqueueLlmJob } from "@/lib/queue/enqueue";
 import { checkRateLimitForIdentifier, evaluationRateLimiter } from "@/lib/rate-limit";
+import { verifyCsrf } from "@/lib/security/csrf";
 import { z } from "zod";
 
 const speakingEvaluationSchema = z.object({
@@ -50,6 +51,9 @@ export async function postSpeakingEvaluation(
     return rateLimitResponse;
   }
 
+  const csrfResponse = verifyCsrf(request);
+  if (csrfResponse) return csrfResponse;
+
   let json: unknown;
   try {
     json = await request.json();
@@ -66,6 +70,25 @@ export async function postSpeakingEvaluation(
     }, 400);
   }
   const { attemptId, sectionId, part, responseText, mediaAssetId } = parsedBody.data;
+  const normalizedResponseText = responseText?.trim() || null;
+
+  const mediaAsset = mediaAssetId
+    ? await deps.prisma.mediaAsset.findUnique({
+        where: { id: mediaAssetId },
+        select: {
+          id: true,
+          profileId: true,
+          transcriptText: true,
+        },
+      })
+    : null;
+
+  if (mediaAssetId && (!mediaAsset || mediaAsset.profileId !== actor.profile.id)) {
+    return fail({ code: "NOT_FOUND", message: "Recording not found" }, 404);
+  }
+
+  const normalizedTranscript = mediaAsset?.transcriptText?.trim() || null;
+  const readyForAutomatedEvaluation = Boolean(normalizedResponseText || normalizedTranscript);
 
   const attempt = await deps.prisma.mockTestAttempt.findUnique({
     where: { id: attemptId },
@@ -132,29 +155,37 @@ export async function postSpeakingEvaluation(
           attemptId,
           sectionId,
           part,
-          responseText: responseText || null,
+          responseText: normalizedResponseText,
           mediaAssetId: mediaAssetId || null,
-          status: "queued",
+          transcript: normalizedTranscript,
+          status: readyForAutomatedEvaluation ? "queued" : "needs_review",
+          needsHumanReview: !readyForAutomatedEvaluation,
         },
       });
 
-      const job = await tx.llmJob.create({
-        data: {
-          type: "speaking_evaluation",
-          status: "queued",
-          inputJson: {
-            evaluationId: evaluation.id,
-            part,
-            responseText,
-            mediaAssetId,
+      let job: { id: string; type: string } | null = null;
+      let linkedEvaluation = evaluation;
+
+      if (readyForAutomatedEvaluation) {
+        job = await tx.llmJob.create({
+          data: {
+            type: "speaking_evaluation",
+            status: "queued",
+            inputJson: {
+              evaluationId: evaluation.id,
+              part,
+              responseText: normalizedResponseText,
+              transcript: normalizedTranscript,
+              mediaAssetId,
+            },
           },
-        },
-      });
+        });
 
-      const linkedEvaluation = await tx.speakingEvaluation.update({
-        where: { id: evaluation.id },
-        data: { llmJobId: job.id },
-      });
+        linkedEvaluation = await tx.speakingEvaluation.update({
+          where: { id: evaluation.id },
+          data: { llmJobId: job.id },
+        });
+      }
 
       await tx.attemptAnswer.upsert({
         where: {
@@ -165,20 +196,20 @@ export async function postSpeakingEvaluation(
           attemptId,
           sectionId,
           questionId: null,
-          answerText: responseText || null,
+          answerText: normalizedResponseText,
           answerJson: buildSectionResponseJson({
             responseKind: "speaking",
-            responseText: responseText || null,
+            responseText: normalizedResponseText,
             mediaAssetId: mediaAssetId || null,
             isDraft: false,
           }),
           submittedAt,
         },
         update: {
-          answerText: responseText || null,
+          answerText: normalizedResponseText,
           answerJson: buildSectionResponseJson({
             responseKind: "speaking",
-            responseText: responseText || null,
+            responseText: normalizedResponseText,
             mediaAssetId: mediaAssetId || null,
             isDraft: false,
           }),

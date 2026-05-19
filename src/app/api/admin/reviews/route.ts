@@ -3,7 +3,6 @@ import { fail, ok } from "@/lib/api/response";
 import { logRouteError } from "@/lib/api/logging";
 import { paginationSchema, parseQuery } from "@/lib/api/validation";
 import { requireAdminActorOrResponse } from "@/lib/auth/admin-api";
-import { verifyCsrf } from "@/lib/security/csrf";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 

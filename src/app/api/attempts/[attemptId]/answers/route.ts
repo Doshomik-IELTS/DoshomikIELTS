@@ -7,6 +7,7 @@ import {
   getSectionMarkerId,
   getSectionResponseKey,
 } from "@/lib/attempts/mock-test";
+import { verifyCsrf } from "@/lib/security/csrf";
 import { z } from "zod";
 
 const answerSaveSchema = z.object({
@@ -35,6 +36,9 @@ export async function postAttemptAnswers(
   } catch {
     return fail({ code: "UNAUTHENTICATED", message: "Authentication required" }, 401);
   }
+
+  const csrfResponse = verifyCsrf(request);
+  if (csrfResponse) return csrfResponse;
 
   const { attemptId } = await params;
 

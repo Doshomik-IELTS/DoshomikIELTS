@@ -26,11 +26,23 @@ export async function GET(request: Request) {
   const { category, difficulty, search } = parsedQuery.data;
 
   const current = await getCurrentUser();
+  let savedIds: Set<string> = new Set();
+
+  if (current) {
+    const saved = await prisma.savedResource.findMany({
+      where: { profileId: current.profile.id },
+      select: { resourceId: true },
+    });
+    savedIds = new Set(saved.map((item) => item.resourceId));
+  }
 
   const strapiResources = await fetchStrapiResources({ category, difficulty, search });
   if (strapiResources) {
     return ok({
-      resources: strapiResources.map((r) => ({ ...r, saved: false })),
+      resources: strapiResources.map((resource) => ({
+        ...resource,
+        saved: savedIds.has(resource.id),
+      })),
     });
   }
 
@@ -59,15 +71,6 @@ export async function GET(request: Request) {
       createdAt: true,
     },
   });
-
-  let savedIds: Set<string> = new Set();
-  if (current) {
-    const saved = await prisma.savedResource.findMany({
-      where: { profileId: current.profile.id },
-      select: { resourceId: true },
-    });
-    savedIds = new Set(saved.map((s) => s.resourceId));
-  }
 
   return ok({
     resources: resources.map((r) => ({ ...r, saved: savedIds.has(r.id) })),

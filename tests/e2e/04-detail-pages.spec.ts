@@ -13,8 +13,11 @@ test.describe("Detail Pages", () => {
     await page.goto("/resources");
     const firstResource = page.locator("a[href*='/resources/']").first();
     if (await firstResource.isVisible()) {
+      const resourceTitle = (await firstResource.textContent())?.trim() ?? "";
       await firstResource.click();
-      await expect(page.url()).toContain("/resources/");
+      await expect(page).toHaveURL(/\/resources\//);
+      await expect(page.getByRole("heading", { level: 1 })).toContainText(resourceTitle);
+      await expect(page.locator(".content-body").first()).toBeVisible();
     }
   });
 

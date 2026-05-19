@@ -1,3 +1,4 @@
+import "./setup-env";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { fail } from "@/lib/api/response";
@@ -22,16 +23,26 @@ const adminActor = {
   profile: { id: "profile_admin", roles: [{ role: "admin" as const }] },
 } as unknown as CurrentActor;
 
+const TEST_APP_ORIGIN = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+
+function postJson(url: string, body: unknown) {
+  return new Request(url, {
+    method: "POST",
+    headers: {
+      origin: TEST_APP_ORIGIN,
+      "content-type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+}
+
 test("writing evaluation returns 401 when authentication fails", async () => {
   const response = await postWritingEvaluation(
-    new Request("http://localhost/api/evaluations/writing", {
-      method: "POST",
-      body: JSON.stringify({
-        attemptId: "attempt_1",
-        sectionId: "section_1",
-        taskType: "task_1",
-        responseText: "Answer text",
-      }),
+    postJson("http://localhost/api/evaluations/writing", {
+      attemptId: "attempt_1",
+      sectionId: "section_1",
+      taskType: "task_1",
+      responseText: "Answer text",
     }),
     {
       requireCurrentUser: async () => {
@@ -53,14 +64,11 @@ test("writing evaluation returns rate-limit response before touching the databas
   let touchedDatabase = false;
 
   const response = await postWritingEvaluation(
-    new Request("http://localhost/api/evaluations/writing", {
-      method: "POST",
-      body: JSON.stringify({
-        attemptId: "attempt_1",
-        sectionId: "section_1",
-        taskType: "task_1",
-        responseText: "Answer text",
-      }),
+    postJson("http://localhost/api/evaluations/writing", {
+      attemptId: "attempt_1",
+      sectionId: "section_1",
+      taskType: "task_1",
+      responseText: "Answer text",
     }),
     {
       requireCurrentUser: async () => learnerActor,
@@ -88,14 +96,11 @@ test("writing evaluation success returns created envelope", async () => {
   let enqueuedJobId = "";
 
   const response = await postWritingEvaluation(
-    new Request("http://localhost/api/evaluations/writing", {
-      method: "POST",
-      body: JSON.stringify({
-        attemptId: "attempt_1",
-        sectionId: "section_1",
-        taskType: "task_2",
-        responseText: "This is a valid essay response.",
-      }),
+    postJson("http://localhost/api/evaluations/writing", {
+      attemptId: "attempt_1",
+      sectionId: "section_1",
+      taskType: "task_2",
+      responseText: "This is a valid essay response.",
     }),
     {
       requireCurrentUser: async () => learnerActor,
@@ -157,13 +162,10 @@ test("writing evaluation success returns created envelope", async () => {
 
 test("speaking evaluation validates request shape", async () => {
   const response = await postSpeakingEvaluation(
-    new Request("http://localhost/api/evaluations/speaking", {
-      method: "POST",
-      body: JSON.stringify({
-        attemptId: "attempt_1",
-        sectionId: "section_1",
-        part: "part_2",
-      }),
+    postJson("http://localhost/api/evaluations/speaking", {
+      attemptId: "attempt_1",
+      sectionId: "section_1",
+      part: "part_2",
     }),
     {
       requireCurrentUser: async () => learnerActor,
@@ -181,14 +183,11 @@ test("speaking evaluation validates request shape", async () => {
 
 test("media upload forbids learner listening-audio uploads", async () => {
   const response = await postMediaUpload(
-    new Request("http://localhost/api/media/upload-url", {
-      method: "POST",
-      body: JSON.stringify({
-        purpose: "listening_audio",
-        contentType: "audio/mpeg",
-        sizeBytes: 2048,
-        licenseMetadata: { source: "licensed" },
-      }),
+    postJson("http://localhost/api/media/upload-url", {
+      purpose: "listening_audio",
+      contentType: "audio/mpeg",
+      sizeBytes: 2048,
+      licenseMetadata: { source: "licensed" },
     }),
     {
       requireCurrentUser: async () => learnerActor,
@@ -220,13 +219,10 @@ test("media upload rejects unsupported speaking audio types before storage calls
   let touchedStorage = false;
 
   const response = await postMediaUpload(
-    new Request("http://localhost/api/media/upload-url", {
-      method: "POST",
-      body: JSON.stringify({
-        purpose: "speaking_recording",
-        contentType: "image/png",
-        sizeBytes: 2048,
-      }),
+    postJson("http://localhost/api/media/upload-url", {
+      purpose: "speaking_recording",
+      contentType: "image/png",
+      sizeBytes: 2048,
     }),
     {
       requireCurrentUser: async () => learnerActor,
@@ -260,10 +256,7 @@ test("media upload rejects unsupported speaking audio types before storage calls
 
 test("attempt answers rejects invalid request payload", async () => {
   const response = await postAttemptAnswers(
-    new Request("http://localhost/api/attempts/attempt_1/answers", {
-      method: "POST",
-      body: JSON.stringify({ sectionId: "section_1", answers: {} }),
-    }),
+    postJson("http://localhost/api/attempts/attempt_1/answers", { sectionId: "section_1", answers: {} }),
     { params: Promise.resolve({ attemptId: "attempt_1" }) },
     {
       requireCurrentUser: async () => learnerActor,
@@ -287,12 +280,9 @@ test("attempt answers rejects invalid request payload", async () => {
 
 test("attempt answers returns not found for attempts owned by another profile", async () => {
   const response = await postAttemptAnswers(
-    new Request("http://localhost/api/attempts/attempt_1/answers", {
-      method: "POST",
-      body: JSON.stringify({
-        sectionId: "section_1",
-        answers: { q1: "Answer" },
-      }),
+    postJson("http://localhost/api/attempts/attempt_1/answers", {
+      sectionId: "section_1",
+      answers: { q1: "Answer" },
     }),
     { params: Promise.resolve({ attemptId: "attempt_1" }) },
     {
@@ -319,13 +309,10 @@ test("attempt answers stores writing responses as section markers", async () => 
   let markerCreate: { answerJson: Record<string, unknown>; questionId: string | null } | null = null;
 
   const response = await postAttemptAnswers(
-    new Request("http://localhost/api/attempts/attempt_1/answers", {
-      method: "POST",
-      body: JSON.stringify({
-        sectionId: "section_1",
-        answers: { writing: "This is a complete writing response." },
-        isDraft: true,
-      }),
+    postJson("http://localhost/api/attempts/attempt_1/answers", {
+      sectionId: "section_1",
+      answers: { writing: "This is a complete writing response." },
+      isDraft: true,
     }),
     { params: Promise.resolve({ attemptId: "attempt_1" }) },
     {
@@ -373,13 +360,10 @@ test("attempt answers stores writing responses as section markers", async () => 
 
 test("attempt answers rejects future full mock sections", async () => {
   const response = await postAttemptAnswers(
-    new Request("http://localhost/api/attempts/attempt_1/answers", {
-      method: "POST",
-      body: JSON.stringify({
-        sectionId: "section_2",
-        answers: { q2: "A" },
-        isDraft: true,
-      }),
+    postJson("http://localhost/api/attempts/attempt_1/answers", {
+      sectionId: "section_2",
+      answers: { q2: "A" },
+      isDraft: true,
     }),
     { params: Promise.resolve({ attemptId: "attempt_1" }) },
     {
@@ -421,10 +405,7 @@ test("attempt answers rejects future full mock sections", async () => {
 
 test("submit section rejects empty answered sections", async () => {
   const response = await postSubmitSection(
-    new Request("http://localhost/api/attempts/attempt_1/submit-section", {
-      method: "POST",
-      body: JSON.stringify({ sectionId: "section_1" }),
-    }),
+    postJson("http://localhost/api/attempts/attempt_1/submit-section", { sectionId: "section_1" }),
     { params: Promise.resolve({ attemptId: "attempt_1" }) },
     {
       requireCurrentUser: async () => learnerActor,
@@ -456,10 +437,7 @@ test("submit section preserves objective answer values when marking them submitt
   let updatedAnswerJson: Record<string, unknown> | null = null;
 
   const response = await postSubmitSection(
-    new Request("http://localhost/api/attempts/attempt_1/submit-section", {
-      method: "POST",
-      body: JSON.stringify({ sectionId: "section_1" }),
-    }),
+    postJson("http://localhost/api/attempts/attempt_1/submit-section", { sectionId: "section_1" }),
     { params: Promise.resolve({ attemptId: "attempt_1" }) },
     {
       requireCurrentUser: async () => learnerActor,
@@ -499,6 +477,7 @@ test("submit section preserves objective answer values when marking them submitt
         moduleScore: {
           upsert: async () => ({}),
         },
+        $transaction: async (operations: Promise<unknown>[]) => Promise.all(operations),
       } as never,
       enqueueLlmJob: async () => true,
     },
@@ -513,10 +492,7 @@ test("submit section preserves objective answer values when marking them submitt
 
 test("submit section rejects future full mock sections", async () => {
   const response = await postSubmitSection(
-    new Request("http://localhost/api/attempts/attempt_1/submit-section", {
-      method: "POST",
-      body: JSON.stringify({ sectionId: "section_2" }),
-    }),
+    postJson("http://localhost/api/attempts/attempt_1/submit-section", { sectionId: "section_2" }),
     { params: Promise.resolve({ attemptId: "attempt_1" }) },
     {
       requireCurrentUser: async () => learnerActor,
@@ -557,10 +533,7 @@ test("submit section rejects future full mock sections", async () => {
 
 test("submit section rejects expired timed sections", async () => {
   const response = await postSubmitSection(
-    new Request("http://localhost/api/attempts/attempt_1/submit-section", {
-      method: "POST",
-      body: JSON.stringify({ sectionId: "section_1" }),
-    }),
+    postJson("http://localhost/api/attempts/attempt_1/submit-section", { sectionId: "section_1" }),
     { params: Promise.resolve({ attemptId: "attempt_1" }) },
     {
       requireCurrentUser: async () => learnerActor,
@@ -599,9 +572,9 @@ test("submit section rejects expired timed sections", async () => {
 
 test("submit section returns not found for attempts owned by another profile", async () => {
   const response = await postSubmitSection(
-    new Request("http://localhost/api/attempts/attempt_1/submit-section", {
-      method: "POST",
-      body: JSON.stringify({ sectionId: "section_1", responseText: "Essay response" }),
+    postJson("http://localhost/api/attempts/attempt_1/submit-section", {
+      sectionId: "section_1",
+      responseText: "Essay response",
     }),
     { params: Promise.resolve({ attemptId: "attempt_1" }) },
     {
@@ -632,14 +605,11 @@ test("speaking evaluation marks the section submitted when the response is queue
   let sectionMarkerJson: Record<string, unknown> | null = null;
 
   const response = await postSpeakingEvaluation(
-    new Request("http://localhost/api/evaluations/speaking", {
-      method: "POST",
-      body: JSON.stringify({
-        attemptId: "attempt_1",
-        sectionId: "section_speaking",
-        part: "part_3",
-        responseText: "A spoken response transcribed as text.",
-      }),
+    postJson("http://localhost/api/evaluations/speaking", {
+      attemptId: "attempt_1",
+      sectionId: "section_speaking",
+      part: "part_3",
+      responseText: "A spoken response transcribed as text.",
     }),
     {
       requireCurrentUser: async () => learnerActor,
@@ -699,16 +669,147 @@ test("speaking evaluation marks the section submitted when the response is queue
   assert.equal(createdSectionMarker.isDraft, false);
 });
 
+test("speaking evaluation keeps audio-only submissions pending review until a transcript exists", async () => {
+  const createdAt = new Date("2026-05-18T00:00:00.000Z");
+  let createdEvaluationData: {
+    status: string;
+    needsHumanReview: boolean;
+    transcript: string | null;
+  } | null = null;
+  let sectionMarkerJson: Record<string, unknown> | null = null;
+  let llmJobCreated = false;
+
+  const response = await postSpeakingEvaluation(
+    postJson("http://localhost/api/evaluations/speaking", {
+      attemptId: "attempt_1",
+      sectionId: "section_speaking",
+      part: "part_2",
+      mediaAssetId: "media_1",
+    }),
+    {
+      requireCurrentUser: async () => learnerActor,
+      checkRateLimitForIdentifier: async () => null,
+      evaluationRateLimiter: async () => ({ allowed: true, remaining: 10, resetIn: 60 }),
+      prisma: {
+        mediaAsset: {
+          findUnique: async () => ({
+            id: "media_1",
+            profileId: learnerActor.profile.id,
+            transcriptText: null,
+          }),
+        },
+        mockTestAttempt: {
+          findUnique: async () => ({
+            id: "attempt_1",
+            profileId: learnerActor.profile.id,
+            status: "in_progress",
+            startedAt: new Date(),
+            test: {
+              type: "full_mock",
+              sections: [{ id: "section_speaking", module: "speaking", durationMinutes: 15 }],
+            },
+            answers: [],
+          }),
+          update: async () => ({}),
+        },
+        $transaction: async (callback: (tx: {
+          speakingEvaluation: {
+            create: (args: { data: Record<string, unknown> }) => Promise<{ id: string; createdAt: Date; status: string; llmJobId: string | null }>;
+            update: (args: { where: { id: string }; data: { llmJobId: string } }) => Promise<{ id: string; createdAt: Date; status: string; llmJobId: string | null }>;
+          };
+          llmJob: {
+            create: (args: { data: Record<string, unknown> }) => Promise<{ id: string; type: string }>;
+          };
+          attemptAnswer: {
+            upsert: (args: { create: { answerJson: Record<string, unknown> } }) => Promise<Record<string, never>>;
+          };
+        }) => Promise<{ evaluation: { id: string; createdAt: Date; status: string; llmJobId: string | null }; job: { id: string; type: string } | null }>) =>
+          callback({
+            speakingEvaluation: {
+              create: async (args) => {
+                createdEvaluationData = args.data as {
+                  status: string;
+                  needsHumanReview: boolean;
+                  transcript: string | null;
+                };
+                return { id: "eval_pending", createdAt, status: "needs_review", llmJobId: null };
+              },
+              update: async () => ({ id: "eval_pending", createdAt, status: "queued", llmJobId: "job_1" }),
+            },
+            llmJob: {
+              create: async () => {
+                llmJobCreated = true;
+                return { id: "job_1", type: "speaking_evaluation" };
+              },
+            },
+            attemptAnswer: {
+              upsert: async (args) => {
+                sectionMarkerJson = args.create.answerJson;
+                return {};
+              },
+            },
+          }),
+      } as never,
+      enqueueLlmJob: async () => true,
+    },
+  );
+
+  assert.equal(response.status, 201);
+  assert.equal(llmJobCreated, false);
+  assert.ok(createdEvaluationData);
+  const persistedEvaluation = createdEvaluationData as {
+    status: string;
+    needsHumanReview: boolean;
+    transcript: string | null;
+  };
+  assert.equal(persistedEvaluation.status, "needs_review");
+  assert.equal(persistedEvaluation.needsHumanReview, true);
+  assert.equal(persistedEvaluation.transcript, null);
+  const payload = await response.json();
+  assert.equal(payload.data.status, "needs_review");
+  const createdSectionMarker = sectionMarkerJson as Record<string, unknown> | null;
+  assert.ok(createdSectionMarker);
+  assert.equal(createdSectionMarker.mediaAssetId, "media_1");
+  assert.equal(createdSectionMarker.responseText, null);
+});
+
+test("speaking evaluation rejects recordings owned by another learner", async () => {
+  const response = await postSpeakingEvaluation(
+    postJson("http://localhost/api/evaluations/speaking", {
+      attemptId: "attempt_1",
+      sectionId: "section_speaking",
+      part: "part_1",
+      mediaAssetId: "media_1",
+    }),
+    {
+      requireCurrentUser: async () => learnerActor,
+      checkRateLimitForIdentifier: async () => null,
+      evaluationRateLimiter: async () => ({ allowed: true, remaining: 10, resetIn: 60 }),
+      prisma: {
+        mediaAsset: {
+          findUnique: async () => ({
+            id: "media_1",
+            profileId: "another_profile",
+            transcriptText: "Hello",
+          }),
+        },
+      } as never,
+      enqueueLlmJob: async () => true,
+    },
+  );
+
+  assert.equal(response.status, 404);
+  const payload = await response.json();
+  assert.equal(payload.error.code, "NOT_FOUND");
+});
+
 test("speaking evaluation rejects expired timed sections", async () => {
   const response = await postSpeakingEvaluation(
-    new Request("http://localhost/api/evaluations/speaking", {
-      method: "POST",
-      body: JSON.stringify({
-        attemptId: "attempt_1",
-        sectionId: "section_speaking",
-        part: "part_2",
-        responseText: "Late response",
-      }),
+    postJson("http://localhost/api/evaluations/speaking", {
+      attemptId: "attempt_1",
+      sectionId: "section_speaking",
+      part: "part_2",
+      responseText: "Late response",
     }),
     {
       requireCurrentUser: async () => learnerActor,

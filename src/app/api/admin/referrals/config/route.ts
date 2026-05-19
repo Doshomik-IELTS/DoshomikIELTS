@@ -31,6 +31,9 @@ export async function PATCH(request: Request) {
   const adminAuth = await requireAdminActorOrResponse();
   if (adminAuth.response) return adminAuth.response;
 
+  const csrfResponse = verifyCsrf(request);
+  if (csrfResponse) return csrfResponse;
+
   const body = await request.json().catch(() => null);
   const parsed = updateConfigSchema.safeParse(body);
   if (!parsed.success) {

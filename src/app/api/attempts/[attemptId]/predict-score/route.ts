@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { requireCurrentUser } from "@/lib/auth/session";
 import { ok, fail } from "@/lib/api/response";
 import { checkRateLimitForIdentifier, predictionRateLimiter } from "@/lib/rate-limit";
+import { verifyCsrf } from "@/lib/security/csrf";
 import type { IeltsModule } from "@prisma/client";
 
 const REQUIRED_MODULES: IeltsModule[] = ["listening", "reading", "writing", "speaking"];
@@ -13,6 +14,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ att
   } catch {
     return fail({ code: "UNAUTHENTICATED", message: "Authentication required" }, 401);
   }
+
+  const csrfResponse = verifyCsrf(request);
+  if (csrfResponse) return csrfResponse;
 
   const rateLimitResponse = await checkRateLimitForIdentifier(predictionRateLimiter, actor.profile.id);
   if (rateLimitResponse) {

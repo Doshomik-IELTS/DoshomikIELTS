@@ -20,6 +20,9 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   if (adminAuth.response) return adminAuth.response;
   const actor = adminAuth.actor;
 
+  const csrfResponse = verifyCsrf(request);
+  if (csrfResponse) return csrfResponse;
+
   const { id } = await params;
   const body = await request.json().catch(() => null);
   const parsed = groupPatchSchema.safeParse(body);
@@ -66,6 +69,9 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
   const adminAuth = await requireAdminActorOrResponse();
   if (adminAuth.response) return adminAuth.response;
   const actor = adminAuth.actor;
+
+  const csrfResponse = verifyCsrf(_request);
+  if (csrfResponse) return csrfResponse;
 
   const { id } = await params;
   const group = await prisma.questionGroup.findUnique({

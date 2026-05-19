@@ -126,7 +126,31 @@ async function processSpeakingJob(llmJobId: string) {
     throw new Error(`Speaking evaluation for job ${llmJobId} not found`);
   }
 
-  const responseText = evaluation.responseText || evaluation.transcript || "";
+  const responseText = evaluation.transcript || evaluation.responseText || "";
+  if (!responseText.trim()) {
+    return prisma.$transaction(async (tx) => {
+      await tx.speakingEvaluation.update({
+        where: { id: evaluation.id },
+        data: {
+          status: JobStatus.needs_review,
+          needsHumanReview: true,
+          transcript: evaluation.transcript || evaluation.responseText || null,
+        },
+      });
+
+      return tx.llmJob.update({
+        where: { id: llmJobId },
+        data: {
+          status: JobStatus.needs_review,
+          outputJson: {
+            reason: "No scorable speaking transcript available",
+            needsHumanReview: true,
+          },
+        },
+      });
+    });
+  }
+
   const result = await evaluateResponse({
     kind: "speaking",
     promptLabel: evaluation.part,

@@ -1,6 +1,7 @@
 import { requireCurrentUser } from "@/lib/auth/session";
 import { ok, fail } from "@/lib/api/response";
 import { prisma } from "@/lib/prisma";
+import { verifyCsrf } from "@/lib/security/csrf";
 import { z } from "zod";
 
 const timePatchSchema = z.object({
@@ -15,6 +16,9 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ at
   } catch {
     return fail({ code: "UNAUTHENTICATED", message: "Authentication required" }, 401);
   }
+
+  const csrfResponse = verifyCsrf(request);
+  if (csrfResponse) return csrfResponse;
 
   const { attemptId } = await params;
   const body = await request.json().catch(() => null);

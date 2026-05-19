@@ -1,6 +1,5 @@
 import { ok } from "@/lib/api/response";
 import { requireAdminActorOrResponse } from "@/lib/auth/admin-api";
-import { verifyCsrf } from "@/lib/security/csrf";
 import { prisma } from "@/lib/prisma";
 
 export async function GET() {

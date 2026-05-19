@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { requireCurrentUser } from "@/lib/auth/session";
 import { ok, fail } from "@/lib/api/response";
+import { verifyCsrf } from "@/lib/security/csrf";
 import { z } from "zod";
 
 const practiceAttemptSchema = z.object({
@@ -17,6 +18,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   } catch {
     return fail({ code: "UNAUTHENTICATED", message: "Authentication required" }, 401);
   }
+
+  const csrfResponse = verifyCsrf(request);
+  if (csrfResponse) return csrfResponse;
 
   const { id: resourceId } = await params;
 

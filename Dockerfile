@@ -56,5 +56,5 @@ COPY --from=builder /app/tsconfig.json ./tsconfig.json
 RUN chown -R worker:nodejs /app
 USER worker
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
-  CMD node -e "const h=require('http');h.get('http://127.0.0.1:3000/api/health',r=>{let d='';r.on('data',c=>d+=c);r.on('end',()=>{const j=JSON.parse(d);process.exit(j.dependencies.worker?.status==='ok'?0:1)})}).on('error',()=>process.exit(1))"
+  CMD node -e "const Redis=require('ioredis');const client=new Redis(process.env.REDIS_URL,{maxRetriesPerRequest:1,enableOfflineQueue:false,lazyConnect:true});(async()=>{try{await client.connect();const pong=await client.ping();await client.quit();process.exit(pong==='PONG'?0:1);}catch{try{client.disconnect();}catch{}process.exit(1);}})()"
 CMD ["node", "node_modules/.bin/tsx", "src/workers/index.ts"]

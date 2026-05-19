@@ -15,6 +15,9 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   if (adminAuth.response) return adminAuth.response;
   const actor = adminAuth.actor;
 
+  const csrfResponse = verifyCsrf(request);
+  if (csrfResponse) return csrfResponse;
+
   const { id: testId } = await params;
   const editable = await canEditTestContent(testId);
   if (!editable.ok) {

@@ -1,14 +1,14 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
 import { State } from "@/components/ui/state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { apiFetch } from "@/lib/api/client";
 import { resourceCategoryLabel, difficultyLabel } from "@/lib/resources/constants";
+import { ResourceSaveButton } from "@/components/resources/resource-save-button";
 
 interface Resource {
   id: string;
@@ -24,6 +24,7 @@ interface Resource {
   vocabularyItemsJson?: unknown;
   tags: string[];
   publishedAt: string | null;
+  saved?: boolean;
 }
 
 interface ResourceResponse {
@@ -35,19 +36,9 @@ async function fetchResource(id: string): Promise<ResourceResponse> {
 }
 
 export function ResourceDetail({ id }: { id: string }) {
-  const queryClient = useQueryClient();
   const { data, isLoading, isError } = useQuery({
     queryKey: ["resource", id],
     queryFn: () => fetchResource(id),
-  });
-
-  const saveMutation = useMutation({
-    mutationFn: async () => {
-      return apiFetch<{ success: boolean }>(`/api/resources/${id}/save`, { method: "POST" });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["resource", id, "saved"] });
-    },
   });
 
   if (isLoading) {
@@ -80,9 +71,10 @@ export function ResourceDetail({ id }: { id: string }) {
         meta={resourceCategoryLabel(resource.category)}
         title={resource.title}
         actions={
-          <Button variant="outline" size="sm" onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending}>
-            {saveMutation.isPending ? "Saving..." : "Save"}
-          </Button>
+          <ResourceSaveButton
+            resourceId={resource.id}
+            initialSaved={Boolean(resource.saved)}
+          />
         }
       />
 

@@ -75,7 +75,7 @@ export function ResourceList() {
         <Card key={resource.id} variant="interactive" className="h-full">
           <CardContent className="p-5 flex flex-col h-full">
             <div className="flex items-start justify-between gap-2">
-              <Link href={`/resources/${resource.slug || resource.id}`} className="flex-1 min-w-0">
+              <Link href={`/resources/${resource.id}`} className="flex-1 min-w-0">
                 <p className="font-semibold text-slate-900 hover:text-blue-600 transition-colors">{resource.title}</p>
               </Link>
               <div className="flex-shrink-0">

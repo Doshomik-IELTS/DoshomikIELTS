@@ -3,6 +3,7 @@ import { requireCurrentUser } from "@/lib/auth/session";
 import { ok, fail } from "@/lib/api/response";
 import { redeemCreditForTest, getCreditBalance, processOngoingPurchase } from "@/lib/referral/service";
 import { ensureLocalTestFromStrapi, isStrapiId } from "@/lib/strapi/content";
+import { verifyCsrf } from "@/lib/security/csrf";
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   let actor;
@@ -11,6 +12,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   } catch {
     return fail({ code: "UNAUTHENTICATED", message: "Authentication required" }, 401);
   }
+
+  const csrfResponse = verifyCsrf(request);
+  if (csrfResponse) return csrfResponse;
 
   const { id: testId } = await params;
 

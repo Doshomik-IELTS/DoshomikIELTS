@@ -97,6 +97,14 @@ type NormalizedMockTest = {
   sections: NormalizedSection[];
 };
 
+function isPublishedResource(resource: StrapiResourceDetail | null | undefined) {
+  return Boolean(resource?.publishedAt);
+}
+
+function isPublishedMockTest(test: NormalizedMockTest | null | undefined) {
+  return Boolean(test?.publishedAt);
+}
+
 function strapiBaseUrl() {
   return process.env.STRAPI_BASE_URL?.replace(/\/$/, "") || "";
 }
@@ -278,7 +286,7 @@ export async function fetchStrapiResources(params: {
   if (!res) return null;
   return collection(res.data)
     .map(resourceFromEntry)
-    .filter((r): r is StrapiResourceDetail => Boolean(r))
+    .filter((r): r is StrapiResourceDetail => isPublishedResource(r))
     .map((resource): StrapiResourceSummary => ({
       id: resource.id,
       strapiDocumentId: resource.strapiDocumentId,
@@ -300,7 +308,69 @@ export async function fetchStrapiResource(id: string): Promise<StrapiResourceDet
   qs.set("populate", "*");
   const res = await strapiFetch<StrapiListResponse>(`/api/resources/${documentId}?${qs.toString()}`);
   if (!res?.data) return null;
-  return resourceFromEntry(res.data);
+  const resource = resourceFromEntry(res.data);
+  return isPublishedResource(resource) ? resource : null;
+}
+
+export async function fetchStrapiResourceBySlug(slug: string): Promise<StrapiResourceDetail | null> {
+  const qs = new URLSearchParams();
+  qs.set("populate", "*");
+  qs.set("filters[slug][$eq]", slug);
+  qs.set("pagination[pageSize]", "1");
+  const res = await strapiFetch<StrapiListResponse>(`/api/resources?${qs.toString()}`);
+  if (!res) return null;
+
+  return (
+    collection(res.data)
+      .map(resourceFromEntry)
+      .find((resource): resource is StrapiResourceDetail => isPublishedResource(resource)) ?? null
+  );
+}
+
+function localResourceSlug(resource: StrapiResourceDetail, existingSlugOwnerId?: string | null) {
+  if (!existingSlugOwnerId || existingSlugOwnerId === resource.id) {
+    return resource.slug;
+  }
+  return `${resource.slug}-${resource.strapiDocumentId}`;
+}
+
+export async function ensureLocalResourceFromStrapi(id: string) {
+  if (!isStrapiId(id)) return null;
+
+  const existing = await prisma.resource.findUnique({ where: { id } });
+  if (existing) return existing;
+
+  const resource = await fetchStrapiResource(id);
+  if (!resource) return null;
+
+  const slugOwner = await prisma.resource.findUnique({
+    where: { slug: resource.slug },
+    select: { id: true },
+  });
+
+  return prisma.resource.upsert({
+    where: { id: resource.id },
+    create: {
+      id: resource.id,
+      title: resource.title,
+      slug: localResourceSlug(resource, slugOwner?.id),
+      category: resource.category as "basic_english" | "words" | "synonyms" | "grammar" | "reading_strategy" | "listening_strategy" | "writing_strategy" | "speaking_strategy",
+      difficulty: resource.difficulty as "basic" | "intermediate" | "advanced",
+      body: resource.body,
+      examplesJson: resource.examplesJson as Prisma.InputJsonValue | undefined,
+      tags: resource.tags,
+      status: "published",
+      publishedAt: resource.publishedAt ? new Date(resource.publishedAt) : new Date(),
+    },
+    update: {
+      title: resource.title,
+      body: resource.body,
+      examplesJson: resource.examplesJson as Prisma.InputJsonValue | undefined,
+      tags: resource.tags,
+      status: "published",
+      publishedAt: resource.publishedAt ? new Date(resource.publishedAt) : new Date(),
+    },
+  });
 }
 
 function normalizeGroup(raw: unknown): NormalizedGroup | null {
@@ -441,7 +511,7 @@ export async function fetchStrapiMockTests(type?: string): Promise<StrapiMockTes
   if (!res) return null;
   return collection(res.data)
     .map(mockTestFromEntry)
-    .filter((t): t is NormalizedMockTest => Boolean(t))
+    .filter((t): t is NormalizedMockTest => isPublishedMockTest(t))
     .map(mockTestSummary);
 }
 
@@ -450,7 +520,8 @@ export async function fetchStrapiMockTest(id: string): Promise<NormalizedMockTes
   const qs = mockTestPopulateQuery();
   const res = await strapiFetch<StrapiListResponse>(`/api/mock-tests/${documentId}?${qs.toString()}`);
   if (!res?.data) return null;
-  return mockTestFromEntry(res.data);
+  const test = mockTestFromEntry(res.data);
+  return isPublishedMockTest(test) ? test : null;
 }
 
 export async function ensureLocalTestFromStrapi(id: string) {
