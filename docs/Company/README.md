@@ -38,6 +38,10 @@ IELTS++ operates on a **credit-based freemium model**: learners receive free res
 
 Before running any role, read the shared [review playbook](review-playbook.md). It defines severity, evidence, validation, and handoff expectations for every agent.
 
+Related planning doc:
+
+- [10-on-10-readiness-plan.md](10-on-10-readiness-plan.md) — cross-functional checklist for moving the product from current paid-beta readiness to a defensible `10/10`.
+
 ## How to Use
 
 1. Pick the narrowest review target you can name: route, file group, flow, API, release gate, or architecture decision.
