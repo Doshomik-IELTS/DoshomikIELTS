@@ -7,7 +7,7 @@ import { queueNames } from "@/lib/queue/names";
 
 const connection = createRedisConnection();
 
-const WORKER_ATTEMPTS = Number(process.env.WORKER_MAX_ATTEMPTS || 3);
+const MAX_RETRIES = 3;
 
 const workers = Object.values(queueNames).map((queueName) => {
   const worker = new Worker(
@@ -38,16 +38,20 @@ const workers = Object.values(queueNames).map((queueName) => {
 
   worker.on("failed", (job, error) => {
     const attemptsMade = job?.attemptsMade ?? 0;
+    const isFinalFailure = attemptsMade >= MAX_RETRIES;
+
     logger.error("worker job failed", {
       queueName,
       jobId: job?.id,
       jobName: job?.name,
       attemptsMade,
+      maxRetries: MAX_RETRIES,
+      isFinalFailure,
       error: error.message,
     });
 
-    if (attemptsMade >= WORKER_ATTEMPTS) {
-      logger.error("job moved to dead-letter queue", {
+    if (isFinalFailure) {
+      logger.error("job exhausted all retries — dead-letter", {
         queueName,
         jobId: job?.id,
         attemptsMade,

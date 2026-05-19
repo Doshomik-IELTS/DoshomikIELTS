@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { requireAdminActorOrResponse } from "@/lib/auth/admin-api";
+import { verifyCsrf } from "@/lib/security/csrf";
 import { ok, fail } from "@/lib/api/response";
 import { z } from "zod";
 import type { Prisma } from "@prisma/client";
@@ -23,6 +24,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const adminAuth = await requireAdminActorOrResponse();
   if (adminAuth.response) return adminAuth.response;
   const actor = adminAuth.actor;
+
+  const csrfResponse = verifyCsrf(request);
+  if (csrfResponse) return csrfResponse;
 
   const { id: testId } = await params;
 

@@ -1,5 +1,6 @@
 import { fail, ok } from "@/lib/api/response";
 import { requireAdminActorOrResponse } from "@/lib/auth/admin-api";
+import { verifyCsrf } from "@/lib/security/csrf";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import type { Prisma } from "@prisma/client";

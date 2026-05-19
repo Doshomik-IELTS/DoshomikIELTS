@@ -1,5 +1,6 @@
 import { fail, ok } from "@/lib/api/response";
 import { requireAdminActorOrResponse } from "@/lib/auth/admin-api";
+import { verifyCsrf } from "@/lib/security/csrf";
 import { prisma } from "@/lib/prisma";
 import { logAuditEvent } from "@/lib/audit";
 import { z } from "zod";
@@ -14,6 +15,9 @@ export async function POST(request: Request) {
   const adminAuth = await requireAdminActorOrResponse();
   if (adminAuth.response) return adminAuth.response;
   const actor = adminAuth.actor;
+
+  const csrfResponse = verifyCsrf(request);
+  if (csrfResponse) return csrfResponse;
 
   const body = await request.json().catch(() => null);
   const parsed = revokeSchema.safeParse(body);

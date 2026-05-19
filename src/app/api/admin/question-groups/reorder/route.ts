@@ -1,5 +1,6 @@
 import { fail, ok } from "@/lib/api/response";
 import { requireAdminActorOrResponse } from "@/lib/auth/admin-api";
+import { verifyCsrf } from "@/lib/security/csrf";
 import { logAuditEvent } from "@/lib/audit";
 import { prisma } from "@/lib/prisma";
 import { canEditTestContent, publishedMutationMessage } from "@/lib/tests/mutability";

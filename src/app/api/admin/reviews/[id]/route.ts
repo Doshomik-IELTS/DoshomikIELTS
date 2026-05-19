@@ -2,6 +2,7 @@ import { ContentStatus, type Prisma } from "@prisma/client";
 import { fail, ok } from "@/lib/api/response";
 import { logRouteError } from "@/lib/api/logging";
 import { requireAdminActorOrResponse } from "@/lib/auth/admin-api";
+import { verifyCsrf } from "@/lib/security/csrf";
 import { prisma } from "@/lib/prisma";
 import { logAuditEvent } from "@/lib/audit";
 import { z } from "zod";

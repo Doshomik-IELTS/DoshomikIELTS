@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { requireAdminActorOrResponse } from "@/lib/auth/admin-api";
+import { verifyCsrf } from "@/lib/security/csrf";
 import { ok, fail } from "@/lib/api/response";
 import { logRouteError } from "@/lib/api/logging";
 import { paginationSchema, parseQuery } from "@/lib/api/validation";

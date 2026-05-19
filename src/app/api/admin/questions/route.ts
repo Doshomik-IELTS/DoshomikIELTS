@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { requireAdminActorOrResponse } from "@/lib/auth/admin-api";
+import { verifyCsrf } from "@/lib/security/csrf";
 import { ok, fail } from "@/lib/api/response";
 import { z } from "zod";
 import type { Prisma } from "@prisma/client";
@@ -93,6 +94,9 @@ export async function POST(request: Request) {
   const adminAuth = await requireAdminActorOrResponse();
   if (adminAuth.response) return adminAuth.response;
   const actor = adminAuth.actor;
+
+  const csrfResponse = verifyCsrf(request);
+  if (csrfResponse) return csrfResponse;
 
   const body = await request.json().catch(() => null);
   const parsed = createQuestionSchema.safeParse(body);

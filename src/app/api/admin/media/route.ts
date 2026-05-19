@@ -2,6 +2,7 @@ import { fail, ok } from "@/lib/api/response";
 import { logRouteError } from "@/lib/api/logging";
 import { paginationSchema, parseQuery } from "@/lib/api/validation";
 import { requireAdminActorOrResponse } from "@/lib/auth/admin-api";
+import { verifyCsrf } from "@/lib/security/csrf";
 import { logAuditEvent } from "@/lib/audit";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
@@ -76,6 +77,9 @@ export async function POST(request: Request) {
   const adminAuth = await requireAdminActorOrResponse();
   if (adminAuth.response) return adminAuth.response;
   const actor = adminAuth.actor;
+
+  const csrfResponse = verifyCsrf(request);
+  if (csrfResponse) return csrfResponse;
 
   try {
     const body = await request.json().catch(() => null);

@@ -3,6 +3,7 @@ import {
   assertCanSetResourceStatus,
   requireAdminActorOrResponse,
 } from "@/lib/auth/admin-api";
+import { verifyCsrf } from "@/lib/security/csrf";
 import { logRouteError } from "@/lib/api/logging";
 import { prisma } from "@/lib/prisma";
 import { ensureUniqueResourceSlug, slugifyTitle } from "@/lib/slug";
@@ -78,6 +79,9 @@ export async function POST(request: Request) {
   const adminAuth = await requireAdminActorOrResponse();
   if (adminAuth.response) return adminAuth.response;
   const actor = adminAuth.actor;
+
+  const csrfResponse = verifyCsrf(request);
+  if (csrfResponse) return csrfResponse;
 
   let json: unknown;
   try {

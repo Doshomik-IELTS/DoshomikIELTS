@@ -1,5 +1,6 @@
 import { fail, ok } from "@/lib/api/response";
 import { requireAdminActorOrResponse } from "@/lib/auth/admin-api";
+import { verifyCsrf } from "@/lib/security/csrf";
 import { logAuditEvent } from "@/lib/audit";
 import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@prisma/client";
@@ -8,6 +9,9 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
   const adminAuth = await requireAdminActorOrResponse();
   if (adminAuth.response) return adminAuth.response;
   const actor = adminAuth.actor;
+
+  const csrfResponse = verifyCsrf(_request);
+  if (csrfResponse) return csrfResponse;
 
   const { id } = await params;
   const source = await prisma.test.findUnique({
