@@ -13,9 +13,8 @@
 # testing
 /coverage
 
-# extracted design references
-/design_X/v1.0.0/
-!/design_X/v1.0.0.zip
+# extracted design references (keep prototype source, ignore zip)
+/design_X/v1.0.0.zip
 
 # next.js
 /.next/

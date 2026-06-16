@@ -46,6 +46,16 @@ The platform uses a **purple-indigo design system** with the following identity:
 
 See [`docs/development/frontend/ui-system.md`](docs/development/frontend/ui-system.md) for the full design token reference.
 
+## Demo
+
+A static preview of the landing page is deployed to GitHub Pages:
+
+**<https://nabil0x.github.io/IELTS/>**
+
+The demo is built from the design prototype in [`design_X/v1.0.0/E-learning-1.0.0/`](design_X/v1.0.0/E-learning-1.0.0/) and auto-deploys on push to `main` via [`.github/workflows/pages.yml`](.github/workflows/pages.yml).
+
+> The demo is a static snapshot — auth, API routes, and interactive features are not functional. The full app runs via Docker (see [Deploy workflow](.github/workflows/deploy.yml)).
+
 ## Documentation
 
 Start here:
