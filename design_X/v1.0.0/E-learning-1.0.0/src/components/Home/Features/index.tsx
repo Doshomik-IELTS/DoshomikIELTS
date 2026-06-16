@@ -1,42 +1,42 @@
-import { Icon } from "@iconify/react";
 import Link from "next/link";
+import { Icon } from "@/components/ui/Icon";
 
 const features = [
   {
     icon: "solar:notebook-minimalistic-outline",
     title: "Basic-English-to-IELTS path",
     description:
-      "Move from grammar, vocabulary, synonyms, and sentence structures into full IELTS module readiness, following a structured learning journey.",
+      "Move from grammar, vocabulary, synonyms, and common errors into IELTS-style practice without losing the foundations.",
   },
   {
     icon: "solar:library-outline",
     title: "Owned resource library",
     description:
-      "Study original lessons, explanations, and examples purpose-built for IELTS preparation — no copyrighted third-party content required.",
+      "Study original lessons for Basic English, Reading, Listening, Writing, Speaking, vocabulary, and grammar.",
   },
   {
     icon: "solar:clipboard-check-outline",
     title: "Objective practice scoring",
     description:
-      "Reading, Listening, vocabulary, and grammar exercises with instant scoring and detailed feedback on every attempt.",
+      "Reading, Listening, vocabulary, synonym, and grammar practice marked instantly with accepted answer variants.",
   },
   {
     icon: "solar:magic-stick-3-outline",
     title: "Transparent AI feedback",
     description:
-      "Writing and Speaking responses evaluated against IELTS criteria with clear, criterion-level feedback and estimated band scores.",
+      "Writing and Speaking responses receive criterion-level band estimates, strengths, weaknesses, and next-step guidance.",
   },
   {
     icon: "solar:chart-square-outline",
     title: "Progress dashboard",
     description:
-      "Track module progress, study streaks, achievements, and score trends over time — all in one place at a glance.",
+      "Track module progress, recent attempts, saved resources, estimated bands, and score history.",
   },
   {
     icon: "solar:shield-check-outline",
     title: "Copyright-safe workflow",
     description:
-      "The platform is structured with original content from the ground up, ensuring full compliance and safe, ethical practice.",
+      "The platform is structured for original, licensed, public-domain-valid, or internally reviewed generated content only.",
   },
 ];
 
@@ -44,26 +44,27 @@ const Features = () => {
   return (
     <section id="features" className="py-20">
       <div className="container mx-auto lg:max-w-screen-xl md:max-w-screen-md px-4">
-        <div className="text-center mb-16">
-          <p className="text-sm font-semibold uppercase tracking-wide text-primary mb-4">
-            MVP features
-          </p>
-          <h2 className="text-midnight_text text-4xl lg:text-5xl font-semibold mb-5">
-            Everything needed for a complete IELTS practice loop.
-          </h2>
-          <p className="text-black/70 text-lg max-w-2xl mx-auto mb-8">
-            The platform connects learning resources, focused practice, mock
-            tests, evaluation, and progress tracking.
-          </p>
+        <div className="flex flex-col justify-between gap-6 sm:flex-row sm:items-end mb-12">
+          <div className="max-w-3xl">
+            <p className="text-sm font-semibold uppercase tracking-wide text-primary">
+              MVP features
+            </p>
+            <h2 className="mt-3 text-3xl lg:text-4xl font-semibold text-midnight_text">
+              Everything needed for a complete IELTS practice loop.
+            </h2>
+            <p className="mt-4 text-grey text-lg">
+              The platform connects learning resources, focused practice, mock tests, evaluation, and progress tracking.
+            </p>
+          </div>
           <Link
             href="/dashboard"
-            className="text-primary text-lg font-medium hover:tracking-widest duration-500 inline-block"
+            className="text-primary text-lg font-medium hover:tracking-widest duration-500 shrink-0"
           >
-            Open learner dashboard &gt;
+            Open learner dashboard&nbsp;&gt;
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {features.map((feature, index) => (
             <div
               key={index}
@@ -76,7 +77,7 @@ const Features = () => {
               <h3 className="text-xl font-semibold text-midnight_text mb-3">
                 {feature.title}
               </h3>
-              <p className="text-black/70 text-base">{feature.description}</p>
+              <p className="text-grey text-sm leading-6">{feature.description}</p>
             </div>
           ))}
         </div>
