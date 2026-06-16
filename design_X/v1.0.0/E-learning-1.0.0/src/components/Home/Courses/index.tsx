@@ -16,67 +16,60 @@ const courseData: {
   rating: number;
   students: number;
   classes: number;
-  free?: boolean;
 }[] = [
   {
     heading: "IELTS Listening — Audio Drills",
     name: "Original audio, transcripts, objective answers, accepted variants, and instant estimated scoring.",
-    imgSrc: "images/courses/course-1.jpg",
+    imgSrc: "images/courses/course-1.png",
     price: 0,
     rating: 4.4,
     students: 150,
     classes: 12,
-    free: true,
   },
   {
     heading: "IELTS Reading — Passage Practice",
     name: "IELTS-style passages, question sets, answer explanations, and source-span rationale.",
-    imgSrc: "images/courses/course-2.jpg",
+    imgSrc: "images/courses/course-2.png",
     price: 0,
     rating: 4.5,
     students: 130,
     classes: 12,
-    free: true,
   },
   {
     heading: "IELTS Writing — Task Feedback",
     name: "Task 1 and Task 2 responses evaluated against IELTS-style criteria with practical revision advice.",
-    imgSrc: "images/courses/course-3.jpg",
+    imgSrc: "images/courses/course-3.png",
     price: 0,
     rating: 5,
     students: 120,
     classes: 12,
-    free: true,
   },
   {
     heading: "IELTS Speaking — Part 1, 2 & 3",
     name: "Part 1, Part 2, and Part 3 practice with text or audio response paths and feedback after evaluation.",
-    imgSrc: "images/courses/course-1.jpg",
+    imgSrc: "images/courses/course-1.png",
     price: 0,
     rating: 5,
     students: 150,
     classes: 12,
-    free: true,
   },
   {
     heading: "Full Mock Tests — Timed Practice",
     name: "Complete all four modules in a timed mock test to unlock an unofficial score prediction.",
-    imgSrc: "images/courses/course-2.jpg",
+    imgSrc: "images/courses/course-2.png",
     price: 0,
     rating: 5,
     students: 150,
     classes: 12,
-    free: true,
   },
   {
     heading: "Vocabulary & Grammar Foundation",
     name: "Build your English foundation with targeted vocabulary, synonym, and grammar drills.",
-    imgSrc: "images/courses/course-3.jpg",
+    imgSrc: "images/courses/course-3.png",
     price: 0,
     rating: 4.2,
     students: 150,
     classes: 12,
-    free: true,
   },
 ];
 
@@ -89,15 +82,12 @@ const Courses = () => {
     arrows: false,
     autoplay: true,
     speed: 500,
-    cssEase: "linear",
     responsive: [
       {
         breakpoint: 1200,
         settings: {
           slidesToShow: 2,
           slidesToScroll: 1,
-          infinite: true,
-          dots: false,
         },
       },
       {
@@ -105,8 +95,6 @@ const Courses = () => {
         settings: {
           slidesToShow: 1,
           slidesToScroll: 1,
-          infinite: true,
-          dots: false,
         },
       },
     ],
@@ -136,7 +124,7 @@ const Courses = () => {
           <Icon
             key={`empty-${i}`}
             icon="tabler:star-filled"
-            className="text-gray-400 text-xl inline-block"
+            className="text-gray-300 text-xl inline-block"
           />
         ))}
       </>
@@ -144,8 +132,8 @@ const Courses = () => {
   };
 
   return (
-    <section id="courses">
-      <div className="container mx-auto max-w-screen-xl px-4">
+    <section id="courses" className="bg-white">
+      <div className="mx-auto lg:max-w-screen-xl md:max-w-screen-md px-4">
         <div className="sm:flex justify-between items-center mb-20">
           <h2 className="text-midnight_text text-4xl lg:text-5xl font-semibold mb-5 sm:mb-0">
             Popular modules.
@@ -161,14 +149,14 @@ const Courses = () => {
         <Slider {...settings}>
           {courseData.map((items, i) => (
             <div key={i}>
-              <div className="bg-white m-3 mb-12 px-3 pt-3 pb-12 shadow-course-shadow rounded-2xl">
-                <div className="relative rounded-3xl">
+              <div className="bg-white m-3 mb-12 px-3 pt-3 pb-12 shadow-course-shadow rounded-2xl h-full">
+                <div className="relative">
                   <Image
                     src={`${getImagePrefix()}${items.imgSrc}`}
                     alt="course-image"
                     width={389}
                     height={262}
-                    className="m-auto clipPath"
+                    className="m-auto"
                   />
                   <div className="absolute right-5 -bottom-2 bg-secondary rounded-full p-6">
                     <h3 className="text-white uppercase text-center text-sm font-medium">
@@ -178,15 +166,12 @@ const Courses = () => {
                 </div>
 
                 <div className="px-3 pt-6">
-                  <Link
-                    href="#"
-                    className="text-2xl font-bold text-black max-w-75% inline-block"
-                  >
+                  <h3 className="text-2xl font-bold text-midnight_text">
                     {items.heading}
-                  </Link>
-                  <h3 className="text-base font-normal pt-6 text-black/75">
-                    {items.name}
                   </h3>
+                  <p className="text-base text-grey pt-6">
+                    {items.name}
+                  </p>
 
                   <div className="flex justify-between items-center py-6 border-b">
                     <div className="flex items-center gap-4">
@@ -194,6 +179,11 @@ const Courses = () => {
                         {items.rating}
                       </h3>
                       <div className="flex">{renderStars(items.rating)}</div>
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-medium text-secondary">
+                        {items.price === 0 ? "Free" : `$${items.price}`}
+                      </h3>
                     </div>
                   </div>
 
