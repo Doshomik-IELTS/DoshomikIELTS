@@ -1,4 +1,4 @@
-import { Icon } from "@iconify/react/dist/iconify.js";
+import { Icon } from "@iconify/react";
 import Image from "next/image";
 import tline from "/public/images/svgs/T-Line.svg";
 import t_half_line from "/public/images/svgs/T-half_line.svg";

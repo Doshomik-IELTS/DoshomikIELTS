@@ -1,36 +1,35 @@
-import { getImagePrefix } from "@/utils/util";
-import Image from "next/image";
+import Link from "next/link";
 
 const Newsletter = () => {
-    const isProd = process.env.NODE_ENV === "production";
-
-    return (
-        <section>
-            <div className="container mx-auto lg:max-w-screen-xl md:max-w-screen-md px-4">
-                <div className="grid grid-cols-1 gap-y-10 gap-x-6 md:grid-cols-12 xl:gap-x-8">
-                    <div className={`col-span-12 ${isProd ? 'bg-newsletter-bg-2' : 'bg-newsletter-bg'} bg-contain bg-no-repeat`}>
-                        <div className="mb-10 mt-24 lg:mx-64 lg:my-24">
-                            <h3 className="text-4xl md:text-5xl text-center font-semibold text-white mb-3">Newsletter.</h3>
-                            <h3 className="text-base font-normal text-white/75 text-center mb-8">
-                                Subscrible our newsletter for discounts, <br /> promo and many more.
-                            </h3>
-                            <div>
-                                <div className="relative text-white focus-within:text-white flex flex-row-reverse rounded-full pt-5 lg:pt-0">
-                                    <input type="Email address" name="q" className="py-6 lg:py-8 text-sm md:text-lg w-full mx-3 text-black rounded-full pl-8 focus:outline-none focus:text-black" placeholder="Enter your email address" autoComplete="off" />
-                                    <div className="absolute inset-y-0 right-0 flex items-center pr-6 pt-5 lg:pt-0">
-                                        <button type="submit" className="p-3 lg:p-5 focus:outline-none focus:shadow-outline bg-ultramarine hover:bg-midnightblue duration-150 ease-in-out rounded-full">
-                                            <Image src={`${getImagePrefix()}images/newsletter/send.svg`} alt="send-icon" width={30} height={30} />
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-        </section>
-    )
-}
+  return (
+    <section>
+      <div className="container mx-auto lg:max-w-screen-xl md:max-w-screen-md px-4">
+        <div className="rounded-2xl bg-secondary p-10 md:p-16 text-center text-white">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            Ready to start building IELTS readiness?
+          </h2>
+          <p className="text-white/80 text-base md:text-lg max-w-2xl mx-auto mb-8">
+            Create a profile, study foundation resources, practise each module,
+            and track progress toward your target band.
+          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Link
+              href="/signup"
+              className="inline-block bg-white text-secondary font-semibold px-10 py-4 rounded-full hover:opacity-90 transition-opacity"
+            >
+              Create free account
+            </Link>
+            <Link
+              href="/#courses"
+              className="inline-block bg-transparent text-white border-2 border-white font-semibold px-10 py-4 rounded-full hover:bg-white hover:text-secondary transition-all"
+            >
+              View mock tests
+            </Link>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
 
 export default Newsletter;

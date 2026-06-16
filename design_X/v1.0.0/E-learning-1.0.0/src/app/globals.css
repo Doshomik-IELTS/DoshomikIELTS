@@ -10,10 +10,6 @@ section {
   @apply py-20;
 }
 
-.slick-dots {
-  color: #1A21BC;
-}
-
 .slick-dots li.slick-active button:before {
   opacity: 1;
   color: #1A21BC !important;

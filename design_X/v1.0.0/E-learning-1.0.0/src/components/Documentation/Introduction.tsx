@@ -6,7 +6,7 @@ import tailwindImg from "/public/images/documentation/Categories=Tailwind.svg";
 import nextauthImg from "/public/images/documentation/nextauth.png";
 import typescriptImg from "/public/images/documentation/Categories=Typescript.svg";
 import axiosImg from "/public/images/documentation/axios.svg";
-import { Icon } from "@iconify/react/dist/iconify.js";
+import { Icon } from "@iconify/react";
 import { useState } from "react";
 import { DocNavigation } from "./DocNavigation";
 
