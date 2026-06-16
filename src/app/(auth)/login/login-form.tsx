@@ -18,9 +18,11 @@ const isDevAuthEnabled = process.env.NODE_ENV !== "production";
 export function LoginForm({
   nextPath,
   role = "learner",
+  variant = "dark",
 }: {
   nextPath: string;
   role?: "learner" | "admin";
+  variant?: "dark" | "light";
 }) {
   const [isMounted, setIsMounted] = useState(false);
   const redirectTarget = nextPath.startsWith("/") && !nextPath.startsWith("//") ? nextPath : "/dashboard";
@@ -74,7 +76,7 @@ export function LoginForm({
   return (
     <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
       <div className="space-y-2">
-        <Label htmlFor="email" className="text-slate-300">
+        <Label htmlFor="email" className={variant === "dark" ? "text-slate-300" : "text-midnight-text"}>
           Email
         </Label>
         <div className="relative">
@@ -83,7 +85,11 @@ export function LoginForm({
             id="email"
             type="email"
             placeholder="you@example.com"
-            className="border-slate-700 bg-slate-800/50 pl-10 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-blue-500"
+            className={
+              variant === "dark"
+                ? "border-slate-700 bg-slate-800/50 pl-10 text-white placeholder:text-slate-500 focus:border-primary focus:ring-primary"
+                : "border-slate-300 bg-white pl-10 text-midnight-text placeholder:text-grey focus:border-primary focus:ring-primary"
+            }
             {...register("email")}
           />
         </div>
@@ -91,7 +97,7 @@ export function LoginForm({
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="password" className="text-slate-300">
+        <Label htmlFor="password" className={variant === "dark" ? "text-slate-300" : "text-midnight-text"}>
           Password
         </Label>
         <div className="relative">
@@ -100,7 +106,11 @@ export function LoginForm({
             id="password"
             type="password"
             placeholder="••••••••"
-            className="border-slate-700 bg-slate-800/50 pl-10 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-blue-500"
+            className={
+              variant === "dark"
+                ? "border-slate-700 bg-slate-800/50 pl-10 text-white placeholder:text-slate-500 focus:border-primary focus:ring-primary"
+                : "border-slate-300 bg-white pl-10 text-midnight-text placeholder:text-grey focus:border-primary focus:ring-primary"
+            }
             {...register("password")}
           />
         </div>
@@ -108,14 +118,14 @@ export function LoginForm({
       </div>
 
       <div className="flex items-center justify-end">
-        <Link href="/reset-password" className="text-sm text-blue-400 hover:text-blue-300">
+        <Link href="/reset-password" className={`text-sm ${variant === "dark" ? "text-blue-400 hover:text-blue-300" : "text-primary hover:text-primary-hover"}`}>
           Forgot password?
         </Link>
       </div>
 
       <Button
         type="submit"
-        className="w-full bg-blue-600 hover:bg-blue-700"
+        className="w-full"
         disabled={!isMounted || loginMutation.isPending}
       >
         {loginMutation.isPending ? (

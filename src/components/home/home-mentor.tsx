@@ -9,32 +9,32 @@ const MentorData = [
   {
     profession: "রাইটিং টাস্ক ১ ও ২ মূল্যায়ন",
     name: "রাহাত ইসলাম",
-    imgSrc: "/images/mentor/user1.png",
+    imgSrc: "/images/mentor/mentor-1.jpg",
   },
   {
     profession: "স্পিকিং কোচ — ফ্লুয়েন্সি ও উচ্চারণ",
     name: "তাহমিনা আক্তার",
-    imgSrc: "/images/mentor/user2.png",
+    imgSrc: "/images/mentor/mentor-2.jpg",
   },
   {
     profession: "কন্টেন্ট রিভিউয়ার — রিসোর্স ও উত্তর ব্যাখ্যা",
     name: "শরিফুল হাসান",
-    imgSrc: "/images/mentor/user3.png",
+    imgSrc: "/images/mentor/mentor-3.jpg",
   },
   {
     profession: "টেস্ট ডিজাইনার — স্কোরিং ভ্যালিডেশন",
     name: "নাজমুল হোসেন",
-    imgSrc: "/images/mentor/user1.png",
+    imgSrc: "/images/mentor/mentor-4.jpg",
   },
   {
     profession: "প্ল্যাটফর্ম ও লার্নিং এক্সপেরিয়েন্স",
     name: "রাইসা পারভীন",
-    imgSrc: "/images/mentor/user2.png",
+    imgSrc: "/images/mentor/mentor-5.jpg",
   },
   {
     profession: "ইউজার রিসার্চ ও ফিডব্যাক",
     name: "জাকির হোসেন",
-    imgSrc: "/images/mentor/user3.png",
+    imgSrc: "/images/mentor/mentor-6.jpg",
   },
 ];
 

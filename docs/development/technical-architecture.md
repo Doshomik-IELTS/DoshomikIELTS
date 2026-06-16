@@ -1,5 +1,7 @@
 # Technical Architecture
 
+**Last updated:** 2026-06-17 — Frontend architecture updated: purple-indigo primary (`#6556ff`), Poppins font, `@theme inline` design tokens, auth modal flow, dark-themed landing page.
+
 ## Product Scope
 
 IELTS++ is an owned IELTS resource and mock-test platform. The platform should provide:
@@ -32,28 +34,22 @@ Allowed use:
 
 ## Recommended Stack
 
-Conservative MVP stack:
+Confirmed MVP stack:
 
-- Frontend: Next.js or React.
-- Backend: FastAPI, Django, NestJS, or Next.js API routes.
-- Database: PostgreSQL.
-- Authentication: managed auth provider or first-party email/password with secure password hashing.
-- Object storage: S3-compatible storage for listening audio, speaking recordings, generated audio, and exported reports.
-- Cache/queue: Redis for background evaluation jobs.
-- LLM provider: configurable service layer so prompts and models can change without rewriting product code.
-- CMS: Strapi Free for resource, IELTS info page, FAQ, and mock-test authoring.
-- Analytics: PostHog for learner workflow and product analytics.
-
-Recommended MVP choice if starting quickly:
-
-- Frontend and API: Next.js.
-- Database: PostgreSQL.
-- ORM: Prisma or Drizzle.
-- Auth: Auth.js, Clerk, Supabase Auth, or custom email/password.
-- Storage: Cloudflare R2, AWS S3, DigitalOcean Spaces, or Supabase Storage.
-- Queue: BullMQ, Celery, or managed background jobs depending on backend stack.
-- CMS: Strapi Free.
-- Analytics: PostHog.
+| Layer | Technology |
+|---|---|
+| Frontend & API | Next.js App Router (TypeScript, strict mode) |
+| Styling | Tailwind CSS v4 with `@theme inline` design tokens |
+| UI Components | In-house primitives (CVA + `cn()`) |
+| Design System | Purple-indigo primary (`#6556ff`), Poppins font, CSS variable-based tokens |
+| Database | PostgreSQL (Supabase) |
+| ORM | Prisma |
+| Auth | Supabase Auth + dev-auth cookie fallback |
+| Storage | Supabase Storage (signed URLs) |
+| Queue | Redis + BullMQ |
+| LLM Provider | Configurable service layer (OpenAI/Anthropic/Gemini) |
+| CMS | Strapi Free for resource, IELTS info page, FAQ, and mock-test authoring |
+| Analytics | PostHog for learner workflow and product analytics |
 
 ## Domains
 

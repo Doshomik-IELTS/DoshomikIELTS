@@ -6,8 +6,8 @@ export const cardVariants = cva("rounded-xl border bg-white shadow-sm", {
   variants: {
     variant: {
       default: "border-slate-200",
-      muted: "border-slate-200 bg-slate-50",
-      interactive: "border-slate-200 hover:border-blue-300 hover:shadow-md transition-shadow cursor-pointer",
+      muted: "border-slate-200 bg-surface-muted",
+      interactive: "border-slate-200 hover:border-primary/50 hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 cursor-pointer",
       elevated: "border-slate-200 shadow-md",
       callout: "border-l-4",
     },

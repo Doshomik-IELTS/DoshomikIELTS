@@ -30,7 +30,7 @@ export function MobileNav({
   return (
     <div className="sticky top-0 z-40 border-b border-slate-200 bg-white md:hidden">
       <div className="flex h-14 items-center justify-between px-4">
-        <Link href={items[0]?.href ?? "/"} className="font-bold text-blue-800" onClick={() => setOpen(false)}>
+        <Link href={items[0]?.href ?? "/"} className="font-bold text-secondary" onClick={() => setOpen(false)}>
           {brand}
         </Link>
         <Button type="button" variant="outline" size="sm" onClick={() => setOpen((value) => !value)} aria-expanded={open}>
@@ -49,7 +49,7 @@ export function MobileNav({
                   onClick={() => setOpen(false)}
                   className={cn(
                     "rounded-md px-3 py-2 text-sm font-medium",
-                    active ? "bg-blue-50 text-blue-700" : "text-slate-700 hover:bg-slate-100",
+                    active ? "bg-primary-soft text-primary" : "text-slate-700 hover:bg-slate-100",
                   )}
                 >
                   {item.label}

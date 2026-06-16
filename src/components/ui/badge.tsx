@@ -7,7 +7,7 @@ export const badgeVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-blue-50 text-blue-700 ring-blue-700/10",
+        default: "bg-primary-soft text-primary ring-primary/10",
         neutral: "bg-slate-100 text-slate-700 ring-slate-700/10",
         success: "bg-green-50 text-green-700 ring-green-700/10",
         warning: "bg-amber-50 text-amber-700 ring-amber-700/10",

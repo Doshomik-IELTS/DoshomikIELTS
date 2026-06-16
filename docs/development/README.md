@@ -1,12 +1,14 @@
 # IELTS++ Development Docs
 
+**Last updated:** 2026-06-17 — Design system finalized (purple-indigo primary, Poppins font, `@theme inline` tokens, auth modal flow, dark landing page).
+
 This folder contains implementation-focused documentation for building the IELTS++ MVP.
 
-## Current Implementation Status (2026-05-17)
+## Current Implementation Status (2026-06-17)
 
 ### ✅ All Major Features Implemented
 
-The IELTS++ platform has completed its core MVP feature set. Learner-facing features, app admin workflows, Strapi content authoring, and baseline PostHog learner analytics are implemented. Current focus is on production hardening.
+The IELTS++ platform has completed its core MVP feature set. Learner-facing features, app admin workflows, Strapi content authoring, and baseline PostHog learner analytics are implemented. The design system has been updated with a purple-indigo primary (`#6556ff`), Poppins font family, CSS variable-based design tokens via `@theme inline`, auth modal flow, and a dark-themed single-scroll landing page. Current focus is on production hardening.
 
 ### ✅ Completed APIs (100+ endpoints)
 - **Auth**: `/api/me`, `/api/profile`, dev-auth endpoints

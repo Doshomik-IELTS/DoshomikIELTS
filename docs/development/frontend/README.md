@@ -1,5 +1,7 @@
 # IELTS++ Frontend Documentation
 
+**Last updated:** 2026-06-17 — Updated for new design system (purple-primary theme, Poppins font, `@theme inline` tokens), auth modal flow, and dark landing page.
+
 ## Overview
 
 The IELTS++ frontend is a responsive Next.js App Router application for learners and basic admins. It supports public marketing/auth pages, learner dashboard with streak tracking and achievements, Strapi-backed resources with bookmarks, spaced-repetition flashcards, practice, full mock tests with per-section timers, writing tasks with word count and auto-save, speaking with audio recording, evaluation feedback, score prediction, referral program, PostHog learner analytics, and admin operational workflows.
@@ -7,9 +9,10 @@ The IELTS++ frontend is a responsive Next.js App Router application for learners
 Recommended stack:
 
 - Next.js App Router
-- TypeScript
-- Tailwind CSS
-- shadcn/ui (optional — repo currently uses **in-house** primitives in `src/components/ui/`)
+- TypeScript (strict mode, `@/` path alias)
+- Tailwind CSS v4 with `@theme inline` design tokens
+- **In-house** UI primitives (`src/components/ui/`) using CVA + `cn()`
+- **Design tokens**: purple-indigo primary (`#6556ff`), Poppins font, CSS variable-based color system
 - Supabase Auth client helpers
 - TanStack Query for client-side API caching/mutations/polling
 - React Hook Form + Zod for forms
@@ -18,7 +21,7 @@ Recommended stack:
 
 ## Implementation status (repository)
 
-> **Last updated:** 2026-05-17
+> **Last updated:** 2026-06-17 — Design system applied (purple-primary, Poppins, @theme inline tokens)
 
 | Area | Status |
 |------|--------|

@@ -32,6 +32,20 @@ Do not host, reproduce, scan, or adapt Cambridge IELTS books or other copyrighte
 7. Score prediction after all four modules are completed.
 8. Strapi authoring workflow for resources/tests plus app admin review/operations.
 
+## Design System
+
+The platform uses a **purple-indigo design system** with the following identity:
+
+- **Primary:** `#6556ff` (purple-indigo)
+- **Font:** Poppins (sans-serif), Geist Mono (monospace)
+- **Styling:** Tailwind CSS v4 with `@theme inline` CSS variable tokens
+- **Components:** In-house primitives via CVA + `cn()` (Button, Card, Badge, Input, etc.)
+- **Auth:** Modal-based login/register/reset flow
+- **Landing page:** Dark-themed single-scroll layout in `(public)/` route group
+- **Icons:** lucide-react throughout
+
+See [`docs/development/frontend/ui-system.md`](docs/development/frontend/ui-system.md) for the full design token reference.
+
 ## Documentation
 
 Start here:
@@ -60,12 +74,14 @@ The project has been scaffolded as a Next.js full-stack app aligned with the dev
 
 Quick commands:
 
+
 ```bash
 pnpm install
 cp .env.example .env.local
 pnpm prisma:generate
 pnpm dev
 ```
+
 
 Useful checks:
 
@@ -75,11 +91,13 @@ pnpm lint
 pnpm build
 ```
 
+
 Worker scaffold:
 
 ```bash
 pnpm worker:dev
 ```
+
 
 Strapi CMS:
 

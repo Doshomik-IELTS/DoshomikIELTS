@@ -40,7 +40,7 @@ export default function BetaWelcomePage() {
     <div className="max-w-3xl mx-auto py-12 px-4">
       <div className="text-center mb-12">
         <div className="text-5xl mb-4">🎉</div>
-        <h1 className="text-3xl font-bold text-slate-900 mb-2">Welcome to IELTS++ Beta!</h1>
+        <h1 className="text-3xl font-bold text-slate-900 mb-2">Welcome to DOshomik IELTS Beta!</h1>
         <p className="text-lg text-slate-600">
           Thank you for joining our closed beta. We are excited to have you try out our platform.
         </p>

@@ -11,7 +11,7 @@ const courseData = [
   {
     heading: "IELTS Listening — Audio Drills",
     name: "Original audio, transcripts, objective answers, accepted variants, and instant estimated scoring.",
-    imgSrc: "/images/courses/courseone.png",
+    imgSrc: "/images/courses/course-1.jpg",
     students: 150,
     classes: 12,
     price: 0,
@@ -20,7 +20,7 @@ const courseData = [
   {
     heading: "IELTS Reading — Passage Practice",
     name: "IELTS-style passages, question sets, answer explanations, and source-span rationale.",
-    imgSrc: "/images/courses/coursetwo.png",
+    imgSrc: "/images/courses/course-2.jpg",
     students: 130,
     classes: 12,
     price: 0,
@@ -29,7 +29,7 @@ const courseData = [
   {
     heading: "IELTS Writing — Task Feedback",
     name: "Task 1 and Task 2 responses evaluated against IELTS-style criteria with practical revision advice.",
-    imgSrc: "/images/courses/coursethree.png",
+    imgSrc: "/images/courses/course-3.jpg",
     students: 120,
     classes: 12,
     price: 0,
@@ -38,7 +38,7 @@ const courseData = [
   {
     heading: "IELTS Speaking — Part 1, 2 & 3",
     name: "Part 1, Part 2, and Part 3 practice with text or audio response paths and feedback after evaluation.",
-    imgSrc: "/images/courses/courseone.png",
+    imgSrc: "/images/courses/course-1.jpg",
     students: 150,
     classes: 12,
     price: 0,
@@ -47,7 +47,7 @@ const courseData = [
   {
     heading: "Full Mock Tests — Timed Practice",
     name: "Complete all four modules in a timed mock test to unlock an unofficial score prediction.",
-    imgSrc: "/images/courses/coursetwo.png",
+    imgSrc: "/images/courses/course-2.jpg",
     students: 150,
     classes: 12,
     price: 0,
@@ -56,7 +56,7 @@ const courseData = [
   {
     heading: "Vocabulary & Grammar Foundation",
     name: "Build your English foundation with targeted vocabulary, synonym, and grammar drills.",
-    imgSrc: "/images/courses/coursethree.png",
+    imgSrc: "/images/courses/course-3.jpg",
     students: 150,
     classes: 12,
     price: 0,

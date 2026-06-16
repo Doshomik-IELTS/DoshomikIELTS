@@ -30,8 +30,8 @@ export function State({ title, description, icon, action, variant = "empty" }: S
 
   if (variant === "info") {
     return (
-      <div className="flex flex-col items-center justify-center rounded-xl border border-blue-200 bg-blue-50 p-8 text-blue-900">
-        {icon && <div className="mb-2 text-blue-600">{icon}</div>}
+      <div className="flex flex-col items-center justify-center rounded-xl border border-primary-soft bg-primary-soft p-8 text-primary">
+        {icon && <div className="mb-2 text-primary">{icon}</div>}
         <h3 className="font-semibold">{title}</h3>
         {description && <p className="mt-2 text-sm">{description}</p>}
         {action && <div className="mt-4">{action}</div>}

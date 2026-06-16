@@ -1,5 +1,7 @@
 # Product Requirements
 
+**Last updated:** 2026-06-17 — Design system finalized: indigo/purple primary (`#6556ff`), Poppins font, `@theme inline` CSS variable tokens in Tailwind v4.
+
 ## Goal
 
 Build an owned IELTS resource and mock-test platform where learners can study basic English foundations, practice all four IELTS modules, complete full mock tests, and receive an estimated band score.
@@ -105,6 +107,25 @@ Overall score should combine:
 - Speaking band estimate
 
 IELTS overall band is normally rounded to the nearest half band. The application should label predictions clearly as estimates, not official scores.
+
+## Design System (Implemented 2026-06)
+
+The platform uses a customized design system built on Tailwind CSS v4 with `@theme inline` tokens:
+
+| Token | Value | Usage |
+|---|---|---|
+| `--primary` | `#6556ff` | Primary actions, links, active states |
+| `--primary-soft` | `#f0eeff` | Soft primary backgrounds |
+| `--primary-hover` | `#4a3df0` | Button/action hover states |
+| `--secondary` | `#1a21bc` | Secondary accent |
+| `--surface` | `#ffffff` | Card/surface backgrounds |
+| `--surface-muted` | `#f6faff` | Muted backgrounds |
+| `--success` | `#43c639` | Success states |
+| `--danger` | `#dc2626` | Error/destructive states |
+| `--warning` | `#d97706` | Warning states |
+| `--font-sans` | Poppins | Primary UI typeface |
+
+Components use CVA (`class-variance-authority`) for variants with `cn()` for class merging. Primitives include: Button (rounded-full, 5 variants), Card (5 variants), Badge (7 variants), Input, Textarea, Label, Skeleton, State (loading/empty/error), PageHeader, Breadcrumbs, ContentPanel.
 
 ## Non-Goals For MVP
 

@@ -2,7 +2,7 @@
 
 This folder contains product, strategy, market, content, and development documentation for IELTS++.
 
-**Last updated:** 2026-05-19 - Company review agents refined with conflict resolution, secret redaction, migration safety, framework reference guide, review quality gate, runbook template, deployment topology, learner personas, business model, and WCAG 2.1 AA baseline.
+**Last updated:** 2026-06-17 — Design system finalized: purple-indigo primary (`#6556ff`), Poppins font, `@theme inline` design tokens, auth modal flow, dark-themed landing page.
 
 ## Start Here
 
@@ -138,7 +138,9 @@ All backend-specific implementation docs live in [`development/backend/`](develo
 
 - Timeline: 8 weeks.
 - Team assumption: solo developer.
-- Frontend: Next.js App Router, Tailwind CSS, in-house UI primitives with selective shadcn-style patterns.
+- Frontend: Next.js App Router, Tailwind CSS v4 with `@theme inline` design tokens, in-house UI primitives (CVA + `cn()`).
+- Design System: Purple-indigo primary (`#6556ff`), Poppins font, CSS variable-based color system, semantic status tokens.
+- Auth Flow: Modal-based login/register/reset flow with standalone fallback pages.
 - Backend: Next.js route handlers.
 - Auth: Supabase Auth.
 - Database: Supabase Postgres.

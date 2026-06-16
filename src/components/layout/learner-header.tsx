@@ -50,8 +50,8 @@ export function LearnerHeader() {
     return (
       <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
-          <Link href="/dashboard" className="shrink-0 text-lg font-bold text-blue-800">
-            IELTS++
+          <Link href="/dashboard" className="shrink-0 text-lg font-bold text-secondary">
+            DOshomik IELTS
           </Link>
           <p className="text-sm text-slate-500">Test in progress</p>
         </div>
@@ -66,8 +66,8 @@ export function LearnerHeader() {
     <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
         <div className="flex min-w-0 items-center gap-8">
-          <Link href="/dashboard" className="shrink-0 text-lg font-bold text-blue-800" onClick={() => setOpen(false)}>
-            IELTS++
+          <Link href="/dashboard" className="shrink-0 text-lg font-bold text-secondary" onClick={() => setOpen(false)}>
+            DOshomik IELTS
           </Link>
           <nav className="hidden items-center gap-1 md:flex" aria-label="Learner navigation">
             {learnerNav.slice(0, 4).map((item) => (
@@ -76,9 +76,9 @@ export function LearnerHeader() {
                 href={item.href}
                 className={cn(
                   "rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                  isActive(pathname, item.href)
-                    ? "bg-blue-50 text-blue-700"
-                    : "text-slate-600 hover:bg-slate-100 hover:text-slate-950",
+                    isActive(pathname, item.href)
+                      ? "bg-primary-soft text-primary"
+                      : "text-slate-600 hover:bg-slate-100 hover:text-slate-950",
                 )}
               >
                 {item.label}
@@ -92,7 +92,7 @@ export function LearnerHeader() {
             href="/mock-tests"
             className={cn(
               "rounded-md px-3 py-2 text-sm font-medium transition-colors",
-              isActive(pathname, "/mock-tests") ? "bg-blue-50 text-blue-700" : "text-blue-700 hover:bg-blue-50",
+              isActive(pathname, "/mock-tests") ? "bg-primary-soft text-primary" : "text-primary hover:bg-primary-soft",
             )}
           >
             Start mock
@@ -104,9 +104,9 @@ export function LearnerHeader() {
               data-more-dropdown
               className={cn(
                 "flex items-center gap-1 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                learnerNav.slice(4).some((item) => isActive(pathname, item.href))
-                  ? "bg-blue-50 text-blue-700"
-                  : "text-slate-600 hover:bg-slate-100 hover:text-slate-950",
+                    learnerNav.slice(4).some((item) => isActive(pathname, item.href))
+                      ? "bg-primary-soft text-primary"
+                      : "text-slate-600 hover:bg-slate-100 hover:text-slate-950",
               )}
             >
               More
@@ -122,7 +122,7 @@ export function LearnerHeader() {
                     className={cn(
                       "block px-4 py-2 text-sm",
                       isActive(pathname, item.href)
-                        ? "bg-blue-50 text-blue-700"
+                        ? "bg-primary-soft text-primary"
                         : "text-slate-700 hover:bg-slate-100",
                     )}
                   >
@@ -158,7 +158,7 @@ export function LearnerHeader() {
                 onClick={() => setOpen(false)}
                 className={cn(
                   "rounded-md px-3 py-2 text-sm font-medium",
-                  isActive(pathname, item.href) ? "bg-blue-50 text-blue-700" : "text-slate-700 hover:bg-slate-100",
+                  isActive(pathname, item.href) ? "bg-primary-soft text-primary" : "text-slate-700 hover:bg-slate-100",
                 )}
               >
                 {item.label}

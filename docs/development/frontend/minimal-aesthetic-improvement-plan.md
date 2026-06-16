@@ -2,6 +2,8 @@
 
 _Date: 2026-05-10_
 
+> **Status: IMPLEMENTED (2026-06-17)** — The design system overhaul is complete. Purple-indigo primary (`#6556ff`), Poppins font, `@theme inline` CSS variable tokens, rounded-full buttons, semantic Badge/Card variants, and auth modal flow are all in place. This plan is retained as a historical reference; the phases below were executed as part of the design system rollout.
+>
 > Historical note, updated 2026-05-17: resource and mock-test authoring has moved to Strapi. Any recommendations below about `/admin/resources` or `/admin/tests` now apply only to the lightweight Strapi entry panels, legacy fallback screens, review workflows, or shared layout polish. Learner desktop navigation now uses `LearnerHeader`; admin layout is centralized in `src/app/(admin)/layout.tsx`.
 
 ## Goal

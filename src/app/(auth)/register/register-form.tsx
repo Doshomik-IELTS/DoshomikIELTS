@@ -15,7 +15,7 @@ import { toast } from "sonner";
 
 const isDevAuthEnabled = process.env.NODE_ENV !== "production";
 
-export function RegisterForm() {
+export function RegisterForm({ variant = "dark" }: { variant?: "dark" | "light" }) {
   const router = useRouter();
   const [supabaseLoading, setSupabaseLoading] = useState(false);
   const {
@@ -74,55 +74,71 @@ export function RegisterForm() {
   return (
     <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
       <div>
-        <Label htmlFor="name" className="text-slate-300">Name</Label>
+        <Label htmlFor="name" className={variant === "dark" ? "text-slate-300" : "text-midnight-text"}>Name</Label>
         <div className="relative">
           <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
           <Input
             id="name"
             placeholder="Your name"
-            className="border-slate-700 bg-slate-800/50 pl-10 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-blue-500"
+            className={
+              variant === "dark"
+                ? "border-slate-700 bg-slate-800/50 pl-10 text-white placeholder:text-slate-500 focus:border-primary focus:ring-primary"
+                : "border-slate-300 bg-white pl-10 text-midnight-text placeholder:text-grey focus:border-primary focus:ring-primary"
+            }
             {...register("name")}
           />
         </div>
         {errors.name && <p className="text-sm text-red-400">{errors.name.message}</p>}
       </div>
       <div>
-        <Label htmlFor="email" className="text-slate-300">Email</Label>
+        <Label htmlFor="email" className={variant === "dark" ? "text-slate-300" : "text-midnight-text"}>Email</Label>
         <div className="relative">
           <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
           <Input
             id="email"
             type="email"
             placeholder="you@example.com"
-            className="border-slate-700 bg-slate-800/50 pl-10 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-blue-500"
+            className={
+              variant === "dark"
+                ? "border-slate-700 bg-slate-800/50 pl-10 text-white placeholder:text-slate-500 focus:border-primary focus:ring-primary"
+                : "border-slate-300 bg-white pl-10 text-midnight-text placeholder:text-grey focus:border-primary focus:ring-primary"
+            }
             {...register("email")}
           />
         </div>
         {errors.email && <p className="text-sm text-red-400">{errors.email.message}</p>}
       </div>
       <div>
-        <Label htmlFor="password" className="text-slate-300">Password</Label>
+        <Label htmlFor="password" className={variant === "dark" ? "text-slate-300" : "text-midnight-text"}>Password</Label>
         <div className="relative">
           <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
           <Input
             id="password"
             type="password"
             placeholder="At least 8 characters"
-            className="border-slate-700 bg-slate-800/50 pl-10 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-blue-500"
+            className={
+              variant === "dark"
+                ? "border-slate-700 bg-slate-800/50 pl-10 text-white placeholder:text-slate-500 focus:border-primary focus:ring-primary"
+                : "border-slate-300 bg-white pl-10 text-midnight-text placeholder:text-grey focus:border-primary focus:ring-primary"
+            }
             {...register("password")}
           />
         </div>
         {errors.password && <p className="text-sm text-red-400">{errors.password.message}</p>}
       </div>
       <div>
-        <Label htmlFor="confirmPassword" className="text-slate-300">Confirm Password</Label>
+        <Label htmlFor="confirmPassword" className={variant === "dark" ? "text-slate-300" : "text-midnight-text"}>Confirm Password</Label>
         <div className="relative">
           <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
           <Input
             id="confirmPassword"
             type="password"
             placeholder="Repeat your password"
-            className="border-slate-700 bg-slate-800/50 pl-10 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-blue-500"
+            className={
+              variant === "dark"
+                ? "border-slate-700 bg-slate-800/50 pl-10 text-white placeholder:text-slate-500 focus:border-primary focus:ring-primary"
+                : "border-slate-300 bg-white pl-10 text-midnight-text placeholder:text-grey focus:border-primary focus:ring-primary"
+            }
             {...register("confirmPassword")}
           />
         </div>
@@ -130,7 +146,7 @@ export function RegisterForm() {
       </div>
       <Button
         type="submit"
-        className="w-full bg-blue-600 hover:bg-blue-700"
+        className="w-full"
         disabled={isLoading}
       >
         {isLoading ? (

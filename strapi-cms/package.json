@@ -7,7 +7,8 @@
     "develop": "node scripts/with-xdg-config.mjs strapi develop",
     "start": "node scripts/with-xdg-config.mjs strapi start",
     "build": "node scripts/with-xdg-config.mjs strapi build",
-    "strapi": "node scripts/with-xdg-config.mjs strapi"
+    "strapi": "node scripts/with-xdg-config.mjs strapi",
+    "seed:resources": "node scripts/seed-vocab-grammar.mjs"
   },
   "dependencies": {
     "@strapi/plugin-cloud": "5.46.0",

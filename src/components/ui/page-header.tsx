@@ -9,7 +9,7 @@ export function PageHeader({ title, description, meta, actions }: PageHeaderProp
   return (
     <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
       <div>
-        {meta && <p className="text-sm font-medium text-blue-700 mb-1">{meta}</p>}
+        {meta && <p className="text-sm font-medium text-primary mb-1">{meta}</p>}
         <h1 className="text-2xl font-bold text-slate-900 sm:text-3xl">{title}</h1>
         {description && <p className="mt-1.5 text-slate-600">{description}</p>}
       </div>

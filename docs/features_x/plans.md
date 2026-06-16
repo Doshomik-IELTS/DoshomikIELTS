@@ -15,18 +15,49 @@ All eilts related info - fee, center, time, preparation , others, FAQ
 
 
 
-# vocab builder - (page) 
+## vocab builder - (page) 
 
-free - vocub list, syno antonym
-paid -  flash card, 
+### Free 
+-  Vocub - Meaning -  Synonym - Antonym - Parts of Speech - Example Sentence
+-  Linking words and common phrases (Independent & Dependent)
 
-# Spelling
+### paid   
+
+- High Frequency Words,  flash card ( per set - 25 | Total set 24) or level wise starting with small and increse incrementally
+- Level wise material - Beginer (max) - Intermediate - Advanced
+- vocab counts -- 250~600  
 
 
-# Basic grammer revision 
 
-free - topic wise study material+ exercise 
-paid - flash card, (metorship)
+
+
+## Spelling
+
+### Free 
+- Common list for spelling 
+- Confusing Words
+
+### paid  
+- Flash Card
+
+
+## Basic grammar revision 
+
+### free 
+- topic wise study material+ exercise 
+- A passage with mistaken grammar that can be used to redirect to specific grammer rule page / correct the grammar
+- Grammer Blog Topic Wise
+- One Example 
+
+### paid 
+- flash card 
+- (metorship) -- *Later*
+ 
+
+
+
+
+
 
 
 
@@ -52,3 +83,6 @@ Github
 
 
 sultanulislamovi@gmail.com
+
+
+Level wise ma

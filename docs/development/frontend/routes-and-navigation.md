@@ -1,33 +1,36 @@
 # Frontend Routes And Navigation
 
+**Last updated:** 2026-06-17 — Added `(public)` route group with dark-themed landing page; auth moved to modal flow.
+
 ## Route Groups
 
-Recommended Next.js App Router route groups:
+Next.js App Router route groups:
 
 ```text
 app/
-  (public)/
-  (auth)/
-  (learner)/
-  (admin)/
+├── (public)/              # Public landing page + changelog
+├── (auth)/                # Standalone auth pages (fallback; primary flow is modal)
+├── (learner)/             # Protected learner pages
+└── (admin)/               # Protected admin pages
 ```
 
 Purpose:
 
-- `(public)` contains marketing/public pages.
-- `(auth)` contains login/register/reset pages.
-- `(learner)` contains protected learner app pages.
-- `(admin)` contains protected role-based admin pages.
+- `(public)` contains the marketing landing page and public changelog.
+- `(auth)` contains standalone login/register/reset-password pages (fallback only — primary auth is modal-based).
+- `(learner)` contains protected learner app pages with `DashboardLayout`.
+- `(admin)` contains protected role-based admin pages with `AdminLayout`.
 
 ## Public Routes
 
-| Route | Purpose |
-|---|---|
-| `/` | Landing page and product CTA. |
-| `/changelog` | Product changelog and update history. |
-| `/login` | Login page. |
-| `/register` | Registration page. |
-| `/reset-password` | Password reset or magic-link flow. |
+| Route | Purpose | Layout |
+|---|---|---|
+| `/` | Landing page and product CTA (dark-themed single-scroll). | PublicHeader |
+| `/changelog` | Product changelog and update history. | PublicHeader |
+
+## Auth Modal
+
+The primary authentication flow uses a **modal dialog** that overlays the current page, triggered from the Public Header "Sign In" / "Get Started" CTA buttons. The modal supports three views: Login, Register, and Reset Password. Standalone auth pages (`/login`, `/register`, `/reset-password`) exist as fallback routes for direct links and deep linking.
 
 ## Learner Routes
 

@@ -1,6 +1,6 @@
 # IELTS++ Development Plan (from current baseline)
 
-**Last updated:** 2026-05-13 (synced to current codebase — all major features implemented)
+**Last updated:** 2026-06-17 — Design system applied: purple-indigo primary (`#6556ff`), Poppins font, `@theme inline` tokens, landing page redesigned, auth modal flow.
 
 **Purpose:** A single, actionable roadmap from the *present* repository state to the MVP described across `docs/development/`. This document does not replace detailed specs; it sequences work and points to them.
 
@@ -25,7 +25,7 @@
 
 ### Routes and shells
 
-- **Next.js App Router** with `(auth)`, `(learner)`, `(admin)`. Marketing home is `src/app/page.tsx` (no `(public)` group).
+- **Next.js App Router** with `(public)`, `(auth)`, `(learner)`, `(admin)`. Landing page moved to `(public)/` route group with dark-themed single-scroll layout.
 - **Learner URLs** fully implemented: `dashboard`, `profile`, `resources`, `resources/[id]`, `flashcards`, `flashcards/[id]`, `flashcards/[id]/study`, `practice`, `practice/[id]`, `practice/[id]/result`, `mock-tests`, `mock-tests/[id]`, `attempts/[id]`, `attempts/[id]/score`, `attempts/[id]/report`, `evaluations/[id]`, `referrals`.
 - **Admin URLs** under `/admin/...`: dashboard, `resources` (+ `new`, `[id]`), `tests` (+ `new`, `[id]`), `flashcards` (+ `[id]`), `reviews` (+ `[id]`).
 
@@ -57,7 +57,7 @@
 ### Frontend patterns
 
 - **Reference slice:** **Profile** — `GET /api/me` + `PATCH /api/profile` via **`apiFetch`**, **`useQuery`** (`["me"]`), **`useMutation`**, **`react-hook-form` + zod`, **Sonner** toasts (`src/components/profile/profile-editor.tsx`).
-- **UI kit:** in-house primitives (`Button`, `Input`, `Textarea`, `Card`, `Badge`, state helpers) — **not** a full shadcn CLI install. **Sonner** added for global toasts.
+- **UI kit:** in-house primitives (`Button`, `Input`, `Textarea`, `Card`, `Badge`, `State`, `PageHeader`, `Breadcrumbs`, `ContentPanel`) using CVA + `cn()`. Design tokens defined in `src/app/globals.css` via `@theme inline` — purple-indigo primary (`#6556ff`), Poppins font, semantic status colors. **Sonner** for global toasts.
 - **Current frontend risk:** active attempt and review flows are functional, but need deeper browser/database regression coverage.
 
 ### Data and workers

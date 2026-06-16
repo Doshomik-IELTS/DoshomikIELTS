@@ -23,7 +23,7 @@ export default function ChangelogPage() {
     <div className="max-w-3xl mx-auto py-12 px-4">
       <div className="text-center mb-12">
         <h1 className="text-3xl font-bold text-slate-900 mb-2">Changelog</h1>
-        <p className="text-slate-600">Follow the latest updates to IELTS++</p>
+        <p className="text-slate-600">Follow the latest updates to DOshomik IELTS</p>
       </div>
 
       <div className="space-y-8">

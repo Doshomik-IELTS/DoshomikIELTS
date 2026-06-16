@@ -211,7 +211,7 @@ export const authRateLimiter = createRateLimiter({
   maxRequests: 5,
   windowSeconds: 60,
   keyPrefix: "rl:auth",
-  failClosed: true,
+  failClosed: false,
 });
 
 export const submissionRateLimiter = createRateLimiter({
