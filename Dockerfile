@@ -20,7 +20,7 @@ WORKDIR /app
 
 ARG GIT_SHA=unknown
 LABEL org.opencontainers.image.revision=$GIT_SHA
-LABEL org.opencontainers.image.source="https://github.com/nabil0x/IELTS--"
+LABEL org.opencontainers.image.source="https://github.com/nabil0x/IELTS"
 
 ENV NODE_ENV=production
 RUN addgroup --system --gid 1001 nodejs && \
