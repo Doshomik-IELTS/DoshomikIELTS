@@ -40,7 +40,7 @@ jobs:
       - name: Build static site
         run: npm run build
         env:
-          REPO_NAME: IELTS
+          REPO_NAME: DoshomikIELTS
           NODE_ENV: production
 
       - name: Add .nojekyll for _next/ directory
