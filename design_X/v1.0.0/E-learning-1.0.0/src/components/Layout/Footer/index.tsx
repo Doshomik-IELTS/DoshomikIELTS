@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Icon } from "@iconify/react";
+import { Icon } from "@/components/ui/Icon";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -19,8 +19,7 @@ const Footer = () => {
               </span>
             </Link>
             <p className="text-grey text-sm mb-6 max-w-xs">
-              Build IELTS readiness with original practice material, mock tests,
-              and progress tracking — all designed for Bangladeshi learners.
+              Basic English foundations, original IELTS practice, mock tests, transparent AI feedback, and score prediction.
             </p>
             <div className="flex items-center gap-4">
               <Link

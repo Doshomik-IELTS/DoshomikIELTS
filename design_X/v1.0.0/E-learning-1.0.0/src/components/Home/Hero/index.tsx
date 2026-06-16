@@ -1,5 +1,6 @@
 import Image from 'next/image';
-import { Icon } from "@iconify/react";
+import Link from 'next/link';
+import { Icon } from "@/components/ui/Icon";
 import { getImagePrefix } from '@/utils/util';
 
 const Hero = () => {
@@ -25,12 +26,15 @@ const Hero = () => {
                 placeholder="Search grammar, vocabulary, writing, reading..."
                 autoComplete="off"
               />
-              <button className="bg-secondary p-5 rounded-full absolute right-2 top-2">
+              <Link
+                href="/resources"
+                className="bg-secondary p-5 rounded-full absolute right-2 top-2 flex items-center justify-center"
+              >
                 <Icon
                   icon="solar:magnifer-linear"
-                  className="text-white text-4xl inline-block"
+                  className="text-white text-4xl"
                 />
-              </button>
+              </Link>
             </div>
             <div className='flex items-center justify-between pt-10 lg:pt-4'>
               <div className='flex gap-2'>

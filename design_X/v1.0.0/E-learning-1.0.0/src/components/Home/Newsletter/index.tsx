@@ -14,13 +14,13 @@ const Newsletter = () => {
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
-              href="/signup"
+              href="/register"
               className="inline-block bg-white text-secondary font-semibold px-10 py-4 rounded-full hover:opacity-90 transition-opacity"
             >
               Create free account
             </Link>
             <Link
-              href="/#courses"
+              href="/mock-tests"
               className="inline-block bg-transparent text-white border-2 border-white font-semibold px-10 py-4 rounded-full hover:bg-white hover:text-secondary transition-all"
             >
               View mock tests

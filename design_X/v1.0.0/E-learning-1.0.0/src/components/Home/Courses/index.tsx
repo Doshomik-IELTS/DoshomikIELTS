@@ -5,7 +5,7 @@ import "slick-carousel/slick/slick-theme.css";
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Icon } from "@iconify/react";
+import { Icon } from "@/components/ui/Icon";
 import { getImagePrefix } from "@/utils/util";
 
 const courseData: {
