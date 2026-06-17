@@ -68,7 +68,7 @@ const Features = () => {
           {features.map((feature) => (
             <div
               key={feature.title}
-              className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md"
+              className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md h-full flex flex-col"
             >
               <Icon
                 icon={feature.icon}
@@ -77,7 +77,7 @@ const Features = () => {
               <h3 className="text-xl font-semibold text-midnight-text mb-3">
                 {feature.title}
               </h3>
-              <p className="text-grey text-sm leading-6">{feature.description}</p>
+              <p className="text-grey text-sm leading-6 grow">{feature.description}</p>
             </div>
           ))}
         </div>
