@@ -1,7 +1,7 @@
 import { chromium } from "@playwright/test";
 
 const BASE_URL = "http://localhost:3002";
-const OUT_DIR = "/mnt/data/wd/10_project/projects/IELTS++/screenshots";
+const OUT_DIR = "/mnt/data/wd/10_project/projects/DOshomik IELTS/screenshots";
 
 async function main() {
   const browser = await chromium.launch({ headless: true });
@@ -24,7 +24,7 @@ async function main() {
   await page.goto(BASE_URL + "/login");
   await page.waitForTimeout(3000);
 
-  await page.fill('input[id="email"]', "demo@ieltspp.local");
+  await page.fill('input[id="email"]', "demo@doshomikielts.local");
   await page.fill('input[id="password"]', "Test@1234!");
   await page.click('button[type="submit"]');
   await page.waitForTimeout(5000);

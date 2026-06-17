@@ -5,7 +5,7 @@
     "singularName": "resource",
     "pluralName": "resources",
     "displayName": "Resource",
-    "description": "IELTS++ lessons, vocabulary, grammar, spelling, and strategy resources."
+    "description": "DOshomik IELTS lessons, vocabulary, grammar, spelling, and strategy resources."
   },
   "options": {
     "draftAndPublish": true

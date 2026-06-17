@@ -6,7 +6,7 @@ async function main() {
   const demo = await prisma.profile.upsert({
     where: { authUserId: "dev:learner" },
     update: {
-      email: "demo@ieltspp.local",
+      email: "demo@doshomikielts.local",
       name: "Demo Learner",
       targetBand: 6.5,
       examDate: new Date("2026-12-31"),
@@ -18,7 +18,7 @@ async function main() {
     },
     create: {
       authUserId: "dev:learner",
-      email: "demo@ieltspp.local",
+      email: "demo@doshomikielts.local",
       name: "Demo Learner",
       targetBand: 6.5,
       examDate: new Date("2026-12-31"),

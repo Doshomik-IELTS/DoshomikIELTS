@@ -21,7 +21,7 @@ test.describe("Learner Pages Screenshots", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("http://localhost:3002");
     await page.request.post("http://localhost:3002/api/dev-auth/login", {
-      data: { email: "demo@ieltspp.local", password: "Test@1234!", role: "learner" }
+      data: { email: "demo@doshomikielts.local", password: "Test@1234!", role: "learner" }
     });
   });
 
@@ -49,7 +49,7 @@ test.describe("Admin Pages Screenshots", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("http://localhost:3002");
     await page.request.post("http://localhost:3002/api/dev-auth/login", {
-      data: { email: "admin@ieltspp.local", password: "Test@1234!", role: "admin" }
+      data: { email: "admin@doshomikielts.local", password: "Test@1234!", role: "admin" }
     });
   });
 

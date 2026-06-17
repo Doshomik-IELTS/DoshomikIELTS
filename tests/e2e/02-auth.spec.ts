@@ -3,7 +3,7 @@ import { test, expect } from "@playwright/test";
 test.describe("Authentication", () => {
   test("should login with dev credentials", async ({ page }) => {
     await page.goto("/login");
-    await page.fill('input[id="email"]', "demo@ieltspp.local");
+    await page.fill('input[id="email"]', "demo@doshomikielts.local");
     await page.fill('input[id="password"]', "Test@1234!");
     await page.click('button[type="submit"]');
     await expect(page).toHaveURL("/dashboard", { timeout: 15000 });
@@ -11,7 +11,7 @@ test.describe("Authentication", () => {
 
   test("should redirect to dashboard when logged in user visits login", async ({ page }) => {
     await page.goto("/login");
-    await page.fill('input[id="email"]', "demo@ieltspp.local");
+    await page.fill('input[id="email"]', "demo@doshomikielts.local");
     await page.fill('input[id="password"]', "Test@1234!");
     await page.click('button[type="submit"]');
     await page.waitForURL("/dashboard");
@@ -22,7 +22,7 @@ test.describe("Authentication", () => {
 
   test("should logout successfully", async ({ page }) => {
     await page.goto("/login");
-    await page.fill('input[id="email"]', "demo@ieltspp.local");
+    await page.fill('input[id="email"]', "demo@doshomikielts.local");
     await page.fill('input[id="password"]', "Test@1234!");
     await page.click('button[type="submit"]');
     await page.waitForURL("/dashboard");

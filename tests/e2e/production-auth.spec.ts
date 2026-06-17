@@ -19,7 +19,7 @@ test.describe("Production Auth Smoke", () => {
 
   test("session cookie propagation via dev-auth for CI", async ({ page }) => {
     const response = await page.request.post("/api/dev-auth/login", {
-      data: { email: "ci-learner@ieltspp.local", password: "Test@1234!", role: "learner" },
+      data: { email: "ci-learner@doshomikielts.local", password: "Test@1234!", role: "learner" },
     });
     expect(response.ok()).toBeTruthy();
 

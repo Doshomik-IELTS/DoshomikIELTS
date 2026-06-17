@@ -5,7 +5,7 @@
     "singularName": "mock-test",
     "pluralName": "mock-tests",
     "displayName": "Mock Test",
-    "description": "IELTS++ practice, short mock, and full mock test definitions."
+    "description": "DOshomik IELTS practice, short mock, and full mock test definitions."
   },
   "options": {
     "draftAndPublish": true

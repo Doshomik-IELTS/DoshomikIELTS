@@ -4,7 +4,7 @@ test.describe("Admin Pages", () => {
   test.beforeEach(async ({ page }) => {
     const response = await page.request.post("/api/dev-auth/login", {
       data: {
-        email: "admin@ieltspp.local",
+        email: "admin@doshomikielts.local",
         password: "Test@1234!",
         role: "admin"
       }

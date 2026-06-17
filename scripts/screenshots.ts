@@ -29,14 +29,14 @@ const pages = [
 async function loginAsLearner(page: Page) {
   await page.goto("/");
   await page.request.post("/api/dev-auth/login", {
-    data: { email: "demo@ieltspp.local", password: "Test@1234!", role: "learner" }
+    data: { email: "demo@doshomikielts.local", password: "Test@1234!", role: "learner" }
   });
 }
 
 async function loginAsAdmin(page: Page) {
   await page.goto("/");
   await page.request.post("/api/dev-auth/login", {
-    data: { email: "admin@ieltspp.local", password: "Test@1234!", role: "admin" }
+    data: { email: "admin@doshomikielts.local", password: "Test@1234!", role: "admin" }
   });
 }
 

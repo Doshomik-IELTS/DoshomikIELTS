@@ -1,7 +1,7 @@
 import { chromium } from "@playwright/test";
 
 const BASE_URL = "http://localhost:3002";
-const OUT_DIR = "/mnt/data/wd/10_project/projects/IELTS++/screenshots";
+const OUT_DIR = "/mnt/data/wd/10_project/projects/DOshomik IELTS/screenshots";
 
 const PAGES = [
   { path: "/", name: "01-landing" },
@@ -39,7 +39,7 @@ async function main() {
 
     try {
       if (needsLogin) {
-        const email = admin ? "admin@ieltspp.local" : "demo@ieltspp.local";
+        const email = admin ? "admin@doshomikielts.local" : "demo@doshomikielts.local";
         const password = "Test@1234!";
         await loginAs(page, email, password);
       }

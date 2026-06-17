@@ -1,9 +1,9 @@
 import { chromium, type Page } from "@playwright/test";
 
 const BASE = "http://127.0.0.1:3002";
-const DEMO_EMAIL = "demo@ieltspp.local";
+const DEMO_EMAIL = "demo@doshomikielts.local";
 const DEMO_PASSWORD = "Test@1234!";
-const ADMIN_EMAIL = "admin@ieltspp.local";
+const ADMIN_EMAIL = "admin@doshomikielts.local";
 
 const results: { gate: string | number; test: string; pass: boolean | null; url?: string; h1?: string | null; resourceCount?: number; testCount?: number; sections?: number; reason?: string; error?: string; errorMsg?: string; disclaimer?: string; label?: string; status?: number; hasScore?: boolean }[] = [];
 

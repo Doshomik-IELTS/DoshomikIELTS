@@ -2,7 +2,7 @@ import { test, expect, type Page } from "@playwright/test";
 
 async function loginAsDemo(page: Page) {
   await page.goto("/login");
-  await page.fill('input[id="email"]', "demo@ieltspp.local");
+  await page.fill('input[id="email"]', "demo@doshomikielts.local");
   await page.fill('input[id="password"]', "Test@1234!");
   await page.click('button[type="submit"]');
   await page.waitForURL("/dashboard", { timeout: 15000 });

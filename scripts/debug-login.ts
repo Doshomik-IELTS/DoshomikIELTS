@@ -22,7 +22,7 @@ async function main() {
   console.log("submit btn:", !!submitBtn);
 
   // Test 2: Fill and submit login form
-  await page.fill('input[id="email"]', "demo@ieltspp.local");
+  await page.fill('input[id="email"]', "demo@doshomikielts.local");
   await page.fill('input[id="password"]', "Test@1234!");
   await page.click('button[type="submit"]');
 
@@ -32,7 +32,7 @@ async function main() {
   console.log("After submit URL:", page.url());
 
   const cookies = await context.cookies();
-  const devCookie = cookies.find((c) => c.name === "ieltspp-dev-session");
+  const devCookie = cookies.find((c) => c.name === "doshomikielts-dev-session");
   console.log("Dev session cookie present:", !!devCookie);
   if (devCookie) {
     console.log("  value:", devCookie.value.slice(0, 30) + "...");
@@ -86,7 +86,7 @@ async function main() {
   // Test 8: Admin login + access
   await page.goto("http://127.0.0.1:3002/login");
   await page.waitForLoadState("networkidle");
-  await page.fill('input[id="email"]', "admin@ieltspp.local");
+  await page.fill('input[id="email"]', "admin@doshomikielts.local");
   await page.fill('input[id="password"]', "Test@1234!");
   await page.click('button[type="submit"]');
   await page.waitForTimeout(3000);

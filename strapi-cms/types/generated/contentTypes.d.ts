@@ -575,7 +575,7 @@ export interface ApiMockTestSectionMockTestSection
 export interface ApiMockTestMockTest extends Struct.CollectionTypeSchema {
   collectionName: 'mock_tests';
   info: {
-    description: 'IELTS++ practice, short mock, and full mock test definitions.';
+    description: 'DOshomik IELTS practice, short mock, and full mock test definitions.';
     displayName: 'Mock Test';
     pluralName: 'mock-tests';
     singularName: 'mock-test';
@@ -731,7 +731,7 @@ export interface ApiQuestionQuestion extends Struct.CollectionTypeSchema {
 export interface ApiResourceResource extends Struct.CollectionTypeSchema {
   collectionName: 'resources';
   info: {
-    description: 'IELTS++ lessons, vocabulary, grammar, spelling, and strategy resources.';
+    description: 'DOshomik IELTS lessons, vocabulary, grammar, spelling, and strategy resources.';
     displayName: 'Resource';
     pluralName: 'resources';
     singularName: 'resource';

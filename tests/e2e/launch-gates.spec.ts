@@ -1,6 +1,6 @@
 import { test, expect, type Page } from "@playwright/test";
 
-const DEMO_EMAIL = "demo@ieltspp.local";
+const DEMO_EMAIL = "demo@doshomikielts.local";
 const DEMO_PASSWORD = "Test@1234!";
 
 async function loginAsDemo(page: Page) {
@@ -13,7 +13,7 @@ async function loginAsDemo(page: Page) {
 
 async function loginAsAdmin(page: Page) {
   const response = await page.request.post("/api/dev-auth/login", {
-    data: { email: "admin@ieltspp.local", password: DEMO_PASSWORD, role: "admin" },
+    data: { email: "admin@doshomikielts.local", password: DEMO_PASSWORD, role: "admin" },
   });
   expect(response.ok()).toBeTruthy();
   await page.goto("/admin");
