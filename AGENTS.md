@@ -1,8 +1,8 @@
-# IELTS++ Agent Guide
+# DOshomik IELTS Agent Guide
 
 ## Project Identity
 
-**IELTS++** is an IELTS preparation platform with owned resources, original practice material, mock tests, profile tracking, and score prediction. The platform serves learners (primarily in Bangladesh) preparing for the IELTS exam, moving from Basic English foundations to full IELTS readiness.
+**DOshomik IELTS** is an IELTS preparation platform with owned resources, original practice material, mock tests, profile tracking, and score prediction. The platform serves learners (primarily in Bangladesh) preparing for the IELTS exam, moving from Basic English foundations to full IELTS readiness.
 
 - **Tech Stack:** Next.js 16.2 · React 19 · TypeScript 5 · Tailwind CSS 4 · Prisma 6 · PostgreSQL (Supabase) · Supabase Auth · Strapi CMS 5 · BullMQ (Redis) · Sentry · PostHog
 - **Runtime:** Node 20, pnpm workspace
@@ -14,7 +14,7 @@
 ## 1. Project Topology
 
 ```
-IELTS++/
+doshomik-ielts/
 ├── prisma/                     # DB schema (40+ models, 776 lines), migrations, seed
 ├── src/
 │   ├── app/                    # Next.js App Router (pages + API routes)

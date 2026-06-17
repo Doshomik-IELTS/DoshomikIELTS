@@ -1,6 +1,6 @@
-# IELTS++ Product Plan
+# DOshomik IELTS Product Plan
 
-IELTS++ is an IELTS preparation platform with owned resources, original practice material, mock tests, profile tracking, and score prediction after a complete test attempt.
+DOshomik IELTS is an IELTS preparation platform with owned resources, original practice material, mock tests, profile tracking, and score prediction after a complete test attempt.
 
 ## Core Modules
 

@@ -1,4 +1,4 @@
-# IELTS++ Feature Report
+# DOshomik IELTS Feature Report
 
 ## Overview
 
@@ -345,7 +345,7 @@
 
 ## Summary
 
-IELTS++ is a fully functional IELTS preparation platform with:
+DOshomik IELTS is a fully functional IELTS preparation platform with:
 
 - **Learner Journey**: Register → Profile → Resources → Practice → Mock Test → Scores → Feedback
 - **Admin Tools**: Resource creation, test building, content review

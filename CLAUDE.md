@@ -1,4 +1,4 @@
-# IELTS++ — Product Context
+# DOshomik IELTS — Product Context
 
 > Full architecture reference in `AGENTS.md`. This file is a quick-entry summary.
 
