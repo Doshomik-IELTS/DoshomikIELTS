@@ -42,14 +42,14 @@ const features = [
 
 const Features = () => {
   return (
-    <section id="features" className="py-20">
+    <section id="features">
       <div className="container mx-auto lg:max-w-screen-xl md:max-w-screen-md px-4">
         <div className="flex flex-col justify-between gap-6 sm:flex-row sm:items-end mb-12">
           <div className="max-w-3xl">
             <p className="text-sm font-semibold uppercase tracking-wide text-primary">
               MVP features
             </p>
-            <h2 className="mt-3 text-3xl lg:text-4xl font-semibold text-midnight_text">
+            <h2 className="mt-3 text-3xl lg:text-4xl font-semibold text-midnight-text">
               Everything needed for a complete IELTS practice loop.
             </h2>
             <p className="mt-4 text-grey text-lg">
@@ -58,23 +58,23 @@ const Features = () => {
           </div>
           <Link
             href="/dashboard"
-            className="text-primary text-lg font-medium hover:tracking-widest duration-500 shrink-0"
+            className="text-primary text-lg font-medium hover:tracking-widest duration-500"
           >
             Open learner dashboard&nbsp;&gt;
           </Link>
         </div>
 
         <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-          {features.map((feature, index) => (
+          {features.map((feature) => (
             <div
-              key={index}
-              className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm hover:-translate-y-0.5 hover:shadow-md transition"
+              key={feature.title}
+              className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md"
             >
               <Icon
                 icon={feature.icon}
                 className="text-primary text-3xl mb-4 inline-block"
               />
-              <h3 className="text-xl font-semibold text-midnight_text mb-3">
+              <h3 className="text-xl font-semibold text-midnight-text mb-3">
                 {feature.title}
               </h3>
               <p className="text-grey text-sm leading-6">{feature.description}</p>

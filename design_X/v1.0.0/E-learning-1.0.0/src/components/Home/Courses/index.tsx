@@ -82,6 +82,7 @@ const Courses = () => {
     arrows: false,
     autoplay: true,
     speed: 500,
+    cssEase: "linear",
     responsive: [
       {
         breakpoint: 1200,
@@ -134,12 +135,12 @@ const Courses = () => {
   return (
     <section id="courses" className="bg-white">
       <div className="mx-auto lg:max-w-screen-xl md:max-w-screen-md px-4">
-        <div className="sm:flex justify-between items-center mb-20">
-          <h2 className="text-midnight_text text-4xl lg:text-5xl font-semibold mb-5 sm:mb-0">
+        <div className="sm:flex justify-between items-center mb-12">
+          <h2 className="text-midnight-text text-4xl lg:text-5xl font-semibold mb-5 sm:mb-0">
             Popular modules.
           </h2>
           <Link
-            href={"/"}
+            href="/practice"
             className="text-primary text-lg font-medium hover:tracking-widest duration-500"
           >
             Explore practice&nbsp;&gt;&nbsp;
@@ -150,7 +151,7 @@ const Courses = () => {
           {courseData.map((items, i) => (
             <div key={i}>
               <div className="bg-white m-3 mb-12 px-3 pt-3 pb-12 shadow-course-shadow rounded-2xl h-full">
-                <div className="relative">
+                <div className="relative rounded-3xl">
                   <Image
                     src={`${getImagePrefix()}${items.imgSrc}`}
                     alt="course-image"
@@ -166,43 +167,39 @@ const Courses = () => {
                 </div>
 
                 <div className="px-3 pt-6">
-                  <h3 className="text-2xl font-bold text-midnight_text">
+                  <h3 className="text-2xl font-bold text-midnight-text max-w-75% inline-block">
                     {items.heading}
                   </h3>
-                  <p className="text-base text-grey pt-6">
-                    {items.name}
-                  </p>
+                  <p className="text-base font-normal pt-4 text-grey">{items.name}</p>
 
-                  <div className="flex justify-between items-center py-6 border-b">
+                  <div className="flex justify-between items-center py-6 border-b border-slate-200">
                     <div className="flex items-center gap-4">
-                      <h3 className="text-red-700 text-2xl font-medium">
+                      <h3 className="text-primary text-2xl font-medium">
                         {items.rating}
                       </h3>
                       <div className="flex">{renderStars(items.rating)}</div>
                     </div>
-                    <div>
-                      <h3 className="text-2xl font-medium text-secondary">
-                        {items.price === 0 ? "Free" : `$${items.price}`}
-                      </h3>
-                    </div>
+                    <h3 className="text-3xl font-medium text-secondary">
+                      {items.price === 0 ? "Free" : `$${items.price}`}
+                    </h3>
                   </div>
 
                   <div className="flex justify-between pt-6">
                     <div className="flex gap-4">
                       <Icon
                         icon="solar:notebook-minimalistic-outline"
-                        className="text-primary text-xl inline-block me-2"
+                        className="text-primary text-xl inline-block"
                       />
-                      <h3 className="text-base font-medium text-black opacity-75">
+                      <h3 className="text-base font-medium text-black/75">
                         {items.classes} exercises
                       </h3>
                     </div>
                     <div className="flex gap-4">
                       <Icon
                         icon="solar:users-group-rounded-linear"
-                        className="text-primary text-xl inline-block me-2"
+                        className="text-primary text-xl inline-block"
                       />
-                      <h3 className="text-base font-medium text-black opacity-75">
+                      <h3 className="text-base font-medium text-black/75">
                         {items.students} learners
                       </h3>
                     </div>

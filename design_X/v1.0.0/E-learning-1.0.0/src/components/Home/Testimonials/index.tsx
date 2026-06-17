@@ -25,6 +25,7 @@ const Testimonial = () => {
     slidesToScroll: 2,
     arrows: false,
     autoplay: true,
+    cssEase: "linear",
     responsive: [
       {
         breakpoint: 1200,
@@ -52,12 +53,12 @@ const Testimonial = () => {
 
   const renderStars = (rating: number) => {
     return (
-      <div className="flex gap-0.5">
-        {Array.from({ length: 5 }, (_, i) => (
+      <div className="flex">
+        {Array.from({ length: 5 }).map((_, i) => (
           <Icon
             key={i}
-            icon="tabler:star-filled"
-            className={`text-xl inline-block ${i < rating ? "text-yellow-500" : "text-gray-300"}`}
+            icon={i < rating ? "tabler:star-filled" : "tabler:star-filled"}
+            className={i < rating ? "text-yellow-500 text-xl" : "text-gray-300 text-xl"}
           />
         ))}
       </div>
@@ -76,26 +77,26 @@ const Testimonial = () => {
           {TestimonialData.map((items, i) => (
             <div key={i}>
               <div
-                className={`bg-white rounded-2xl m-4 p-6 my-20 relative ${
-                  i % 2 === 0 ? "shadow-testimonial-shadow1" : "shadow-testimonial-shadow2"
+                className={`relative m-4 my-16 rounded-2xl bg-white px-6 pb-6 pt-16 ${
+                  i % 2 ? "shadow-testimonial-shadow2" : "shadow-testimonial-shadow1"
                 }`}
               >
-                <div className="absolute top-[-45px]">
+                <div className="absolute left-6 top-0 -translate-y-1/2">
                   <Image
                     src={`${getImagePrefix()}${items.imgSrc}`}
                     alt={items.name}
                     width={100}
                     height={100}
-                    className="rounded-full"
+                    className="h-20 w-20 rounded-full border-4 border-white object-cover shadow-md sm:h-24 sm:w-24"
                   />
                 </div>
-                <h4 className="text-base font-normal text-grey my-4 leading-relaxed pt-8">{items.comment}</h4>
-                <div className="flex justify-between items-center pt-4 border-t border-slate-100">
-                  <div>
+                <h4 className="mb-5 text-base font-normal leading-relaxed text-grey">{items.comment}</h4>
+                <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-4">
+                  <div className="min-w-0">
                     <h3 className="text-lg font-semibold text-midnight_text">{items.name}</h3>
                     <p className="text-sm font-normal text-grey">{items.profession}</p>
                   </div>
-                  <div className="flex">{renderStars(items.rating)}</div>
+                  {renderStars(items.rating)}
                 </div>
               </div>
             </div>

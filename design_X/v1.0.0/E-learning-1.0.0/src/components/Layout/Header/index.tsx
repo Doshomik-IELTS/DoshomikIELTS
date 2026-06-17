@@ -33,8 +33,9 @@ const Header: React.FC = () => {
       <div className="container mx-auto lg:max-w-screen-xl md:max-w-screen-md flex items-center justify-between px-4">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-3">
-          <div className="bg-secondary rounded-xl w-10 h-10 flex items-center justify-center">
-            <span className="text-white text-xl font-bold">D</span>
+          <div className="relative flex shrink-0 items-center justify-center overflow-hidden bg-primary text-white shadow-sm rounded-xl w-10 h-10">
+            <span className="text-[0.72em] font-black leading-none">D</span>
+            <span className="absolute right-[18%] top-[16%] h-1.5 w-1.5 rounded-full bg-success" />
           </div>
           <span className="text-secondary font-bold text-xl">
             DOshomik IELTS
@@ -47,7 +48,7 @@ const Header: React.FC = () => {
             <a
               key={index}
               href={item.href}
-              className="text-grey hover:text-primary font-medium transition-colors"
+              className="text-sm font-medium text-grey hover:text-primary transition-colors"
             >
               {item.label}
             </a>
@@ -58,13 +59,13 @@ const Header: React.FC = () => {
         <div className="hidden lg:flex items-center gap-4">
           <Link
             href="/signin"
-            className="bg-primary text-white px-8 py-3 rounded-full text-base font-medium hover:opacity-90 transition-opacity"
+            className="bg-primary text-white hover:bg-primary-hover px-8 py-3 rounded-full text-sm font-medium transition-colors"
           >
             Sign In
           </Link>
           <Link
             href="/signup"
-            className="bg-primary/15 text-primary px-8 py-3 rounded-full text-base font-medium hover:bg-primary hover:text-white transition-all"
+            className="bg-primary/15 text-primary hover:bg-primary hover:text-white px-8 py-3 rounded-full text-sm font-medium transition-colors"
           >
             Sign Up
           </Link>
@@ -77,17 +78,17 @@ const Header: React.FC = () => {
           aria-label="Toggle mobile menu"
         >
           <span
-            className={`block w-6 h-0.5 bg-midnight-text transition-all duration-300 ${
+            className={`block w-6 h-0.5 bg-secondary transition-all duration-300 ${
               navbarOpen ? "rotate-45 translate-y-1.5" : ""
             }`}
           />
           <span
-            className={`block w-6 h-0.5 bg-midnight-text mt-1.5 transition-all duration-300 ${
+            className={`block w-6 h-0.5 bg-secondary mt-1.5 transition-all duration-300 ${
               navbarOpen ? "opacity-0" : ""
             }`}
           />
           <span
-            className={`block w-6 h-0.5 bg-midnight-text mt-1.5 transition-all duration-300 ${
+            className={`block w-6 h-0.5 bg-secondary mt-1.5 transition-all duration-300 ${
               navbarOpen ? "-rotate-45 -translate-y-1.5" : ""
             }`}
           />
@@ -108,10 +109,11 @@ const Header: React.FC = () => {
           navbarOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
-        <div className="flex items-center justify-between p-4 border-b border-gray-100">
+        <div className="flex items-center justify-between p-4 border-b border-slate-100">
           <Link href="/" className="flex items-center gap-2" onClick={() => setNavbarOpen(false)}>
-            <div className="bg-secondary rounded-lg w-8 h-8 flex items-center justify-center">
-              <span className="text-white text-sm font-bold">D</span>
+            <div className="relative flex shrink-0 items-center justify-center overflow-hidden bg-primary text-white shadow-sm rounded-lg w-8 h-8">
+              <span className="text-[0.72em] font-black leading-none">D</span>
+              <span className="absolute right-[18%] top-[16%] h-1.5 w-1.5 rounded-full bg-success" />
             </div>
             <span className="text-secondary font-bold text-base">
               DOshomik IELTS
@@ -119,11 +121,11 @@ const Header: React.FC = () => {
           </Link>
           <button
             onClick={() => setNavbarOpen(false)}
-            className="p-2 rounded-lg"
+            className="text-grey hover:text-primary"
             aria-label="Close menu"
           >
-            <span className="block w-6 h-0.5 bg-midnight-text rotate-45 translate-y-0.5" />
-            <span className="block w-6 h-0.5 bg-midnight-text -rotate-45 -translate-y-0.5" />
+            <span className="block w-6 h-0.5 bg-secondary rotate-45 translate-y-0.5" />
+            <span className="block w-6 h-0.5 bg-secondary -rotate-45 -translate-y-0.5" />
           </button>
         </div>
         <nav className="flex flex-col p-4 space-y-2">
@@ -131,23 +133,23 @@ const Header: React.FC = () => {
             <a
               key={index}
               href={item.href}
-              className="text-grey hover:text-primary font-medium py-2 transition-colors"
+              className="px-4 py-3 rounded-lg text-grey hover:bg-primary-soft hover:text-primary transition-colors"
               onClick={() => setNavbarOpen(false)}
             >
               {item.label}
             </a>
           ))}
-          <div className="mt-6 flex flex-col space-y-3">
+          <div className="mt-6 space-y-3 pt-6 border-t border-slate-100">
             <Link
               href="/signin"
-              className="bg-primary text-white text-center px-8 py-3 rounded-full text-base font-medium hover:opacity-90 transition-opacity"
+              className="w-full bg-primary text-white px-4 py-3 rounded-full text-sm font-medium text-center block"
               onClick={() => setNavbarOpen(false)}
             >
               Sign In
             </Link>
             <Link
               href="/signup"
-              className="bg-primary/15 text-primary text-center px-8 py-3 rounded-full text-base font-medium hover:bg-primary hover:text-white transition-all"
+              className="w-full bg-primary/15 text-primary px-4 py-3 rounded-full text-sm font-medium text-center block hover:bg-primary hover:text-white transition-colors"
               onClick={() => setNavbarOpen(false)}
             >
               Sign Up
