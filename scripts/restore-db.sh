@@ -1,8 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 
-BACKUP_DIR="${BACKUP_DIR:-/tmp/ieltspp-backups}"
-LATEST_BACKUP=$(ls -t "$BACKUP_DIR"/ieltspp_*.sql.gz 2>/dev/null | head -1)
+BACKUP_DIR="${BACKUP_DIR:-/tmp/doshomikielts-backups}"
+LATEST_BACKUP=$(ls -t "$BACKUP_DIR"/doshomikielts_*.sql.gz 2>/dev/null | head -1)
 
 if [ -z "$LATEST_BACKUP" ]; then
   echo "No backups found in $BACKUP_DIR"

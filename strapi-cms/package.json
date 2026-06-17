@@ -1,8 +1,8 @@
 {
-  "name": "ielts-plus-plus-strapi-cms",
+  "name": "doshomik-ielts-strapi-cms",
   "version": "0.1.0",
   "private": true,
-  "description": "Strapi CMS for IELTS++ resources and mock-test authoring.",
+  "description": "Strapi CMS for DOshomik IELTS resources and mock-test authoring.",
   "scripts": {
     "develop": "node scripts/with-xdg-config.mjs strapi develop",
     "start": "node scripts/with-xdg-config.mjs strapi start",
@@ -32,6 +32,6 @@
     "npm": ">=6.0.0"
   },
   "strapi": {
-    "uuid": "ielts-plus-plus-strapi-cms"
+    "uuid": "doshomik-ielts-strapi-cms"
   }
 }

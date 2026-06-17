@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-IMAGE_NAME="${IMAGE_NAME:-ieltspp}"
+IMAGE_NAME="${IMAGE_NAME:-doshomikielts}"
 DOCKER_COMPOSE="${DOCKER_COMPOSE:-docker-compose.yml}"
 TAG_FILE="${TAG_FILE:-.deployed-tags}"
 ROLLBACK_TAG="${1:-}"

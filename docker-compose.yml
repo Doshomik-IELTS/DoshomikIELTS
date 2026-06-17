@@ -8,8 +8,8 @@ services:
     env_file:
       - .env.local
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/ieltsplusplus
-      - DIRECT_URL=postgresql://postgres:postgres@db:5432/ieltsplusplus
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/doshomikielts
+      - DIRECT_URL=postgresql://postgres:postgres@db:5432/doshomikielts
       - REDIS_URL=redis://redis:6379
       - STRAPI_BASE_URL=http://strapi:1337
       - STRAPI_ADMIN_URL=http://strapi:1337/admin
@@ -25,14 +25,14 @@ services:
       retries: 3
       start_period: 30s
     networks:
-      - ieltspp
+      - doshomikielts
 
   db:
     image: postgres:16-alpine
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: ieltsplusplus
+      POSTGRES_DB: doshomikielts
     ports:
       - "5432:5432"
     volumes:
@@ -43,7 +43,7 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - ieltspp
+      - doshomikielts
 
   redis:
     image: redis:7-alpine
@@ -57,7 +57,7 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - ieltspp
+      - doshomikielts
 
   strapi:
     profiles:
@@ -71,7 +71,7 @@ services:
       DATABASE_CLIENT: postgres
       DATABASE_HOST: db
       DATABASE_PORT: 5432
-      DATABASE_NAME: ieltsplusplus
+      DATABASE_NAME: doshomikielts
       DATABASE_USERNAME: postgres
       DATABASE_PASSWORD: postgres
     volumes:
@@ -80,7 +80,7 @@ services:
       db:
         condition: service_healthy
     networks:
-      - ieltspp
+      - doshomikielts
 
   worker:
     build:
@@ -90,8 +90,8 @@ services:
     env_file:
       - .env.local
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/ieltsplusplus
-      - DIRECT_URL=postgresql://postgres:postgres@db:5432/ieltsplusplus
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/doshomikielts
+      - DIRECT_URL=postgresql://postgres:postgres@db:5432/doshomikielts
       - REDIS_URL=redis://redis:6379
       - STRAPI_BASE_URL=http://strapi:1337
       - STRAPI_ADMIN_URL=http://strapi:1337/admin
@@ -108,7 +108,7 @@ services:
       retries: 3
       start_period: 30s
     networks:
-      - ieltspp
+      - doshomikielts
 
 volumes:
   pgdata:
@@ -116,5 +116,5 @@ volumes:
   strapi-data:
 
 networks:
-  ieltspp:
+  doshomikielts:
     driver: bridge
