@@ -3,6 +3,7 @@ export const siteConfig = {
   description:
     "Basic English foundations, original IELTS practice, mock tests, transparent AI feedback, and score prediction.",
   nav: [
+    { href: "/resources", label: "Resources" },
     { href: "#features", label: "Features" },
     { href: "#courses", label: "Courses" },
     { href: "#mentor", label: "Mentor" },

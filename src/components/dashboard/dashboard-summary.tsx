@@ -200,7 +200,7 @@ export function DashboardSummary() {
               </div>
               <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
                 <div 
-                  className="h-full bg-blue-500 rounded-full transition-all"
+                  className="h-full bg-primary rounded-full transition-all"
                   style={{ width: `${progressData.overall.percentage}%` }}
                 />
               </div>

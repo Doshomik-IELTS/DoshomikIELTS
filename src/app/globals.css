@@ -26,7 +26,7 @@
   --midnight-text: #222c44;
   --grey: #57595f;
   --slate-gray: #f6faff;
-  --deep-slte: #d5effa;
+  --deep-slate: #d5effa;
 }
 
 @theme inline {
@@ -54,9 +54,9 @@
   --color-midnight-text: var(--midnight-text);
   --color-grey: var(--grey);
   --color-slate-gray: var(--slate-gray);
-  --color-deep-slate: var(--deep-slte);
+  --color-deep-slate: var(--deep-slate);
   --font-sans: var(--font-poppins), "Poppins", sans-serif;
-  --font-mono: "Geist Mono", monospace;
+  --font-mono: var(--font-geist-mono), "Geist Mono", monospace;
   --shadow-input-shadow: 0 63px 59px rgba(101, 86, 255, 0.1);
   --shadow-course-shadow: 0 40px 20px rgba(0, 0, 0, 0.15);
   --shadow-testimonial-shadow1: 0 5.54348px 11.087px rgba(89, 104, 118, 0.05);
@@ -71,7 +71,7 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: "Poppins", sans-serif;
+  font-family: var(--font-poppins), "Poppins", sans-serif;
 }
 
 html {

@@ -6,6 +6,7 @@ import { siteConfig } from "@/config/site";
 import { Icon } from "@iconify/react";
 import { LoginForm } from "@/app/(auth)/login/login-form";
 import { RegisterForm } from "@/app/(auth)/register/register-form";
+import { Logo } from "@/components/layout/logo";
 
 const navItems = siteConfig.nav;
 
@@ -47,11 +48,8 @@ export function PublicHeader() {
     >
       <div className="container mx-auto lg:max-w-screen-xl md:max-w-screen-md flex items-center justify-between px-4">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 text-xl font-bold text-secondary">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-secondary text-sm font-black text-white">
-            D
-          </span>
-          DOshomik IELTS
+        <Link href="/" className="shrink-0">
+          <Logo variant="full" size="md" />
         </Link>
 
         {/* Desktop Nav */}
@@ -146,8 +144,8 @@ export function PublicHeader() {
         }`}
       >
         <div className="flex items-center justify-between p-4 border-b border-slate-100">
-          <Link href="/" className="text-lg font-bold text-secondary">
-            DOshomik IELTS
+          <Link href="/" className="shrink-0">
+            <Logo variant="text" size="md" />
           </Link>
           <button
             onClick={() => setNavbarOpen(false)}

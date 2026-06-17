@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#f8fafc"/>
+  <circle cx="1030" cy="110" r="210" fill="#f0eeff"/>
+  <circle cx="130" cy="560" r="180" fill="#d5effa"/>
+  <rect x="96" y="96" width="1008" height="438" rx="36" fill="#ffffff" stroke="#e2e8f0" stroke-width="2"/>
+  <g transform="translate(150 154)">
+    <rect width="116" height="116" rx="28" fill="#6556ff"/>
+    <path fill="#fff" d="M33 29h27.6C75.9 29 87 39.9 87 58S75.9 87 60.6 87H33V29Zm18.1 16.7v24.6h8.7c6.5 0 10.5-4.9 10.5-12.3 0-7.6-4-12.3-10.5-12.3h-8.7Z"/>
+    <circle cx="86" cy="31" r="7" fill="#43c639"/>
+  </g>
+  <text x="150" y="335" fill="#0f172a" font-family="Poppins, Arial, sans-serif" font-size="72" font-weight="700">DOshomik IELTS</text>
+  <text x="154" y="392" fill="#64748b" font-family="Poppins, Arial, sans-serif" font-size="30" font-weight="500">Practice IELTS with owned resources</text>
+  <g font-family="Poppins, Arial, sans-serif" font-size="22" font-weight="600">
+    <rect x="154" y="438" width="220" height="46" rx="23" fill="#f0eeff"/>
+    <text x="184" y="468" fill="#6556ff">Original lessons</text>
+    <rect x="394" y="438" width="206" height="46" rx="23" fill="#f0eeff"/>
+    <text x="424" y="468" fill="#6556ff">Mock tests</text>
+    <rect x="620" y="438" width="232" height="46" rx="23" fill="#f0eeff"/>
+    <text x="650" y="468" fill="#6556ff">Band estimates</text>
+  </g>
+</svg>

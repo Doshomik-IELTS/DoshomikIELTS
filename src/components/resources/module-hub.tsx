@@ -68,7 +68,7 @@ export async function ModuleHubPage({ mod }: { mod: ResourceModule }) {
       {resourceCount > 0 && (
         <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
           <div
-            className="h-full rounded-full bg-blue-500 transition-all duration-500"
+            className="h-full rounded-full bg-primary transition-all duration-500"
             style={{ width: `${Math.min(progressPercent, 100)}%` }}
           />
         </div>

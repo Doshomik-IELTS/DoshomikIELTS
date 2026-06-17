@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { LogoutButton } from "@/components/auth/logout-button";
+import { Logo } from "@/components/layout/logo";
 import { cn } from "@/lib/utils";
 
 const learnerNav: { label: string; href: string }[] = [
@@ -50,8 +51,8 @@ export function LearnerHeader() {
     return (
       <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
-          <Link href="/dashboard" className="shrink-0 text-lg font-bold text-secondary">
-            DOshomik IELTS
+          <Link href="/dashboard" className="shrink-0">
+            <Logo variant="text" size="md" />
           </Link>
           <p className="text-sm text-slate-500">Test in progress</p>
         </div>
@@ -66,8 +67,8 @@ export function LearnerHeader() {
     <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
         <div className="flex min-w-0 items-center gap-8">
-          <Link href="/dashboard" className="shrink-0 text-lg font-bold text-secondary" onClick={() => setOpen(false)}>
-            DOshomik IELTS
+          <Link href="/dashboard" className="shrink-0" onClick={() => setOpen(false)}>
+            <Logo variant="text" size="md" />
           </Link>
           <nav className="hidden items-center gap-1 md:flex" aria-label="Learner navigation">
             {learnerNav.slice(0, 4).map((item) => (

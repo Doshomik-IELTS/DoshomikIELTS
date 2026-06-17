@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { GraduationCap } from "lucide-react";
 import { LoginForm } from "./login-form";
 import { getCurrentUser } from "@/lib/auth/session";
 import { canAccessAdminRoutes } from "@/lib/auth/roles";
+import { Logo } from "@/components/layout/logo";
 
 export default function LoginPage({
   searchParams,
@@ -45,11 +45,8 @@ async function LoginScreen({
       <main className="relative flex min-h-screen flex-col items-center justify-center px-4 py-12">
         <div className="w-full max-w-md">
           <div className="mb-8 text-center">
-            <Link href="/" className="inline-flex items-center gap-2 text-2xl font-bold text-white">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
-                <GraduationCap className="h-6 w-6 text-white" />
-              </div>
-              DOshomik IELTS
+            <Link href="/" className="inline-flex">
+              <Logo variant="full" size="lg" inverse />
             </Link>
           </div>
 

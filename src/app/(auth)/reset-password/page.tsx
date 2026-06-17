@@ -2,12 +2,13 @@
 
 import { type FormEvent, useState } from "react";
 import Link from "next/link";
-import { GraduationCap, Mail, Loader2 } from "lucide-react";
+import { Mail, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { Logo } from "@/components/layout/logo";
 
 export default function ResetPasswordPage() {
   const [email, setEmail] = useState("");
@@ -56,11 +57,8 @@ export default function ResetPasswordPage() {
       <main className="relative flex min-h-screen flex-col items-center justify-center px-4 py-12">
         <div className="w-full max-w-md">
           <div className="mb-8 text-center">
-            <Link href="/" className="inline-flex items-center gap-2 text-2xl font-bold text-white">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
-                <GraduationCap className="h-6 w-6 text-white" />
-              </div>
-              DOshomik IELTS
+            <Link href="/" className="inline-flex">
+              <Logo variant="full" size="lg" inverse />
             </Link>
           </div>
 

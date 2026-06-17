@@ -101,24 +101,24 @@ export function HomeTestimonials() {
           {TestimonialData.map((items, i) => (
             <div key={i}>
               <div
-                className={`bg-white rounded-2xl m-4 p-6 my-20 relative ${
+                className={`relative m-4 my-16 rounded-2xl bg-white px-6 pb-6 pt-16 ${
                   i % 2 ? "shadow-testimonial-shadow2" : "shadow-testimonial-shadow1"
                 }`}
               >
-                <div className="absolute top-[-45px]">
+                <div className="absolute left-6 top-0 -translate-y-1/2">
                   <Image
                     src={items.imgSrc}
                     alt={items.name}
                     width={100}
                     height={100}
-                    className="rounded-full"
+                    className="h-20 w-20 rounded-full border-4 border-white object-cover shadow-md sm:h-24 sm:w-24"
                   />
                 </div>
-                <h4 className="text-base font-normal text-grey my-4 leading-relaxed">
+                <h4 className="mb-5 text-base font-normal leading-relaxed text-grey">
                   {items.comment}
                 </h4>
-                <div className="flex justify-between items-center pt-4 border-t border-slate-100">
-                  <div>
+                <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-4">
+                  <div className="min-w-0">
                     <h3 className="text-lg font-semibold text-midnight-text">{items.name}</h3>
                     <p className="text-sm font-normal text-grey">{items.profession}</p>
                   </div>

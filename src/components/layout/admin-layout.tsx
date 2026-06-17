@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { AdminHeaderNav } from "@/components/layout/admin-header-nav";
+import { Logo } from "@/components/layout/logo";
 
 const adminNav: { label: string; href: string }[] = [
   { label: "Overview", href: "/admin" },
@@ -13,11 +14,11 @@ const adminNav: { label: string; href: string }[] = [
 export function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-slate-50">
-      <MobileNav brand="DOshomik IELTS Admin" items={adminNav} backHref="/dashboard" backLabel="Learner app" />
+      <MobileNav brand={<Logo variant="text" size="sm" admin />} items={adminNav} backHref="/dashboard" backLabel="Learner app" />
       <header className="sticky top-0 z-40 hidden border-b border-slate-200 bg-white/95 backdrop-blur md:block">
         <div className="mx-auto flex h-16 max-w-7xl items-center gap-6 px-6 lg:px-8">
-          <Link href="/admin" className="shrink-0 text-lg font-bold text-secondary">
-            DOshomik IELTS Admin
+          <Link href="/admin" className="shrink-0">
+            <Logo variant="text" size="md" admin />
           </Link>
           <AdminHeaderNav items={adminNav} />
           <Link

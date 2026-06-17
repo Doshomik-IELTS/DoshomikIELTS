@@ -1,0 +1,13 @@
+{
+  "name": "DOshomik IELTS",
+  "short_name": "DOshomik",
+  "description": "Basic English foundations, original IELTS practice, mock tests, transparent AI feedback, and score prediction.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#6556ff",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

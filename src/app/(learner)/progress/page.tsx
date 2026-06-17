@@ -179,7 +179,7 @@ export default function ProgressPage() {
                     </div>
                     <div className="h-2 overflow-hidden rounded-full bg-slate-100" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100} aria-label={`${resourceCategoryLabel(category)} progress: ${pct} percent`}>
                       <div
-                        className={`h-full rounded-full transition-all ${pct === 100 ? "bg-green-500" : pct > 0 ? "bg-blue-500" : "bg-slate-200"}`}
+                        className={`h-full rounded-full transition-all ${pct === 100 ? "bg-green-500" : pct > 0 ? "bg-primary" : "bg-slate-200"}`}
                         style={{ width: `${pct}%` }}
                       />
                     </div>

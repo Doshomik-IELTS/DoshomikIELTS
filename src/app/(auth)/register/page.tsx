@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { GraduationCap } from "lucide-react";
 import { RegisterForm } from "./register-form";
+import { Logo } from "@/components/layout/logo";
 
 export default function RegisterPage() {
   return (
@@ -15,11 +15,8 @@ export default function RegisterPage() {
       <main className="relative flex min-h-screen flex-col items-center justify-center px-4 py-12">
         <div className="w-full max-w-md">
           <div className="mb-8 text-center">
-            <Link href="/" className="inline-flex items-center gap-2 text-2xl font-bold text-white">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
-                <GraduationCap className="h-6 w-6 text-white" />
-              </div>
-              DOshomik IELTS
+            <Link href="/" className="inline-flex">
+              <Logo variant="full" size="lg" inverse />
             </Link>
           </div>
 

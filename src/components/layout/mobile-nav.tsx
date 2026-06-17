@@ -18,7 +18,7 @@ export function MobileNav({
   backLabel,
   footer,
 }: {
-  brand: string;
+  brand: React.ReactNode;
   items: MobileNavItem[];
   backHref?: string;
   backLabel?: string;

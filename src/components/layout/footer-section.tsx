@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Icon } from "@iconify/react";
+import { Logo } from "@/components/layout/logo";
 
 const headerData = [
   { label: "Features", href: "#features" },
@@ -14,11 +15,8 @@ export function FooterSection() {
       <div className="container mx-auto lg:max-w-screen-xl md:max-w-screen-md px-4">
         <div className="grid grid-cols-1 gap-y-10 gap-x-16 sm:grid-cols-2 lg:grid-cols-12">
           <div className="col-span-4 md:col-span-12 lg:col-span-4">
-            <Link href="/" className="flex items-center gap-2 text-xl font-bold text-secondary mb-4">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-secondary text-sm font-black text-white">
-                D
-              </span>
-              DOshomik IELTS
+            <Link href="/" className="mb-4 inline-flex">
+              <Logo variant="full" size="md" />
             </Link>
             <p className="text-grey text-sm mb-4 max-w-xs">
               Basic English foundations, original IELTS practice, mock tests, transparent AI feedback, and score prediction.
@@ -65,16 +63,16 @@ export function FooterSection() {
               </li>
             </ul>
           </div>
-          <div className="col-span-4 md:col-span-4 lg:col-span-4">
+          <div className="col-span-4 space-y-3 md:col-span-4 lg:col-span-4">
             <div className="flex items-center gap-2">
               <Icon icon="tabler:brand-google-maps" className="text-primary text-3xl" />
               <h5 className="text-lg text-grey">925 Filbert Street Pennsylvania 18072</h5>
             </div>
-            <div className="flex gap-2 mt-8">
+            <div className="flex gap-2">
               <Icon icon="tabler:phone" className="text-primary text-3xl" />
               <h5 className="text-lg text-grey">+45 3411-4411</h5>
             </div>
-            <div className="flex gap-2 mt-8">
+            <div className="flex gap-2">
               <Icon icon="tabler:folder" className="text-primary text-3xl" />
               <h5 className="text-lg text-grey">info@doshomikielts.com</h5>
             </div>
