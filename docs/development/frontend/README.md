@@ -1,10 +1,10 @@
-# IELTS++ Frontend Documentation
+# DOshomik IELTS Frontend Documentation
 
 **Last updated:** 2026-06-17 — Updated for new design system (purple-primary theme, Poppins font, `@theme inline` tokens), auth modal flow, and dark landing page.
 
 ## Overview
 
-The IELTS++ frontend is a responsive Next.js App Router application for learners and basic admins. It supports public marketing/auth pages, learner dashboard with streak tracking and achievements, Strapi-backed resources with bookmarks, spaced-repetition flashcards, practice, full mock tests with per-section timers, writing tasks with word count and auto-save, speaking with audio recording, evaluation feedback, score prediction, referral program, PostHog learner analytics, and admin operational workflows.
+The DOshomik IELTS frontend is a responsive Next.js App Router application for learners and basic admins. It supports public marketing/auth pages, learner dashboard with streak tracking and achievements, Strapi-backed resources with bookmarks, spaced-repetition flashcards, practice, full mock tests with per-section timers, writing tasks with word count and auto-save, speaking with audio recording, evaluation feedback, score prediction, referral program, PostHog learner analytics, and admin operational workflows.
 
 Recommended stack:
 

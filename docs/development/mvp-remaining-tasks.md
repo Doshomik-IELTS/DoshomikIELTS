@@ -1,4 +1,4 @@
-# IELTS++ MVP Remaining Tasks
+# DOshomik IELTS MVP Remaining Tasks
 
 **Last updated:** 2026-05-17
 
@@ -70,7 +70,7 @@ pnpm db:deploy
 
 ## Definition of MVP Complete
 
-IELTS++ MVP is considered complete when:
+DOshomik IELTS MVP is considered complete when:
 - ✅ All learner-facing features implemented and functional
 - ✅ All admin content workflows implemented
 - ✅ Automated checks pass (typecheck, lint, test:p0, build)

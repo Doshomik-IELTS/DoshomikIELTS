@@ -1,8 +1,8 @@
-# IELTS++ Development Starting Phase
+# DOshomik IELTS Development Starting Phase
 
 ## Purpose
 
-This document organizes the first development phase for IELTS++. It is updated to align with the detailed backend documentation in [`backend/`](backend/) and frontend documentation in [`frontend/`](frontend/).
+This document organizes the first development phase for DOshomik IELTS. It is updated to align with the detailed backend documentation in [`backend/`](backend/) and frontend documentation in [`frontend/`](frontend/).
 
 Use this file before starting the full 8-week MVP plan in [`mvp-development-workplan.md`](mvp-development-workplan.md).
 

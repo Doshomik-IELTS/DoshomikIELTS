@@ -1,8 +1,8 @@
-# IELTS++ Backend Documentation
+# DOshomik IELTS Backend Documentation
 
 ## Overview
 
-The IELTS++ backend powers an owned IELTS resource and mock-test platform. It supports learner accounts, profiles, Strapi-authored resources/mock tests, practice attempts, full mock tests, spaced-repetition flashcards, referral/credits system, objective scoring, LLM-assisted writing/speaking evaluation, score prediction, media storage, and admin review workflows.
+The DOshomik IELTS backend powers an owned IELTS resource and mock-test platform. It supports learner accounts, profiles, Strapi-authored resources/mock tests, practice attempts, full mock tests, spaced-repetition flashcards, referral/credits system, objective scoring, LLM-assisted writing/speaking evaluation, score prediction, media storage, and admin review workflows.
 
 ## Code Quality Status
 

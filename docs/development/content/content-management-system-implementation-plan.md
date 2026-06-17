@@ -1,4 +1,4 @@
-# IELTS++ Content Management System Implementation Plan
+# DOshomik IELTS Content Management System Implementation Plan
 
 Last updated: 2026-05-17
 

@@ -1,4 +1,4 @@
-# IELTS++ Launch Readiness Plan
+# DOshomik IELTS Launch Readiness Plan
 
 **Last updated:** 2026-05-17 (all P0 source fixes verified, P1 hardening complete, Strapi and PostHog integrated, E2E scaffold created. Ready for staging smoke test before internal alpha.)
 **Status:** All P0 source fixes verified. P1 hardening items (integration tests, rate limiting, audit logs, Sentry, PostHog analytics) implemented. E2E scaffold created. Core MVP feature-complete. Ready for staging smoke test before internal alpha.
@@ -420,4 +420,4 @@ Public launch requires all items below to be checked.
 
 ## Definition Of Launch Ready
 
-IELTS++ is launch ready when a new user can register in a production-like environment, complete the core learning and mock-test loop, receive clearly labeled unofficial feedback, and an admin can safely manage content, while the system passes automated checks, deploys from committed migrations, protects private data, and has enough operational visibility to diagnose failures after release.
+DOshomik IELTS is launch ready when a new user can register in a production-like environment, complete the core learning and mock-test loop, receive clearly labeled unofficial feedback, and an admin can safely manage content, while the system passes automated checks, deploys from committed migrations, protects private data, and has enough operational visibility to diagnose failures after release.

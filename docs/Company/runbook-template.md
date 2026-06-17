@@ -2,7 +2,7 @@
 
 <!-- Last Updated: 2026-05-19 — Populated Redis Outage and Worker Crash runbook instances. -->
 
-Use this template when reviewing operational readiness or generating incident response procedures for IELTS++. Each incident class should have its own runbook instance.
+Use this template when reviewing operational readiness or generating incident response procedures for DOshomik IELTS. Each incident class should have its own runbook instance.
 
 ## Incident Class
 

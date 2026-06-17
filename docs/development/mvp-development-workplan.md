@@ -1,8 +1,8 @@
-# IELTS++ MVP Development Workplan — 8 Weeks
+# DOshomik IELTS MVP Development Workplan — 8 Weeks
 
 ## Summary
 
-Build the full IELTS++ learner MVP in 8 weeks as a solo-developer project using the approved full-stack plan.
+Build the full DOshomik IELTS learner MVP in 8 weeks as a solo-developer project using the approved full-stack plan.
 
 Core stack:
 

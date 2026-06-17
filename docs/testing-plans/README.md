@@ -1,6 +1,6 @@
 # Testing plans
 
-This folder is the home for **all testing and QA plans** for IELTS++—manual checklists, automated coverage intent, accessibility/responsive passes, and (as you add them) E2E, performance, security, and load plans.
+This folder is the home for **all testing and QA plans** for DOshomik IELTS—manual checklists, automated coverage intent, accessibility/responsive passes, and (as you add them) E2E, performance, security, and load plans.
 
 > **Implementation Note (2026-05-17):** Backend APIs for practice, mock tests, evaluations, media, Strapi-backed content reads, and admin reviews are implemented. Resource/mock-test authoring now happens in Strapi. PostHog learner analytics is configured behind env vars. `pnpm typecheck`, `pnpm lint`, and `pnpm test:p0` (38/38) pass. E2E scaffold created with 11 Playwright spec files. Integration test scaffold exists in `tests/integration/`. Next step: staging smoke tests against real services.
 

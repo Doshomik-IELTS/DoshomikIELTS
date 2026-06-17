@@ -1,10 +1,10 @@
-# IELTS++ Road To 10/10
+# DOshomik IELTS Road To 10/10
 
 <!-- Last Updated: 2026-05-19 — Expanded with principal-engineer concerns around transactional integrity, provider fallback, content consistency, and health modeling. -->
 
 ## Purpose
 
-This document defines what must be true before IELTS++ can honestly be rated `10/10` for paid-beta readiness.
+This document defines what must be true before DOshomik IELTS can honestly be rated `10/10` for paid-beta readiness.
 
 Current state after the latest cross-functional re-review: `8.5/10`.
 
@@ -49,7 +49,7 @@ What still keeps the product below `10/10`:
 
 ## Non-Negotiable Exit Criteria
 
-IELTS++ cannot be called `10/10` until **all** of the following are true:
+DOshomik IELTS cannot be called `10/10` until **all** of the following are true:
 
 1. Full release automation passes in CI:
    - `pnpm lint`

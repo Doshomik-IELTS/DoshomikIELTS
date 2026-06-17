@@ -1,12 +1,12 @@
-# IELTS++ Market Research Analysis
+# DOshomik IELTS Market Research Analysis
 
 Research date: May 2026
 
 ## Purpose
 
-This document summarizes comparable IELTS preparation apps and platforms, the features they provide, and the strategic implications for IELTS++.
+This document summarizes comparable IELTS preparation apps and platforms, the features they provide, and the strategic implications for DOshomik IELTS.
 
-IELTS++ is planned as an owned IELTS resource and mock-test platform with Basic English foundations, original resources, AI-assisted writing/speaking evaluation, full mock tests, and score prediction.
+DOshomik IELTS is planned as an owned IELTS resource and mock-test platform with Basic English foundations, original resources, AI-assisted writing/speaking evaluation, full mock tests, and score prediction.
 
 ---
 
@@ -352,35 +352,35 @@ Source: https://www.ieltsadvantage.com/vip-academy/
 
 ### 1. Crowded AI Scoring Market
 
-Many platforms already offer AI Writing and Speaking scoring. IELTS++ cannot compete only by saying “AI IELTS feedback”. It needs a clearer educational path and trust positioning.
+Many platforms already offer AI Writing and Speaking scoring. DOshomik IELTS cannot compete only by saying “AI IELTS feedback”. It needs a clearer educational path and trust positioning.
 
 ### 2. Trust Problem Around AI Scores
 
-IELTS learners often distrust unofficial AI scoring, especially for Writing and Speaking. IELTS++ should clearly label scores as estimates and provide criterion-level reasoning, confidence, and improvement steps.
+IELTS learners often distrust unofficial AI scoring, especially for Writing and Speaking. DOshomik IELTS should clearly label scores as estimates and provide criterion-level reasoning, confidence, and improvement steps.
 
 ### 3. Content Copyright Risk
 
-Several platforms advertise Cambridge or actual test libraries. IELTS++ should avoid copying or hosting protected content and instead build original content with review status and license metadata.
+Several platforms advertise Cambridge or actual test libraries. DOshomik IELTS should avoid copying or hosting protected content and instead build original content with review status and license metadata.
 
 ### 4. Official Platforms Have Brand Advantage
 
-British Council and IDP have strong trust, official branding, test booking, and results access. IELTS++ must focus on affordability, accessibility, foundations, and daily improvement.
+British Council and IDP have strong trust, official branding, test booking, and results access. DOshomik IELTS must focus on affordability, accessibility, foundations, and daily improvement.
 
 ### 5. Mock Test Alone Is Not Enough
 
-Users can access many free mock tests online. IELTS++ should connect mock test performance to specific lessons and targeted practice.
+Users can access many free mock tests online. DOshomik IELTS should connect mock test performance to specific lessons and targeted practice.
 
 ---
 
-## Opportunities For IELTS++
+## Opportunities For DOshomik IELTS
 
 ### 1. Basic English To IELTS Pathway
 
-Many competitors assume the learner is already ready for IELTS-level practice. IELTS++ can target learners who need Basic English, grammar, vocabulary, sentence structure, synonyms, and foundations before full mock tests.
+Many competitors assume the learner is already ready for IELTS-level practice. DOshomik IELTS can target learners who need Basic English, grammar, vocabulary, sentence structure, synonyms, and foundations before full mock tests.
 
 ### 2. Transparent AI Evaluation
 
-IELTS++ can stand out by showing:
+DOshomik IELTS can stand out by showing:
 
 - Criteria-level bands.
 - Why the score was assigned.
@@ -392,7 +392,7 @@ IELTS++ can stand out by showing:
 
 ### 3. Original And Safe Content
 
-IELTS++ can build trust with:
+DOshomik IELTS can build trust with:
 
 - Owned resources.
 - Original reading passages.
@@ -425,10 +425,10 @@ The best product loop is:
 
 ## Strategic Takeaway
 
-The IELTS prep market is crowded with AI mock test apps. IELTS++ should not position itself as just another AI scorer.
+The IELTS prep market is crowded with AI mock test apps. DOshomik IELTS should not position itself as just another AI scorer.
 
 Recommended positioning:
 
-> IELTS++ is a basic-English-to-IELTS platform with owned resources, original practice, full mock tests, transparent AI feedback, and score prediction.
+> DOshomik IELTS is a basic-English-to-IELTS platform with owned resources, original practice, full mock tests, transparent AI feedback, and score prediction.
 
 This positioning is strongest for learners who are not yet ready for high-pressure mock tests and need structured improvement from the foundations upward.

@@ -36,7 +36,7 @@ Source links:
 
 ## Product Principle
 
-IELTS++ should not claim official scoring. Every predicted score must be labeled:
+DOshomik IELTS should not claim official scoring. Every predicted score must be labeled:
 
 > Unofficial estimate. Official IELTS results may differ.
 

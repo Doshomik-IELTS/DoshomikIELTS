@@ -1,12 +1,12 @@
-# IELTS++ Company Review Agents
+# DOshomik IELTS Company Review Agents
 
 <!-- Last Updated: 2026-05-19 — Added solo developer review cadence, batching guidance, and version tracking policy. -->
 
 ## Overview
 
-This directory contains role prompts for reviewing IELTS++ from distinct company perspectives. They are meant for targeted reviews, release gates, architecture decisions, and re-reviews after fixes.
+This directory contains role prompts for reviewing DOshomik IELTS from distinct company perspectives. They are meant for targeted reviews, release gates, architecture decisions, and re-reviews after fixes.
 
-IELTS++ is a Next.js 16.x / React 19 IELTS preparation platform with Prisma, Supabase, BullMQ, Strapi CMS, PostHog, Sentry, Playwright, Tailwind CSS, and TypeScript. Reviews should account for learner trust, licensed or original content rules, score-prediction disclaimers, attempt persistence, and the separation between authored content and learner runtime state.
+DOshomik IELTS is a Next.js 16.x / React 19 IELTS preparation platform with Prisma, Supabase, BullMQ, Strapi CMS, PostHog, Sentry, Playwright, Tailwind CSS, and TypeScript. Reviews should account for learner trust, licensed or original content rules, score-prediction disclaimers, attempt persistence, and the separation between authored content and learner runtime state.
 
 ## Deployment Topology
 
@@ -34,7 +34,7 @@ Reviews should consider these primary learner personas:
 
 ## Business Model
 
-IELTS++ operates on a **credit-based freemium model**: learners receive free resources and practice, purchase credits for mock tests and evaluations, and can earn credits through referrals. Score predictions are gated behind completed four-module attempts and labeled as unofficial estimates.
+DOshomik IELTS operates on a **credit-based freemium model**: learners receive free resources and practice, purchase credits for mock tests and evaluations, and can earn credits through referrals. Score predictions are gated behind completed four-module attempts and labeled as unofficial estimates.
 
 Before running any role, read the shared [review playbook](review-playbook.md). It defines severity, evidence, validation, and handoff expectations for every agent.
 

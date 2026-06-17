@@ -1,9 +1,9 @@
-# IELTS++ — Tech Stack Report
+# DOshomik IELTS — Tech Stack Report
 
 > Generated: 2026-05-17
 
 ## Product
-**IELTS++** — IELTS preparation platform with Strapi-authored original practice material, mock tests, profile tracking, LLM-powered evaluation, and score prediction.
+**DOshomik IELTS** — IELTS preparation platform with Strapi-authored original practice material, mock tests, profile tracking, LLM-powered evaluation, and score prediction.
 
 ---
 

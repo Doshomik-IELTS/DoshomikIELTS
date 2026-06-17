@@ -1,6 +1,6 @@
 # Security And Compliance Testing Plan
 
-**Purpose:** Executable checklist for verifying that IELTS++ meets [`../development/backend/security-and-compliance.md`](../development/backend/security-and-compliance.md) and related media rules in [`../development/backend/storage-and-media.md`](../development/backend/storage-and-media.md). Use for manual QA, targeted automation, and periodic security reviews.
+**Purpose:** Executable checklist for verifying that DOshomik IELTS meets [`../development/backend/security-and-compliance.md`](../development/backend/security-and-compliance.md) and related media rules in [`../development/backend/storage-and-media.md`](../development/backend/storage-and-media.md). Use for manual QA, targeted automation, and periodic security reviews.
 
 **Out of scope here:** Full penetration test report format, SOC2 evidence packs, and vendor questionnaires—this document stays aligned with the MVP spec and testable behaviors.
 

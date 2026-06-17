@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document defines how the IELTS++ MVP database should be managed during development and what data model is needed to support the first release.
+This document defines how the DOshomik IELTS MVP database should be managed during development and what data model is needed to support the first release.
 
 It complements:
 
@@ -28,7 +28,7 @@ MVP database stack:
 Important separation:
 
 - Supabase Auth owns login identity.
-- IELTS++ owns learner profile, roles, attempts, resources, scores, evaluations, media metadata, reviews, and audit logs.
+- DOshomik IELTS owns learner profile, roles, attempts, resources, scores, evaluations, media metadata, reviews, and audit logs.
 
 ---
 

@@ -4,7 +4,7 @@
 
 ## Design Direction
 
-The IELTS++ frontend follows a **calm, educational, trustworthy** aesthetic — a minimal, modern educational SaaS look with restrained color, generous whitespace, clear hierarchy, and strong content readability.
+The DOshomik IELTS frontend follows a **calm, educational, trustworthy** aesthetic — a minimal, modern educational SaaS look with restrained color, generous whitespace, clear hierarchy, and strong content readability.
 
 ### Visual Principles
 

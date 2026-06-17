@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document defines the referral program architecture for the IELTS++ platform. It enables existing users to share a unique referral ID and invite new users. Referred users receive free mock tests or other services as onboarding rewards, while referrers earn benefits. All rewards are managed from the admin dashboard.
+This document defines the referral program architecture for the DOshomik IELTS platform. It enables existing users to share a unique referral ID and invite new users. Referred users receive free mock tests or other services as onboarding rewards, while referrers earn benefits. All rewards are managed from the admin dashboard.
 
 ---
 
@@ -247,7 +247,7 @@ enum RedemptionStatus {
 ### 5.2 Share URL Format
 
 ```
-https://ieltsplusplus.com/signup?ref=IELTS2025XY
+https://doshomikielts.com/signup?ref=IELTS2025XY
 ```
 
 - Referral code passed as `ref` query parameter

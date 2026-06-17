@@ -1,8 +1,8 @@
-# IELTS++ Evaluation Methods
+# DOshomik IELTS Evaluation Methods
 
 ## Purpose
 
-This document defines how IELTS++ evaluates practice and mock test work across Reading, Listening, Writing, Speaking, and full score prediction.
+This document defines how DOshomik IELTS evaluates practice and mock test work across Reading, Listening, Writing, Speaking, and full score prediction.
 
 It is aligned with:
 

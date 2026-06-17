@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document defines the complete content management architecture for the IELTS++ platform. IELTS++ uses Strapi Free (self-hosted, open-source) as the authoring CMS for resources, mock tests, IELTS information pages, FAQs, and related learning content. The Next.js application remains responsible for learner runtime behavior: authentication, access control, attempts, timers, scoring, progress tracking, saved resources, and reports.
+This document defines the complete content management architecture for the DOshomik IELTS platform. DOshomik IELTS uses Strapi Free (self-hosted, open-source) as the authoring CMS for resources, mock tests, IELTS information pages, FAQs, and related learning content. The Next.js application remains responsible for learner runtime behavior: authentication, access control, attempts, timers, scoring, progress tracking, saved resources, and reports.
 
 The goal is to avoid maintaining a fragile custom admin CMS for content authoring while keeping exam delivery and learner state inside the application database.
 
@@ -228,7 +228,7 @@ These are read directly by public/learner pages and do not need Prisma persisten
 
 ### 2A.7 Editor-Friendly Strapi Coverage
 
-The current Strapi setup is intended to let non-technical editors manage the content types IELTS++ needs without touching the legacy app builder:
+The current Strapi setup is intended to let non-technical editors manage the content types DOshomik IELTS needs without touching the legacy app builder:
 
 | Need | Strapi Type / Fields |
 |------|----------------------|
@@ -813,7 +813,7 @@ Admin can configure:
 
 1. **Hierarchical Structure**
    ```
-   IELTS++ Content
+   DOshomik IELTS Content
    ├── Information (fees, centers, FAQ)
    ├── Vocabulary (words, synonyms, antonyms)
    ├── Grammar (topics, rules, exercises)

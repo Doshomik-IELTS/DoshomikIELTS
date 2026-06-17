@@ -154,7 +154,7 @@ Before browser-level tests, keep `pnpm typecheck` green. ✅ All passing.
 7. Submit Speaking text → wait for feedback.
 8. Submit Speaking audio/upload if supported and confirm text fallback when recording is unavailable.
 9. View final predicted score after all modules complete.
-10. Admin opens Strapi resource/mock-test authoring from IELTS++ admin.
+10. Admin opens Strapi resource/mock-test authoring from DOshomik IELTS admin.
 11. Learner confirms published Strapi resource/test appears when Strapi API token is configured.
 
 ## Accessibility Manual Checks

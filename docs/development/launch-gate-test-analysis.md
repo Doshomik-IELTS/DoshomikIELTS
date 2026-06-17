@@ -29,10 +29,10 @@ The `login()` helper:
 Browser → GET /login
          → Fill email + password, click Submit
          → POST /api/dev-auth/login
-             → 200 OK + Set-Cookie: ieltspp-dev-session=<token>
+             → 200 OK + Set-Cookie: doshomikielts-dev-session=<token>
          → LoginForm onSuccess: router.push("/dashboard")
          → GET /dashboard
-             → Middleware reads ieltspp-dev-session cookie
+             → Middleware reads doshomikielts-dev-session cookie
              → User is authenticated → allow through
          → Dashboard page renders
 ```
@@ -52,12 +52,12 @@ Browser → GET /login
 ### 2. Dev auth API (`src/app/api/dev-auth/login/route.ts`)
 
 - Returns `ok({ ... })` response ✅
-- Sets `ieltspp-dev-session` httpOnly cookie ✅
+- Sets `doshomikielts-dev-session` httpOnly cookie ✅
 - Credentials checked against `devCredentialsMatch(email, password)` ✅
 
 ### 3. Middleware (`middleware.ts`)
 
-- Reads `DEV_COOKIE_NAME = "ieltspp-dev-session"` cookie ✅
+- Reads `DEV_COOKIE_NAME = "doshomikielts-dev-session"` cookie ✅
 - If cookie present → redirects to `/dashboard` if on an auth route ✅
 - If user authenticated → allows through to protected routes ✅
 - If **not** authenticated → redirects to `/login?next=<path>` ✅
@@ -121,7 +121,7 @@ If the middleware doesn't recognize the dev cookie, every attempt to visit `/das
 
 1. **Verify dev mode**: Check that `process.env.NODE_ENV === "development"` when running the script. Add `console.log(process.env.NODE_ENV)` in the test or check the browser console.
 
-2. **Check the dev cookie name match**: The middleware uses `DEV_COOKIE_NAME = "ieltspp-dev-session"` but the cookie is set in the API response. Verify the cookie name in the response matches exactly.
+2. **Check the dev cookie name match**: The middleware uses `DEV_COOKIE_NAME = "doshomikielts-dev-session"` but the cookie is set in the API response. Verify the cookie name in the response matches exactly.
 
 3. **Add console logging to the test**: Log `page.url()` at each step and `response.headers()` from the API call to see what's actually happening.
 
@@ -129,7 +129,7 @@ If the middleware doesn't recognize the dev cookie, every attempt to visit `/das
 
 5. **Check rate limiting**: Look at `/api/dev-auth/login` rate limit state. The limiter uses an in-memory store (`Map`) which resets on server restart — so if the dev server was just started, this shouldn't be an issue.
 
-6. **Verify the dev session cookie is being set**: After clicking submit, check `await page.context().cookies()` to see if the `ieltspp-dev-session` cookie is present.
+6. **Verify the dev session cookie is being set**: After clicking submit, check `await page.context().cookies()` to see if the `doshomikielts-dev-session` cookie is present.
 
 7. **Try direct cookie injection**: Instead of relying on the form submission + API, set the dev session cookie directly in the browser context before navigating to `/dashboard` — this isolates whether the problem is login or dashboard access.
 
@@ -148,7 +148,7 @@ async function login(page: any, role = "demo") {
   // 2. Navigate to /dashboard directly
   // This bypasses router.push() timing issues
   await page.context().addCookies([{
-    name: "ieltspp-dev-session",
+    name: "doshomikielts-dev-session",
     value: createTestToken(role), // generate a valid test token
     domain: "127.0.0.1",
     path: "/"

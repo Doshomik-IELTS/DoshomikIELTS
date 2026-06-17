@@ -1,6 +1,6 @@
-# IELTS++ Documentation Index
+# DOshomik IELTS Documentation Index
 
-This folder contains product, strategy, market, content, and development documentation for IELTS++.
+This folder contains product, strategy, market, content, and development documentation for DOshomik IELTS.
 
 **Last updated:** 2026-06-17 — Design system finalized: purple-indigo primary (`#6556ff`), Poppins font, `@theme inline` design tokens, auth modal flow, dark-themed landing page.
 

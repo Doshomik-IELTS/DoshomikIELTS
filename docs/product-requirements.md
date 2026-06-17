@@ -9,7 +9,7 @@ Build an owned IELTS resource and mock-test platform where learners can study ba
 ## Users
 
 - Learner: studies resources, practices modules, takes mock tests, views score history.
-- Admin/content reviewer: creates, reviews, publishes, and retires resources and test material in Strapi; manages app operations and reviews in the IELTS++ admin area.
+- Admin/content reviewer: creates, reviews, publishes, and retires resources and test material in Strapi; manages app operations and reviews in the DOshomik IELTS admin area.
 - Evaluator: reviews flagged writing/speaking responses when human review is needed.
 
 ## Resource Library

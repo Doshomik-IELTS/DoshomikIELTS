@@ -1,4 +1,4 @@
-# IELTS++ Review Playbook
+# DOshomik IELTS Review Playbook
 
 <!-- Last Updated: 2026-05-19 — Added Review Retrospective section for feedback loop and system improvement. -->
 
@@ -64,7 +64,7 @@ When evidence is incomplete, say what is missing and how to obtain it.
 
 ## Repo-Specific Risk Checklist
 
-Agents should actively check for these IELTS++ risks when relevant:
+Agents should actively check for these DOshomik IELTS risks when relevant:
 
 - Content licensing: no Cambridge-book reproduction, close paraphrase, unlicensed hosted audio, or missing attribution metadata.
 - Evaluation trust: writing and speaking feedback must be rubric-based, qualified, and reviewable when confidence is low.

@@ -60,7 +60,7 @@ Implemented:
 - Rename buttons:
   - "New resource" -> "Open Strapi Resources"
   - "New test" -> "Open Strapi Mock Tests"
-- Keep review/flashcard/referral/admin operations inside IELTS++.
+- Keep review/flashcard/referral/admin operations inside DOshomik IELTS.
 
 ### P1 - Sidebar Can Remain For Admin, But It Should Be More Operational
 
@@ -146,7 +146,7 @@ Recommendation:
 
 Use a sticky top header:
 
-- Left: IELTS++ brand.
+- Left: DOshomik IELTS brand.
 - Center: Dashboard, Resources, Practice, Mock Tests.
 - Right: Referrals, Profile/avatar, Logout/menu.
 - Optional primary CTA: Start mock / Continue.

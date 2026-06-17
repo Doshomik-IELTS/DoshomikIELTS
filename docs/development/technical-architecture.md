@@ -4,7 +4,7 @@
 
 ## Product Scope
 
-IELTS++ is an owned IELTS resource and mock-test platform. The platform should provide:
+DOshomik IELTS is an owned IELTS resource and mock-test platform. The platform should provide:
 
 - Text-based learning resources for Basic English, words, synonyms, and basic grammar rules.
 - Original listening resources with no copyrighted audio or copied scripts.
@@ -55,15 +55,15 @@ Confirmed MVP stack:
 
 Recommended domain structure:
 
-- `ieltsplusplus.com` or selected primary brand domain for marketing pages.
-- `app.ieltsplusplus.com` for the learner application.
-- `admin.ieltsplusplus.com` for content/admin tools if separated.
-- `api.ieltsplusplus.com` for backend API if frontend and backend are split.
-- `cdn.ieltsplusplus.com` for static/media assets if using a CDN.
+- `doshomikielts.com` or selected primary brand domain for marketing pages.
+- `app.doshomikielts.com` for the learner application.
+- `admin.doshomikielts.com` for content/admin tools if separated.
+- `api.doshomikielts.com` for backend API if frontend and backend are split.
+- `cdn.doshomikielts.com` for static/media assets if using a CDN.
 
 Minimum MVP can use one domain:
 
-- `ieltsplusplus.com` for landing pages and app.
+- `doshomikielts.com` for landing pages and app.
 - `/admin` for admin tools.
 - `/api` for API routes.
 

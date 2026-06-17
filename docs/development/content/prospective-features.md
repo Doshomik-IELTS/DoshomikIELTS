@@ -1,4 +1,4 @@
-# IELTS++ Prospective Features To Include
+# DOshomik IELTS Prospective Features To Include
 
 Research date: May 2026
 
@@ -15,7 +15,7 @@ Last updated: 2026-05-17
 
 ## Purpose
 
-This document lists prospective features IELTS++ should include based on market research of similar IELTS preparation apps and platforms.
+This document lists prospective features DOshomik IELTS should include based on market research of similar IELTS preparation apps and platforms.
 
 Features are grouped by priority:
 
@@ -28,7 +28,7 @@ Features are grouped by priority:
 
 ## MVP Required Features
 
-These features are necessary for IELTS++ to be competitive in the current IELTS prep market.
+These features are necessary for DOshomik IELTS to be competitive in the current IELTS prep market.
 
 Implementation status summary:
 
@@ -84,7 +84,7 @@ Resource features:
 
 Why needed:
 
-- IELTS++ should compete not only as a mock test app but also as a learning platform.
+- DOshomik IELTS should compete not only as a mock test app but also as a learning platform.
 
 ---
 
@@ -330,7 +330,7 @@ Required admin features:
 
 Why needed:
 
-- IELTS++ depends on original content and should not publish generated content without review.
+- DOshomik IELTS depends on original content and should not publish generated content without review.
 
 Status:
 
@@ -340,7 +340,7 @@ Status:
 
 ## MVP Differentiator Features
 
-These should be included early if possible because they help IELTS++ stand apart.
+These should be included early if possible because they help DOshomik IELTS stand apart.
 
 ### 1. Basic-English-To-IELTS Pathway
 

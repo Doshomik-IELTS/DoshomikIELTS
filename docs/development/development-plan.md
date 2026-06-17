@@ -1,4 +1,4 @@
-# IELTS++ Development Plan (from current baseline)
+# DOshomik IELTS Development Plan (from current baseline)
 
 **Last updated:** 2026-06-17 — Design system applied: purple-indigo primary (`#6556ff`), Poppins font, `@theme inline` tokens, landing page redesigned, auth modal flow.
 

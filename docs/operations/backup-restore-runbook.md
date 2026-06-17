@@ -1,7 +1,7 @@
 # Backup and Restore Runbook
 
 ## Scope
-This runbook covers the minimum launch operations for IELTS++ data stores:
+This runbook covers the minimum launch operations for DOshomik IELTS data stores:
 
 - Supabase/Postgres application database.
 - Supabase storage buckets for learner recordings and admin media.

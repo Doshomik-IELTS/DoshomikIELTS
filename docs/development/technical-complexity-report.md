@@ -1,4 +1,4 @@
-# IELTS++ Technical Complexity Report
+# DOshomik IELTS Technical Complexity Report
 
 ## Current Implementation Status (2026-05-17)
 
@@ -35,7 +35,7 @@ See [`development/README.md`](README.md) for full implementation status.
 
 ## Summary
 
-The projected IELTS++ MVP is a **medium-to-high complexity full-stack product** because it combines conventional SaaS features with exam simulation, AI evaluation, audio/media workflows, scoring logic, content governance, and learner analytics.
+The projected DOshomik IELTS MVP is a **medium-to-high complexity full-stack product** because it combines conventional SaaS features with exam simulation, AI evaluation, audio/media workflows, scoring logic, content governance, and learner analytics.
 
 The highest complexity areas are:
 
@@ -174,7 +174,7 @@ Recommended mitigation:
 
 ### 5. Content Safety Complexity
 
-IELTS++ must avoid copyrighted Cambridge/commercial content.
+DOshomik IELTS must avoid copyrighted Cambridge/commercial content.
 
 Primary risks:
 
