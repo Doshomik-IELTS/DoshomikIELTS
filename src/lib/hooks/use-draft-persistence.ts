@@ -5,7 +5,7 @@ import { useEffect, useRef, useCallback } from "react";
 type DraftAnswers = Record<string, { answerText?: string; answerJson?: unknown }>;
 
 function getStorageKey(attemptId: string) {
-  return `ieltspp:draft:${attemptId}`;
+  return `doshomikielts:draft:${attemptId}`;
 }
 
 export function useDraftPersistence(attemptId: string | null) {

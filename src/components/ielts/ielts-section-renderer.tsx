@@ -245,7 +245,7 @@ function SectionMaterial({
         </CardHeader>
         <CardContent className="space-y-4">
           {audioUrl ? (
-            <StrictAudioPlayer src={audioUrl} storageKey={`ieltspp:audio:${attemptId ?? "preview"}:${section.id}`} />
+            <StrictAudioPlayer src={audioUrl} storageKey={`doshomikielts:audio:${attemptId ?? "preview"}:${section.id}`} />
           ) : audioAssetId ? (
             <p className="text-sm text-slate-500">{audioError ?? "Loading audio..."}</p>
           ) : (

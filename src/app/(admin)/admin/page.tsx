@@ -96,7 +96,7 @@ export default async function AdminPage() {
       <PageHeader
         meta="Operations"
         title="Admin dashboard"
-        description="Prioritized publishing work, review queues, and content health for IELTS++."
+        description="Prioritized publishing work, review queues, and content health for DOshomik IELTS."
         actions={
           <div className="flex flex-wrap gap-2 sm:justify-end">
             <Link href="/admin/resources/new" className={buttonVariants()}>

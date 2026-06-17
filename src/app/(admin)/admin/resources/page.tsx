@@ -8,7 +8,7 @@ export default function AdminResourcesPage() {
       <StrapiAuthoringPanel
         collection="resources"
         title="Resource authoring moved to Strapi"
-        description="Create, edit, publish, and unpublish IELTS++ lessons, vocabulary, grammar, spelling, and strategy resources in Strapi. The learner app reads published Strapi resources when STRAPI_BASE_URL and STRAPI_API_TOKEN are configured."
+        description="Create, edit, publish, and unpublish DOshomik IELTS lessons, vocabulary, grammar, spelling, and strategy resources in Strapi. The learner app reads published Strapi resources when STRAPI_BASE_URL and STRAPI_API_TOKEN are configured."
       />
     </div>
   );

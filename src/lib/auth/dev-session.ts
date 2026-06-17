@@ -2,7 +2,7 @@ import { createHmac, timingSafeEqual } from "crypto";
 import { cookies } from "next/headers";
 import { DEV_AUTH, DEV_ADMIN_AUTH } from "@/config/dev-auth";
 
-const COOKIE_NAME = "ieltspp-dev-session";
+const COOKIE_NAME = "doshomikielts-dev-session";
 
 export type DevSessionUser = {
   email: string;
@@ -11,7 +11,7 @@ export type DevSessionUser = {
 };
 
 function secret() {
-  return process.env.DEV_AUTH_SECRET ?? "ieltspp-dev-secret";
+  return process.env.DEV_AUTH_SECRET ?? "doshomikielts-dev-secret";
 }
 
 function encode(value: string) {

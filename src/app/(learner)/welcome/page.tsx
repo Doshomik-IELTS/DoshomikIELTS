@@ -90,7 +90,7 @@ export default function BetaWelcomePage() {
       </div>
 
       <p className="text-center text-sm text-slate-500 mt-8">
-        Need help? Use the feedback button or email us at support@ieltspp.local
+        Need help? Use the feedback button or email us at support@doshomikielts.local
       </p>
     </div>
   );

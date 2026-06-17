@@ -10,7 +10,7 @@ import { createServerClient } from "@supabase/ssr";
 const protectedPrefixes = ["/dashboard", "/profile", "/resources", "/practice", "/mock-tests", "/attempts", "/evaluations"];
 const adminPrefixes = ["/admin"];
 const authRoutes = ["/login", "/register", "/reset-password"];
-const DEV_COOKIE_NAME = "ieltspp-dev-session";
+const DEV_COOKIE_NAME = "doshomikielts-dev-session";
 
 function isProtectedPath(pathname: string) {
   return protectedPrefixes.some((prefix) => pathname.startsWith(prefix));

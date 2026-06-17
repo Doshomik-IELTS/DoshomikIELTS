@@ -73,10 +73,10 @@ async function LoginScreen({
             {process.env.NODE_ENV !== "production" && (
             <div className="mt-6 rounded-lg border border-primary/20 bg-primary/5 p-3">
               <p className="mb-1 text-xs font-medium text-blue-300">Demo account</p>
-              <p className="text-xs text-slate-400">Email: demo@ieltspp.local</p>
+              <p className="text-xs text-slate-400">Email: demo@doshomikielts.local</p>
               <p className="text-xs text-slate-400">Password: Test@1234!</p>
               <p className="mt-2 mb-1 text-xs font-medium text-blue-300">Admin demo</p>
-              <p className="text-xs text-slate-400">Email: admin@ieltspp.local</p>
+              <p className="text-xs text-slate-400">Email: admin@doshomikielts.local</p>
               <p className="text-xs text-slate-400">Password: Test@1234!</p>
             </div>
             )}

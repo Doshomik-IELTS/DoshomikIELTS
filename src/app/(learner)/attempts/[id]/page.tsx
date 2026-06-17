@@ -142,7 +142,7 @@ export default function AttemptPage({ params }: { params: Promise<{ id: string }
 
 function ActiveAttempt({ attempt, onRefresh }: { attempt: AttemptDetail; onRefresh: () => void }) {
   const [currentSection, setCurrentSection] = useState(attempt.currentSectionIndex);
-  const draftStorageKey = `ieltspp:attempt:${attempt.id}:draft`;
+  const draftStorageKey = `doshomikielts:attempt:${attempt.id}:draft`;
   const [answers, setAnswers] = useState<AnswerState>(() => getInitialAnswers(attempt, draftStorageKey));
   const [lastSavedSnapshot, setLastSavedSnapshot] = useState(() => JSON.stringify(answers));
   const [reviewing, setReviewing] = useState(false);

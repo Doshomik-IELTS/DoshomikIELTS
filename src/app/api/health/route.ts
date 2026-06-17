@@ -39,7 +39,7 @@ export async function getHealth(
   return ok(
     {
       status: degraded ? "degraded" : "ok",
-      service: "ielts-plus-plus",
+      service: "doshomik-ielts",
       timestamp: new Date().toISOString(),
       dependencies,
     },
